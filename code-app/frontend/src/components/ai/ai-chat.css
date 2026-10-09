@@ -1,0 +1,128 @@
+/* ============ 批次 5：右侧 AI 对话面板 ============
+   本文件仅由 src/components/ai/AiChatPanel.tsx 引入，不改动 src/styles/index.css。
+   面板根节点 .ai-chat-body 是 .app-chat（既有 flex 列容器）的子节点，故此处自带 flex:1。
+   品牌色沿用 index.css 的 --primary-color / --text-secondary / --divider-color。 */
+
+.ai-chat-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    color: var(--text-primary);
+    text-align: left;
+}
+
+/* ---- 状态条（未启用 / 错误 / 检查中） ---- */
+.ai-status-bar {
+    padding: 8px 14px;
+    font-size: 9pt;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--divider-color);
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    line-height: 1.5;
+}
+.ai-status-bar.is-warn { background: #fffbeb; color: #854d0e; border-bottom-color: #fde68a; }
+.ai-status-bar.is-error { background: #fef2f2; color: #991b1b; border-bottom-color: #fecaca; }
+
+/* ---- 消息区 ---- */
+.ai-msg-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 14px 14px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.ai-empty { color: var(--text-secondary); font-size: 9pt; padding: 10px 2px; line-height: 1.7; }
+.ai-empty-hint { color: #94a3b8; margin-top: 6px; }
+
+.ai-msg { display: flex; }
+.ai-msg-user { justify-content: flex-end; }
+.ai-msg-assistant { justify-content: flex-start; }
+.ai-msg-bubble {
+    max-width: 92%;
+    border-radius: 12px;
+    padding: 9px 12px;
+    font-size: 9pt;
+    line-height: 1.65;
+    word-break: break-word;
+    white-space: normal;
+}
+.ai-msg-user .ai-msg-bubble { background: var(--primary-color); color: #fff; border-top-right-radius: 4px; }
+.ai-msg-assistant .ai-msg-bubble {
+    background: #fff;
+    border: 1px solid var(--divider-color);
+    border-top-left-radius: 4px;
+}
+.ai-msg-paragraph { margin: 0 0 6px; white-space: pre-wrap; }
+.ai-msg-paragraph:last-child { margin-bottom: 0; }
+
+/* ---- 工具调用状态 ---- */
+.ai-msg-tool { color: var(--primary-color); font-size: 9pt; display: flex; align-items: center; gap: 6px; }
+.ai-msg-tool::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--primary-color);
+    animation: ai-pulse 1s ease-in-out infinite;
+}
+@keyframes ai-pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+.ai-tool-chip {
+    display: flex; align-items: baseline; gap: 6px;
+    margin-top: 6px; padding: 4px 8px;
+    border-radius: 6px;
+    background: #f1f5f9;
+    font-size: 8pt;
+    color: var(--text-secondary);
+}
+.ai-tool-chip.is-error { background: #fef2f2; color: #991b1b; }
+.ai-tool-name { font-weight: 600; }
+
+/* ---- 结构化渲染块 ---- */
+.ai-render-block { margin-top: 8px; }
+.ai-render-block .table-container { border-radius: var(--radius-sm); overflow-x: auto; }
+.ai-render-block table { font-size: 8pt; }
+.ai-render-block th, .ai-render-block td { padding: 5px 8px; }
+.ai-table-render { display: flex; flex-direction: column; gap: 4px; }
+.ai-table-meta { color: #94a3b8; font-size: 8pt; }
+.ai-chart-render { border: 1px solid var(--divider-color); border-radius: var(--radius-sm); padding: 4px; }
+.ai-render-empty { color: #94a3b8; font-size: 8pt; }
+
+/* ---- action（只读跳转） ---- */
+.ai-action-render { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.ai-action-tip { color: #94a3b8; font-size: 8pt; }
+.ai-action-warn { color: #854d0e; font-size: 8pt; }
+
+/* ---- 中文错误 / 停止条 ---- */
+.ai-error-bar {
+    margin-top: 6px; padding: 6px 9px;
+    border-radius: 6px;
+    background: #fef2f2; color: #991b1b;
+    font-size: 8pt; border: 1px solid #fecaca;
+}
+.ai-stopped-bar { margin-top: 6px; color: #94a3b8; font-size: 8pt; }
+
+/* ---- 输入区 ---- */
+.ai-input-area {
+    flex-shrink: 0;
+    border-top: 1px solid var(--divider-color);
+    padding: 10px 12px 12px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.ai-input {
+    border-radius: 12px;
+    resize: none;
+    line-height: 1.6;
+    font-size: 9pt;
+}
+.ai-input-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ai-input-hint { color: #94a3b8; font-size: 8pt; }

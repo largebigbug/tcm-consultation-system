@@ -1,0 +1,390 @@
+# M5 主体模型元文件 - m5-actor-model.yaml
+# 依据《中医问诊系统-需求规格说明书-V9.md》第六部分 + 附录 C.4
+# 说明：
+# 1. 权限粒度到行为级别（targetType=BEHAVIOR，targetRef 为 M2 行为 id）；
+#    QUERY 类权限绑定 M2 查询行为，不直接绑定 M7 报表对象（本体框架 §7.1、第六部分纪律）。
+# 2. 数据范围：本期不做数据行级权限、字段级权限与多租户隔离（D-32），全部 dataScope=ALL，
+#    不填写 abacCondition。中医师可查询全部患者记录，此为已确认后果。
+# 3. 系统管理员（ROLE-06）：其职能为底座内置的「系统管理」模块（用户/角色/权限/菜单维护，FUNC-17），
+#    平台功能不进 M1/M2 本体模型，故本模型不给 ROLE-06 绑定 M2 权限。
+# 4. 系统自动执行主体（ROLE-07）承载 B-01～B-04 四个自动行为，无人工账号登录。
+model_type: ACTOR
+version: "1.0"
+domain: "中医问诊"
+
+actors:
+  - actorId: ACTOR-ROLE-01
+    name: 导诊员
+    actorType: HUMAN
+    roles:
+      - ROLE-01
+  - actorId: ACTOR-ROLE-02
+    name: 中医师
+    actorType: HUMAN
+    roles:
+      - ROLE-02
+  - actorId: ACTOR-ROLE-03
+    name: 中药师
+    actorType: HUMAN
+    roles:
+      - ROLE-03
+  - actorId: ACTOR-ROLE-04
+    name: 库房管理员
+    actorType: HUMAN
+    roles:
+      - ROLE-04
+  - actorId: ACTOR-ROLE-05
+    name: 科室管理员
+    actorType: HUMAN
+    roles:
+      - ROLE-05
+  - actorId: ACTOR-ROLE-06
+    name: 系统管理员
+    actorType: HUMAN
+    roles:
+      - ROLE-06
+  - actorId: ACTOR-SYSTEM
+    name: 系统自动执行主体
+    actorType: SYSTEM
+    roles:
+      - ROLE-07
+
+roles:
+  # 导诊员：患者建档与停用、挂号、撤销就诊、复诊随访登记（含失访）
+  - roleId: ROLE-01
+    name: 导诊员
+    description: 门诊前台，负责患者建档、挂号与随访登记
+    permissions:
+      - PERM-PATIENT-SAVE
+      - PERM-PATIENT-STATUS
+      - PERM-VISIT-REGISTER
+      - PERM-VISIT-CANCEL
+      - PERM-FOLLOWUP-COMPLETE
+      - PERM-FOLLOWUP-LOST
+      - PERM-QUERY-VISIT-PRESCRIPTION
+      - PERM-QUERY-FOLLOWUP
+
+  # 中医师：接诊全流程（接诊、四诊、辨证、开方、送审、作废）、随访与四类查询
+  - roleId: ROLE-02
+    name: 中医师
+    description: 门诊医师，负责接诊、四诊录入、辨证、开具处方与随访
+    permissions:
+      - PERM-VISIT-RECEIVE
+      - PERM-VISIT-FOURDIAGNOSIS
+      - PERM-VISIT-CANCEL
+      - PERM-DIAGNOSIS-SAVE
+      - PERM-DIAGNOSIS-CONFIRM
+      - PERM-PRESCRIPTION-SAVE
+      - PERM-PRESCRIPTION-SUBMIT
+      - PERM-PRESCRIPTION-CANCEL
+      - PERM-FOLLOWUP-COMPLETE
+      - PERM-FOLLOWUP-LOST
+      - PERM-QUERY-VISIT-STATS
+      - PERM-QUERY-SYNDROME-DIST
+      - PERM-QUERY-VISIT-PRESCRIPTION
+      - PERM-QUERY-FOLLOWUP
+
+  # 中药师：处方审核（审批行为）、调剂发药与三类查询
+  - roleId: ROLE-03
+    name: 中药师
+    description: 药房药师，负责处方审核、调剂与发药
+    permissions:
+      - PERM-PRESCRIPTION-REVIEW
+      - PERM-DISPENSE-CONFIRM
+      - PERM-DISPENSE-ISSUE
+      - PERM-QUERY-VISIT-PRESCRIPTION
+      - PERM-QUERY-HERB-STOCK
+      - PERM-QUERY-OVERDOSE-REVIEW
+
+  # 库房管理员：饮片建档与入库、库存盘点与预警、库存查询
+  - roleId: ROLE-04
+    name: 库房管理员
+    description: 中药库房，负责饮片建档、入库、盘点与库存预警跟进
+    permissions:
+      - PERM-HERB-SAVE
+      - PERM-HERB-INBOUND
+      - PERM-HERB-STATUS
+      - PERM-HERB-STOCKTAKE
+      - PERM-QUERY-HERB-STOCK
+
+  # 科室管理员：处方作废、方剂模板与证型字典维护、全部查询报表
+  - roleId: ROLE-05
+    name: 科室管理员
+    description: 科室负责人，负责基础数据维护、处方作废审批与全量查询统计
+    permissions:
+      - PERM-PRESCRIPTION-CANCEL
+      - PERM-FORMULA-SAVE
+      - PERM-FORMULA-STATUS
+      - PERM-SYNDROME-SAVE
+      - PERM-SYNDROME-STATUS
+      - PERM-QUERY-VISIT-STATS
+      - PERM-QUERY-SYNDROME-DIST
+      - PERM-QUERY-HERB-USAGE
+      - PERM-QUERY-VISIT-PRESCRIPTION
+      - PERM-QUERY-HERB-STOCK
+      - PERM-QUERY-OVERDOSE-REVIEW
+      - PERM-QUERY-FOLLOWUP
+
+  # 系统管理员：仅底座内置系统管理模块（FUNC-17），无业务操作与业务查询权限（D-35）
+  - roleId: ROLE-06
+    name: 系统管理员
+    description: 平台管理角色，维护用户、角色、权限与菜单；不参与任何业务操作与业务查询
+    permissions: []
+
+  # 系统自动执行主体：承载四个自动行为（库房扣减/回冲、就诊收尾、随访生成）
+  - roleId: ROLE-07
+    name: 系统自动执行主体
+    description: 由 syncTriggers 同步调用执行的系统行为主体，无人工登录账号
+    permissions:
+      - PERM-AUTO-VISIT-COMPLETE
+      - PERM-AUTO-FOLLOWUP-PLAN
+      - PERM-AUTO-STOCK-DEDUCT
+      - PERM-AUTO-STOCK-RETURN
+      - PERM-AUTO-DISPENSE-CREATE
+      - PERM-AUTO-DISPENSE-CANCEL
+
+permissions:
+  # ── 患者（FUNC-01）──────────────────────────────────────
+  - permissionId: PERM-PATIENT-SAVE
+    name: 患者建档与修改
+    targetType: BEHAVIOR
+    targetRef: Patient_Save
+    dataScope: ALL
+    description: 对应 FUNC-01
+  - permissionId: PERM-PATIENT-STATUS
+    name: 患者停用与启用
+    targetType: BEHAVIOR
+    targetRef: Patient_ChangeStatus
+    dataScope: ALL
+    description: 对应 FUNC-01（停用并入建档功能，D-23）
+
+  # ── 就诊（FUNC-02 / FUNC-03 / FUNC-04 / FUNC-16）────────
+  - permissionId: PERM-VISIT-REGISTER
+    name: 门诊挂号
+    targetType: BEHAVIOR
+    targetRef: Visit_Register
+    dataScope: ALL
+    description: 对应 FUNC-02
+  - permissionId: PERM-VISIT-RECEIVE
+    name: 接诊开单
+    targetType: BEHAVIOR
+    targetRef: Visit_Receive
+    dataScope: ALL
+    description: 对应 FUNC-03
+  - permissionId: PERM-VISIT-FOURDIAGNOSIS
+    name: 录入四诊信息
+    targetType: BEHAVIOR
+    targetRef: Visit_SaveFourDiagnosis
+    dataScope: ALL
+    description: 对应 FUNC-04
+  - permissionId: PERM-VISIT-CANCEL
+    name: 撤销就诊
+    targetType: BEHAVIOR
+    targetRef: Visit_Cancel
+    dataScope: ALL
+    description: 对应 FUNC-16
+
+  # ── 辨证（FUNC-05）─────────────────────────────────────
+  - permissionId: PERM-DIAGNOSIS-SAVE
+    name: 辨证结论保存
+    targetType: BEHAVIOR
+    targetRef: Diagnosis_Save
+    dataScope: ALL
+    description: 对应 FUNC-05
+  - permissionId: PERM-DIAGNOSIS-CONFIRM
+    name: 辨证结论确认
+    targetType: BEHAVIOR
+    targetRef: Diagnosis_Confirm
+    dataScope: ALL
+    description: 对应 FUNC-05（结论定稿）
+
+  # ── 证型字典（FUNC-15）──────────────────────────────────
+  - permissionId: PERM-SYNDROME-SAVE
+    name: 证型字典新增与修改
+    targetType: BEHAVIOR
+    targetRef: Syndrome_Save
+    dataScope: ALL
+    description: 对应 FUNC-15
+  - permissionId: PERM-SYNDROME-STATUS
+    name: 证型字典停用与启用
+    targetType: BEHAVIOR
+    targetRef: Syndrome_ChangeStatus
+    dataScope: ALL
+    description: 对应 FUNC-15
+
+  # ── 方剂模板（FUNC-14）──────────────────────────────────
+  - permissionId: PERM-FORMULA-SAVE
+    name: 方剂模板新增与修改
+    targetType: BEHAVIOR
+    targetRef: Formula_Save
+    dataScope: ALL
+    description: 对应 FUNC-14
+  - permissionId: PERM-FORMULA-STATUS
+    name: 方剂模板停用与启用
+    targetType: BEHAVIOR
+    targetRef: Formula_ChangeStatus
+    dataScope: ALL
+    description: 对应 FUNC-14
+
+  # ── 中药饮片与库存（FUNC-11 / FUNC-12）──────────────────
+  - permissionId: PERM-HERB-SAVE
+    name: 饮片建档与修改
+    targetType: BEHAVIOR
+    targetRef: Herb_Save
+    dataScope: ALL
+    description: 对应 FUNC-11
+  - permissionId: PERM-HERB-INBOUND
+    name: 饮片入库登记
+    targetType: BEHAVIOR
+    targetRef: Herb_Inbound
+    dataScope: ALL
+    description: 对应 FUNC-11
+  - permissionId: PERM-HERB-STATUS
+    name: 饮片停用与启用
+    targetType: BEHAVIOR
+    targetRef: Herb_ChangeStatus
+    dataScope: ALL
+    description: 对应 FUNC-11（停用并入建档入库功能，D-31）
+  - permissionId: PERM-HERB-STOCKTAKE
+    name: 饮片库存盘点调整
+    targetType: BEHAVIOR
+    targetRef: Herb_Stocktake
+    dataScope: ALL
+    description: 对应 FUNC-12
+
+  # ── 处方（FUNC-06 / FUNC-07 / FUNC-09）──────────────────
+  - permissionId: PERM-PRESCRIPTION-SAVE
+    name: 开具处方与保存草稿
+    targetType: BEHAVIOR
+    targetRef: Prescription_Save
+    dataScope: ALL
+    description: 对应 FUNC-06
+  - permissionId: PERM-PRESCRIPTION-SUBMIT
+    name: 提交处方送审
+    targetType: BEHAVIOR
+    targetRef: Prescription_Submit
+    dataScope: ALL
+    description: 对应 FUNC-07
+  - permissionId: PERM-PRESCRIPTION-CANCEL
+    name: 处方退回与作废
+    targetType: BEHAVIOR
+    targetRef: Prescription_Cancel
+    dataScope: ALL
+    description: 对应 FUNC-09
+
+  # ── 处方审核（B-APP-01，审批行为）────────────────────────
+  - permissionId: PERM-PRESCRIPTION-REVIEW
+    name: 处方审核
+    targetType: BEHAVIOR
+    targetRef: Prescription_Review
+    dataScope: ALL
+    description: 对应审批行为 B-APP-01
+
+  # ── 调剂发药（FUNC-10）──────────────────────────────────
+  - permissionId: PERM-DISPENSE-CONFIRM
+    name: 确认调剂
+    targetType: BEHAVIOR
+    targetRef: Dispense_Confirm
+    dataScope: ALL
+    description: 对应 FUNC-10
+  - permissionId: PERM-DISPENSE-ISSUE
+    name: 发药确认
+    targetType: BEHAVIOR
+    targetRef: Dispense_Issue
+    dataScope: ALL
+    description: 对应 FUNC-10
+
+  # ── 复诊随访（FUNC-13）──────────────────────────────────
+  - permissionId: PERM-FOLLOWUP-COMPLETE
+    name: 复诊登记与疗效评价
+    targetType: BEHAVIOR
+    targetRef: FollowUp_Complete
+    dataScope: ALL
+    description: 对应 FUNC-13
+  - permissionId: PERM-FOLLOWUP-LOST
+    name: 标记失访
+    targetType: BEHAVIOR
+    targetRef: FollowUp_MarkLost
+    dataScope: ALL
+    description: 对应 FUNC-13
+
+  # ── 查询报表（Q-01～Q-07）───────────────────────────────
+  - permissionId: PERM-QUERY-VISIT-STATS
+    name: 门诊量统计查询
+    targetType: BEHAVIOR
+    targetRef: Visit_QueryStats
+    dataScope: ALL
+    description: 对应 Q-01 / RPT-VISIT-STATS-001
+  - permissionId: PERM-QUERY-SYNDROME-DIST
+    name: 证型分布统计查询
+    targetType: BEHAVIOR
+    targetRef: Diagnosis_QuerySyndromeDistribution
+    dataScope: ALL
+    description: 对应 Q-02 / RPT-SYNDROME-DIST-001
+  - permissionId: PERM-QUERY-HERB-USAGE
+    name: 方剂与饮片使用统计查询
+    targetType: BEHAVIOR
+    targetRef: Prescription_QueryHerbUsage
+    dataScope: ALL
+    description: 对应 Q-03 / RPT-HERB-USAGE-001
+  - permissionId: PERM-QUERY-VISIT-PRESCRIPTION
+    name: 就诊与处方记录查询
+    targetType: BEHAVIOR
+    targetRef: Visit_QueryVisitAndPrescription
+    dataScope: ALL
+    description: 对应 Q-04 / QR-VISIT-PRESCRIPTION-001
+  - permissionId: PERM-QUERY-HERB-STOCK
+    name: 饮片库存与预警查询
+    targetType: BEHAVIOR
+    targetRef: Herb_QueryStockAndAlert
+    dataScope: ALL
+    description: 对应 Q-05 / QR-HERB-STOCK-001
+  - permissionId: PERM-QUERY-OVERDOSE-REVIEW
+    name: 超量毒性处方审核台账查询
+    targetType: BEHAVIOR
+    targetRef: Prescription_QueryOverdoseReview
+    dataScope: ALL
+    description: 对应 Q-06 / QR-PRESCRIPTION-OVERDOSE-001
+  - permissionId: PERM-QUERY-FOLLOWUP
+    name: 随访完成与失访分析查询
+    targetType: BEHAVIOR
+    targetRef: FollowUp_QueryCompletion
+    dataScope: ALL
+    description: 对应 Q-07 / RPT-FOLLOWUP-COMPLETION-001
+
+  # ── 系统自动行为（B-01～B-04，由 ROLE-07 承载）──────────
+  - permissionId: PERM-AUTO-VISIT-COMPLETE
+    name: 就诊状态收尾
+    targetType: BEHAVIOR
+    targetRef: Visit_Complete
+    dataScope: ALL
+    description: 对应 B-04，由 Prescription_Submit 的 syncTriggers 触发
+  - permissionId: PERM-AUTO-FOLLOWUP-PLAN
+    name: 复诊提醒生成
+    targetType: BEHAVIOR
+    targetRef: FollowUp_CreatePlan
+    dataScope: ALL
+    description: 对应 B-03，由 Visit_Complete 的 syncTriggers 触发
+  - permissionId: PERM-AUTO-STOCK-DEDUCT
+    name: 饮片库存扣减
+    targetType: BEHAVIOR
+    targetRef: Herb_DeductStock
+    dataScope: ALL
+    description: 对应 B-01，由 Dispense_Confirm 经 R-02 的 syncTriggers 触发
+  - permissionId: PERM-AUTO-STOCK-RETURN
+    name: 饮片库存回冲
+    targetType: BEHAVIOR
+    targetRef: Herb_ReturnStock
+    dataScope: ALL
+  - permissionId: PERM-AUTO-DISPENSE-CREATE
+    name: 创建待调剂记录
+    targetType: BEHAVIOR
+    targetRef: Dispense_CreatePending
+    dataScope: ALL
+    description: 对应 B-05（建模补全），由处方审核流「通过」分支调用
+  - permissionId: PERM-AUTO-DISPENSE-CANCEL
+    name: 取消待调剂记录
+    targetType: BEHAVIOR
+    targetRef: Dispense_CancelPending
+    dataScope: ALL
+    description: 对应 B-06（建模补全），由 Prescription_Cancel 经 R-04 的 syncTriggers 触发

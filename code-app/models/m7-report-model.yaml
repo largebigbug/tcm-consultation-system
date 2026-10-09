@@ -1,0 +1,2239 @@
+# M7 查询统计与报表模型元文件 - m7-report-model.yaml
+# 依据《中医问诊系统-需求规格说明书-V9.md》第五部分（查询统计与固定报表 M7）+ 附录 C.6 M7 查询报表对象（并核对 附录 C.9 可视化覆盖索引）
+#
+# ── 本文件统一建模约定（门禁自检依据）────────────────────────────────────────
+# 约定 1：M7 的直接依赖只有 M1 对象与 M2 QUERY 行为。本文件不写任何跨模型引用字段
+#         （不写规则引用、权限引用、角色引用、流程引用），数据访问权限由 M2 行为与 M5 建立关系。
+# 约定 2：Q-01～Q-07 与 RPT/QR-…-001 严格一对一双向绑定（见各对象 behaviorRef）。
+# 约定 3：聚合内子实体与父记录通过聚合归属键关联，实现阶段由平台按聚合归属建立外键：
+#         - 处方明细 PrescriptionItem.prescriptionId = 所属处方的主键 id（**不是**处方号 prescriptionNo）；
+#         - 饮片出入库记录 HerbStockFlow.herbId = 所属饮片的主键 id（**不是**饮片编码 herbCode）；
+#         跨聚合同理：Visit.patientId = Patient.id、Prescription.visitId = Visit.id、
+#         Prescription.formulaTemplateId = FormulaTemplate.id、FollowUp.sourceVisitId = Visit.id。
+#         Join 的 conditionExpression 一律写 `别名.外键 == 别名.id`，与 schema.sql 建表口径一致。
+# 约定 4：一对多明细一律先按关联键 preAggregation（groupBy + columns + aggregateFunction）汇总再 join，
+#         禁止用「先去重再求和」之类写法替代预聚合（需求 5.4 与附录 C.6 均明确此项）。
+# 约定 5：SUBTOTAL(X) = 在同一 WHERE 筛选条件下对全量结果集求 X 的合计（等价于不带分组的总计），
+#         仅用作占比类列的分母，确保分子与分母使用完全相同的筛选条件（需求 5.3、5.4 明确要求同条件）；
+#         结果列表达式中的 SUBTOTAL(x) 实现为窗口聚合 SUM(x) OVER ()。
+# 约定 6：常量条件用 fixedValue 表达（列引用或字面量/取值集合），无 parameterRef 时恒参与；
+#         组名非 BASE 的条件组为「可选条件组」，其参与由同报表的开关参数控制，开关参数一律**显式声明**
+#         在组内条件的 switchParameterRef 上（见约定 13）：TRIGGER 组由 triggerType 控制
+#         （BOTH=全部成员按组内连接符 OR 参与；OVERDOSE=仅 triggerKind=OVERDOSE 的成员参与；
+#         TOXIC=仅 triggerKind=TOXIC 的成员参与）；ALERT_FILTER 组由 onlyAlert 控制（true=参与，false/未传=整组跳过）。
+# 约定 7：DATE_TRUNC(field, granularity) = 按粒度截断日期，用于统计日期与统计期间列；
+#         粒度参数只接受 DAY（按日）/ MONTH（按月）两个取值，实现须拒绝其它取值并给中文提示。
+# 约定 8：医师（doctorId）在 M1 中是平台用户 ID（String），科室（deptCode）在 M1 中是数据字典 DICT-VISIT.DEPT，
+#         二者均不单独设聚合，因此本文件直接取 visit.doctorId / visit.deptCode，不引入对应来源对象。
+# 约定 9：referenceSql 统一为 null——物理表名在实现阶段确定，来源/条件/结果列/聚合等语义定义为准。
+# 约定 10：Enum 型参数的合法取值 = 该参数的 `enumValues` 字段（可机读，如 granularity=[DAY, MONTH]、
+#          statsDimension=[HERB, FORMULA_TEMPLATE]、triggerType=[OVERDOSE, TOXIC, BOTH]）；实现与
+#          《实现契约》一律以此为准，枚举外取值必须拒绝并给中文提示（不得只认自造别名而拒绝模型取值）。
+# 约定 11：维度开关参数（statsDimension）的取值按「最长前缀」映射到维度别名：HERB→herb、
+#          FORMULA_TEMPLATE→formula；实现可额外接受同义别名（FORMULA）作容错，但不得拒绝 enumValues 取值。
+#          维度别名由「非主来源、且存在仅引用自身的一组非聚合结果列」确定（结果列驱动）。
+# 约定 12：预聚合（preAggregation）来源**不得作主来源**：主来源即 FROM 表，必须为普通表；预聚合来源须
+#          在 CTE 中先按 groupBy 汇总，再以 LEFT JOIN 接入（否则生成 SQL 会引用错误的别名与列）。
+# 约定 13：非 BASE 条件组必须能**机械定位开关参数**：组内条件一律声明 `switchParameterRef`（同一组内取值一致）；
+#          该参数必须存在于本报表 queryParameters 且 required=false。开关语义两种：
+#          ① 显式给 `switchActivateValue`（如 onlyAlert 的 true）→「相等即参与」，未传时取参数 defaultValue；
+#          ② 未给 `switchActivateValue`（Enum 型开关，如 triggerType）→ 取值为 BOTH 时整组参与，
+#             为其它取值时仅 triggerKind 等于该值的成员参与。
+#          验证门禁：非 BASE 组缺 `switchParameterRef`、开关参数不存在/为必填、或 `switchActivateValue`
+#          与参数 dataType 不符 → 校验失败（不得静默按「整组恒参与」容错）。
+model_type: REPORT
+version: 2.1
+domain: "中医问诊"
+
+# ── 修订说明（v2.1，阶段三批次 4 开工修订） ────────────────────────────────
+# v2.1：新增约定 13「非 BASE 条件组必须显式声明机读开关 switchParameterRef（＋可选 switchActivateValue）」，
+#       并为两组条件补上显式开关：TRIGGER → triggerType（Enum 语义）、ALERT_FILTER → onlyAlert
+#       （Boolean 语义，activateValue=true）。原 ALERT_FILTER 的开关只写在注释里，注册表解析后无迹可循，
+#       引擎只能按「整组恒参与」容错 → QR-HERB-STOCK-001 忽略 onlyAlert、恒只返回预警项（批次 4 修复）。
+#       同时把「非 BASE 组缺开关参数」由静默容错升级为**校验失败**（validate_ontology.py 门禁 + 引擎自检）。
+#
+# ── 修订说明（v1.6，阶段三批次 3 侦察时修正） ────────────────────────────────
+# Join 的 conditionExpression 原先写成「外键 == 对方业务编号」（如 visit.patientId == patient.patientNo），
+# 与物理模型不符：业务表关联一律为 INTEGER 外键 → 对方主键 id。已全部改为 `X.foreignKey == Y.id`，
+# 与 code-app/backend/schema.sql 建表口径一致。preAggregation 别名（itemAgg/visitPrescriptionAgg/flowAgg）
+# 的 groupBy 键即外键本身。
+#
+# ── 修订说明（v1.9，阶段三批次 3 收口时修正；v1.7/v1.8 内容见 CHANGELOG） ──────
+# 1) 约定编号去重重排为 1～10（原文件同时存在两个「约定 5/6/7」，门禁自检依据不可歧义）。
+# 2) RPT-HERB-USAGE-001 的主来源**保持 `prescription`**（曾试改为 `itemAgg`，实测触发引擎对
+#    「预聚合来源作主来源」支持不完善的缺陷 → 生成 SQL 引用错误别名，故回退并立为约定 12）；
+#    「无明细的处方」按数据质量问题处理（正常流程下已审核/已发药处方必有明细），不由报表口径兜底。
+# 3) 新增约定 10：Enum 型参数取值域以模型 `enumValues` 字段为准（此前只写在注释里，注册表解析后注释丢失、
+#    实现无法机读，导致实现接受模型外取值 YEAR、拒绝模型内取值 FORMULA_TEMPLATE）；
+#    并新增约定 11（维度取值→维度别名的最长前缀映射）。
+# 4) 为 granularity / statsDimension / triggerType 三个 Enum 参数补 `enumValues` 字段。
+query_reports:
+
+  # ══════════════════════════════════════════════════════════
+  # REP-01 门诊量统计（统计分析 → REPORT）｜唯一查询行为 Q-01
+  # 口径：以就诊记录为主表，按挂号日期范围过滤；就诊人数 = 不重复患者数，就诊人次 = 就诊记录条数；
+  #       本查询不对一对多明细做任何聚合，避免重复计数（需求 5.2 参考 SQL 口径）。
+  # ══════════════════════════════════════════════════════════
+  - id: RPT-VISIT-STATS-001
+    name: 门诊量统计
+    alias: visitStats
+    objectType: REPORT
+    description: 按期间、科室、接诊医师与就诊类型统计门诊接诊量，掌握门诊负荷与初诊/复诊结构；表格底部给出合计行
+    behaviorRef: Visit_QueryStats
+    sourceObjects:
+      - objectRef: AGG-VISIT-001
+        alias: visit
+        primary: true
+      # 患者来源：需求 5.2「关联 OBJ-01 患者」；就诊人数按 visit.patientId 不重复计数，join 为多对一，不放大行数
+      - objectRef: AGG-PATIENT-001
+        alias: patient
+        primary: false
+    joins:
+      - joinId: J01
+        joinType: LEFT
+        leftSource: visit
+        rightSource: patient
+        conditionExpression: "visit.patientId == patient.id"
+    parameters:
+      - name: registerDateFrom
+        label: 挂号日期起
+        dataType: Date
+        required: false
+        defaultValue: MONTH_START  # 默认本月首日（需求 5.2「默认本月」）
+        allowedOperators: [GE]
+        sourceField: visit.registerTime
+      - name: registerDateTo
+        label: 挂号日期止
+        dataType: Date
+        required: false
+        defaultValue: MONTH_END  # 默认本月末日（需求 5.2「默认本月」）
+        allowedOperators: [LE]
+        sourceField: visit.registerTime
+      - name: deptCode
+        label: 科室
+        dataType: DictionaryRef
+        required: false
+        allowedOperators: [EQ]
+        sourceField: visit.deptCode
+      - name: doctorId
+        label: 接诊医师
+        dataType: String
+        required: false
+        allowedOperators: [EQ]
+        sourceField: visit.doctorId
+      - name: visitType
+        label: 就诊类型
+        dataType: Enum
+        required: false
+        allowedOperators: [EQ]
+        sourceField: visit.visitType
+      - name: visitStatus
+        label: 就诊状态
+        dataType: Enum
+        required: false
+        allowedOperators: [EQ]
+        sourceField: visit.visitStatus
+      - name: granularity
+        label: 日期粒度
+        dataType: Enum
+        required: false
+        defaultValue: DAY
+        enumValues: [DAY, MONTH]  # 取值 DAY（按日）/ MONTH（按月）；约定 10：实现只接受此处列出的取值
+        allowedOperators: [EQ]
+        sourceField: visit.registerTime
+    conditions:
+      - conditionId: C01
+        leftExpression: visit.registerTime
+        operator: GE
+        parameterRef: registerDateFrom
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C02
+        leftExpression: visit.registerTime
+        operator: LE
+        parameterRef: registerDateTo
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C03
+        leftExpression: visit.deptCode
+        operator: EQ
+        parameterRef: deptCode
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C04
+        leftExpression: visit.doctorId
+        operator: EQ
+        parameterRef: doctorId
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C05
+        leftExpression: visit.visitType
+        operator: EQ
+        parameterRef: visitType
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C06
+        leftExpression: visit.visitStatus
+        operator: EQ
+        parameterRef: visitStatus
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+    resultColumns:
+      - name: statDate
+        label: 统计日期
+        dataType: Date
+        sourceExpression: "DATE_TRUNC(visit.registerTime, granularity)"
+        aggregateFunction: NONE
+        format: "yyyy-MM-dd"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: deptCode
+        label: 科室
+        dataType: DictionaryRef
+        sourceExpression: visit.deptCode
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: doctorId
+        label: 接诊医师
+        dataType: String
+        sourceExpression: visit.doctorId
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: visitType
+        label: 就诊类型
+        dataType: Enum
+        sourceExpression: visit.visitType
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: patientCount
+        label: 就诊人数
+        dataType: Integer
+        sourceExpression: visit.patientId
+        aggregateFunction: COUNT_DISTINCT
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: false  # 不重复计数列不参与合计行求和，见 reportOptions.totalFields 说明
+      - name: visitCount
+        label: 就诊人次
+        dataType: Integer
+        sourceExpression: visit.visitNo
+        aggregateFunction: COUNT
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: firstVisitCount
+        label: 初诊人次
+        dataType: Integer
+        sourceExpression: "SUM(CASE WHEN visit.visitType = 'FIRST' THEN 1 ELSE 0 END)"
+        aggregateFunction: NONE
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: followUpVisitCount
+        label: 复诊人次
+        dataType: Integer
+        sourceExpression: "SUM(CASE WHEN visit.visitType = 'FOLLOW_UP' THEN 1 ELSE 0 END)"
+        aggregateFunction: NONE
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: completedCount
+        label: 已完成人次
+        dataType: Integer
+        sourceExpression: "SUM(CASE WHEN visit.visitStatus = 'COMPLETED' THEN 1 ELSE 0 END)"
+        aggregateFunction: NONE
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: cancelledCount
+        label: 已取消人次
+        dataType: Integer
+        sourceExpression: "SUM(CASE WHEN visit.visitStatus = 'CANCELLED' THEN 1 ELSE 0 END)"
+        aggregateFunction: NONE
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: followUpRatio
+        label: 复诊占比
+        dataType: Decimal
+        # 复诊占比 = 复诊人次 ÷ 就诊人次，分子分母取同一分组的同源计数
+        sourceExpression: "SUM(CASE WHEN visit.visitType = 'FOLLOW_UP' THEN 1 ELSE 0 END) / NULLIF(COUNT(visit.visitNo), 0)"
+        aggregateFunction: NONE
+        format: "0.00%"
+        nullable: true
+        visible: true
+        sortable: false
+    groupBy:
+      - "DATE_TRUNC(visit.registerTime, granularity)"
+      - visit.deptCode
+      - visit.doctorId
+      - visit.visitType
+    having: []
+    orderBy:
+      - expression: statDate
+        direction: DESC
+      - expression: deptCode
+        direction: ASC
+      - expression: doctorId
+        direction: ASC
+    pagination:
+      enabled: true
+      defaultPageSize: 20
+      maxPageSize: 100
+    reportOptions:
+      title: 门诊量统计
+      layout: TABLE
+      groupFields: [statDate, deptCode, doctorId, visitType]
+      subtotalFields: []
+      # 合计行：只合计可加计数列；「就诊人数」为不重复计数、「复诊占比」为比率列，不参与合计（避免口径失真）
+      totalFields: [visitCount, firstVisitCount, followUpVisitCount, completedCount, cancelledCount]
+      exportFormats: [XLSX, CSV]
+      emptyValueDisplay: "-"
+    referenceSql: null
+    version: "1.0"
+
+  # ══════════════════════════════════════════════════════════
+  # REP-02 证型分布统计（统计分析 → REPORT）｜唯一查询行为 Q-02
+  # 口径：以辨证结论为主表，JOIN 证型字典取名称与体系，JOIN 就诊记录限定日期/科室/医师；
+  #       占比分母为同一 WHERE 条件下的全部辨证结论例数（分子分母同条件）。
+  # ══════════════════════════════════════════════════════════
+  - id: RPT-SYNDROME-DIST-001
+    name: 证型分布统计
+    alias: syndromeDistribution
+    objectType: REPORT
+    description: 按期间统计各证型出现频次与占比，支撑辨证规律分析与科室病种结构分析；底部给出总例数
+    behaviorRef: Diagnosis_QuerySyndromeDistribution
+    sourceObjects:
+      - objectRef: AGG-DIAGNOSIS-001
+        alias: diagnosis
+        primary: true
+      - objectRef: AGG-SYNDROME-001
+        alias: syndrome
+        primary: false
+      # 就诊记录来源：仅用于就诊日期、科室、接诊医师过滤（辨证结论→就诊记录 多对一，不放大行数）
+      - objectRef: AGG-VISIT-001
+        alias: visit
+        primary: false
+    joins:
+      - joinId: J01
+        joinType: LEFT
+        leftSource: diagnosis
+        rightSource: syndrome
+        conditionExpression: "diagnosis.syndromeId == syndrome.id"
+      - joinId: J02
+        joinType: LEFT
+        leftSource: diagnosis
+        rightSource: visit
+        conditionExpression: "diagnosis.visitId == visit.id"
+    parameters:
+      - name: visitDateFrom
+        label: 就诊日期起
+        dataType: Date
+        required: false
+        defaultValue: MONTH_START  # 默认本月首日（需求 5.3「默认本月」）
+        allowedOperators: [GE]
+        sourceField: visit.registerTime
+      - name: visitDateTo
+        label: 就诊日期止
+        dataType: Date
+        required: false
+        defaultValue: MONTH_END  # 默认本月末日（需求 5.3「默认本月」）
+        allowedOperators: [LE]
+        sourceField: visit.registerTime
+      - name: diagnosisMethod
+        label: 辨证体系
+        dataType: DictionaryRef
+        required: false
+        allowedOperators: [EQ]
+        sourceField: diagnosis.diagnosisMethod
+      - name: syndromeNature
+        label: 证型性质
+        dataType: Enum
+        required: false
+        allowedOperators: [EQ]
+        sourceField: diagnosis.syndromeNature
+      - name: syndromeId
+        label: 证型
+        dataType: String
+        required: false
+        allowedOperators: [EQ, IN]
+        sourceField: diagnosis.syndromeId
+      - name: deptCode
+        label: 科室
+        dataType: DictionaryRef
+        required: false
+        allowedOperators: [EQ]
+        sourceField: visit.deptCode
+      - name: doctorId
+        label: 接诊医师
+        dataType: String
+        required: false
+        allowedOperators: [EQ]
+        sourceField: visit.doctorId
+    conditions:
+      - conditionId: C01
+        leftExpression: visit.registerTime
+        operator: GE
+        parameterRef: visitDateFrom
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C02
+        leftExpression: visit.registerTime
+        operator: LE
+        parameterRef: visitDateTo
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C03
+        leftExpression: diagnosis.diagnosisMethod
+        operator: EQ
+        parameterRef: diagnosisMethod
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C04
+        leftExpression: diagnosis.syndromeNature
+        operator: EQ
+        parameterRef: syndromeNature
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C05
+        leftExpression: diagnosis.syndromeId
+        operator: IN
+        parameterRef: syndromeId
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C06
+        leftExpression: visit.deptCode
+        operator: EQ
+        parameterRef: deptCode
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C07
+        leftExpression: visit.doctorId
+        operator: EQ
+        parameterRef: doctorId
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+    resultColumns:
+      - name: syndromeCode
+        label: 证型编码
+        dataType: String
+        sourceExpression: syndrome.syndromeCode
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: syndromeName
+        label: 证型名称
+        dataType: String
+        sourceExpression: syndrome.syndromeName
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: diagnosisMethod
+        label: 所属辨证体系
+        dataType: DictionaryRef
+        sourceExpression: syndrome.diagnosisMethod
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: syndromeNature
+        label: 证型性质
+        dataType: Enum
+        sourceExpression: diagnosis.syndromeNature
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: caseCount
+        label: 辨证例数
+        dataType: Integer
+        sourceExpression: diagnosis.diagnosisNo
+        aggregateFunction: COUNT
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: caseRatio
+        label: 占比
+        dataType: Decimal
+        # 占比 = 该证型辨证例数 ÷ 统计范围内全部辨证结论例数；SUBTOTAL 表示同一 WHERE 条件下的全量例数，分子分母同条件
+        sourceExpression: "COUNT(diagnosis.diagnosisNo) / NULLIF(SUBTOTAL(COUNT(diagnosis.diagnosisNo)), 0)"
+        aggregateFunction: NONE
+        format: "0.00%"
+        nullable: true
+        visible: true
+        sortable: true
+    groupBy:
+      - syndrome.syndromeCode
+      - syndrome.syndromeName
+      - syndrome.diagnosisMethod
+      - diagnosis.syndromeNature
+    # 分组汇总「可切换按所属辨证体系汇总」：切换时 groupBy 改为 [syndrome.diagnosisMethod]，并对 caseCount 求分组小计（见 reportOptions.subtotalFields）
+    having: []
+    orderBy:
+      - expression: caseCount
+        direction: DESC
+      - expression: syndromeCode
+        direction: ASC
+    pagination:
+      enabled: true
+      defaultPageSize: 20
+      maxPageSize: 100
+    reportOptions:
+      title: 证型分布统计
+      layout: TABLE
+      groupFields: [diagnosisMethod, syndromeCode, syndromeName, syndromeNature]
+      subtotalFields: [caseCount]
+      # 总例数合计；占比为比率列，不参与合计
+      totalFields: [caseCount]
+      exportFormats: [XLSX, CSV]
+      emptyValueDisplay: "-"
+    referenceSql: null
+    version: "1.0"
+
+  # ══════════════════════════════════════════════════════════
+  # REP-03 方剂与饮片使用统计（统计分析 → REPORT）｜唯一查询行为 Q-03
+  # 口径（需求 5.4）：累计用量 = Σ（单剂剂量 × 该处方剂数）；单剂平均用量 = 累计用量 ÷ 使用剂数；
+  #                   引用占比 = 该模板引用张数 ÷ 统计范围内处方总张数。
+  # 统计维度：以「统计维度」参数在同一对象内切换两条结果列口径——
+  #           按饮片（HERB，默认）与按方剂模板（FORMULA_TEMPLATE）；两维度分别执行、不同时聚合。
+  # 一对多处理：处方明细为处方下的一对多明细，先按「处方 × 饮片」预聚合（preAggregation）再 join，
+  #             使饮片维度用量不被放大，方剂维度的引用张数用 COUNT(DISTINCT 处方号) 计数。
+  # ══════════════════════════════════════════════════════════
+  - id: RPT-HERB-USAGE-001
+    name: 方剂与饮片使用统计
+    alias: herbUsageStats
+    objectType: REPORT
+    description: 统计饮片累计用量与方剂模板引用情况，支撑饮片采购计划、效期管理与方剂使用分析；按饮片与按方剂模板两个维度分别查询，底部合计累计用量与总张数
+    behaviorRef: Prescription_QueryHerbUsage
+    sourceObjects:
+      - objectRef: AGG-PRESCRIPTION-001
+        alias: prescription
+        primary: true
+      # 处方明细（聚合内子实体）：预聚合粒度为「处方 × 饮片」——饮片维度需按饮片跨处方汇总；同一处方内
+      # 同一饮片不得重复（M1 处方明细饮片不重复不变量），故该粒度对处方级口径无损。
+      # 约定 12：**预聚合（preAggregation）来源不得作主来源**——主来源必须是普通表（引擎按主来源生成 FROM，
+      # 预聚合来源须在 CTE 中先聚合并以 LEFT JOIN 接入）。业务侧「无明细的处方」属数据质量问题
+      # （正常流程下已审核/已发药处方必有明细），不由报表口径兜底。
+      - objectRef: AGG-PRESCRIPTION-001
+        alias: itemAgg
+        entityPath: PrescriptionItem
+        primary: false
+        preAggregation:
+          groupBy: [prescriptionId, herbId]
+          columns:
+            - name: doseSum
+              sourceExpression: singleDose
+              aggregateFunction: SUM
+            - name: itemCount
+              sourceExpression: itemId
+              aggregateFunction: COUNT
+      # 中药饮片：饮片维度结果列（编码/名称/类别/毒性分级）
+      - objectRef: AGG-HERB-001
+        alias: herb
+        primary: false
+      # 方剂模板：方剂维度结果列
+      - objectRef: AGG-FORMULA-001
+        alias: formula
+        primary: false
+      # 就诊记录：仅用于「科室」条件（需求 5.4 输入条件含科室；科室在 M1 中位于就诊记录 visit.deptCode）
+      - objectRef: AGG-VISIT-001
+        alias: visit
+        primary: false
+    joins:
+      - joinId: J01
+        joinType: LEFT
+        leftSource: prescription
+        rightSource: itemAgg
+        conditionExpression: "itemAgg.prescriptionId == prescription.id"
+      - joinId: J02
+        joinType: LEFT
+        leftSource: itemAgg
+        rightSource: herb
+        conditionExpression: "itemAgg.herbId == herb.id"
+      - joinId: J03
+        joinType: LEFT
+        leftSource: prescription
+        rightSource: formula
+        conditionExpression: "prescription.formulaTemplateId == formula.id"
+      - joinId: J04
+        joinType: LEFT
+        leftSource: prescription
+        rightSource: visit
+        conditionExpression: "prescription.visitId == visit.id"
+    parameters:
+      - name: prescribeDateFrom
+        label: 开方日期起
+        dataType: Date
+        required: false
+        defaultValue: MONTH_START  # 默认本月首日（需求 5.4「默认本月」）
+        allowedOperators: [GE]
+        sourceField: prescription.prescribeTime
+      - name: prescribeDateTo
+        label: 开方日期止
+        dataType: Date
+        required: false
+        defaultValue: MONTH_END  # 默认本月末日（需求 5.4「默认本月」）
+        allowedOperators: [LE]
+        sourceField: prescription.prescribeTime
+      - name: herbCategory
+        label: 饮片类别
+        dataType: DictionaryRef
+        required: false
+        allowedOperators: [EQ]
+        sourceField: herb.herbCategory
+      - name: herbId
+        label: 饮片
+        dataType: String
+        required: false
+        allowedOperators: [EQ, IN]
+        sourceField: herb.herbCode
+      - name: formulaTemplateId
+        label: 方剂模板
+        dataType: String
+        required: false
+        allowedOperators: [EQ]
+        sourceField: formula.formulaCode
+      - name: prescriptionType
+        label: 处方类型
+        dataType: DictionaryRef
+        required: false
+        allowedOperators: [EQ]
+        sourceField: prescription.prescriptionType
+      - name: deptCode
+        label: 科室
+        dataType: DictionaryRef
+        required: false
+        allowedOperators: [EQ]
+        sourceField: visit.deptCode
+      - name: statsDimension
+        label: 统计维度
+        dataType: Enum
+        required: false
+        defaultValue: HERB
+        enumValues: [HERB, FORMULA_TEMPLATE]  # 取值 HERB（按饮片，默认）/ FORMULA_TEMPLATE（按方剂模板）；约定 11：取值按最长前缀映射到维度别名（HERB→herb、FORMULA_TEMPLATE→formula）
+        allowedOperators: [EQ]
+        sourceField: itemAgg.herbId  # 展示口径开关参数：切换饮片维度（itemAgg.herbId / herb.*）与方剂维度（formula.*）两套结果列，不产生 WHERE 条件
+    conditions:
+      - conditionId: C01
+        leftExpression: prescription.prescribeTime
+        operator: GE
+        parameterRef: prescribeDateFrom
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C02
+        leftExpression: prescription.prescribeTime
+        operator: LE
+        parameterRef: prescribeDateTo
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      # 固定口径条件（不可省略）：统计范围限定处方状态 ∈ {审核通过, 已调剂, 已发药}（需求 5.4 参考 SQL 口径）
+      - conditionId: C03
+        leftExpression: prescription.prescriptionStatus
+        operator: IN
+        parameterRef: null
+        fixedValue: "[APPROVED, DISPENSING, ISSUED]"
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: false
+      - conditionId: C04
+        leftExpression: herb.herbCategory
+        operator: EQ
+        parameterRef: herbCategory
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C05
+        leftExpression: itemAgg.herbId
+        operator: IN
+        parameterRef: herbId
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C06
+        leftExpression: prescription.formulaTemplateId
+        operator: EQ
+        parameterRef: formulaTemplateId
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C07
+        leftExpression: prescription.prescriptionType
+        operator: EQ
+        parameterRef: prescriptionType
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C08
+        leftExpression: visit.deptCode
+        operator: EQ
+        parameterRef: deptCode
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+    # 结果列：前 9 列为「按饮片」维度；后 5 列为「按方剂模板」维度。
+    # 平台按「统计维度」参数只展示与分组其中一套列，两个维度分别执行、不同时聚合（需求 5.4 分组汇总口径）。
+    resultColumns:
+      - name: herbCode
+        label: 饮片编码
+        dataType: String
+        sourceExpression: herb.herbCode
+        aggregateFunction: NONE
+        format: null
+        nullable: true  # 方剂模板维度不展示本列
+        visible: true
+        sortable: true
+      - name: herbName
+        label: 饮片名称
+        dataType: String
+        sourceExpression: herb.herbName
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: true
+      - name: herbCategory
+        label: 药材类别
+        dataType: DictionaryRef
+        sourceExpression: herb.herbCategory
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: true
+      - name: toxicityLevel
+        label: 毒性分级
+        dataType: DictionaryRef
+        sourceExpression: herb.toxicityLevel
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: true
+      - name: doseCount
+        label: 使用剂数
+        dataType: Integer
+        # 使用剂数 = 该饮片涉及处方剂数之和（Σ 剂数）
+        sourceExpression: prescription.doses
+        aggregateFunction: SUM
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: totalQuantity
+        label: 累计用量（g）
+        dataType: Decimal
+        # 累计用量 = Σ（单剂剂量 × 剂数）：预聚合后的 doseSum 即该处方该饮片的单剂剂量合计
+        sourceExpression: "SUM(itemAgg.doseSum * prescription.doses)"
+        aggregateFunction: NONE
+        format: "#,##0.00"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: avgSingleDose
+        label: 单剂平均用量（g）
+        dataType: Decimal
+        sourceExpression: "SUM(itemAgg.doseSum * prescription.doses) / NULLIF(SUM(prescription.doses), 0)"
+        aggregateFunction: NONE
+        format: "#,##0.00"
+        nullable: true
+        visible: true
+        sortable: true
+      - name: prescriptionCount
+        label: 涉及处方张数
+        dataType: Integer
+        sourceExpression: prescription.prescriptionNo
+        aggregateFunction: COUNT_DISTINCT
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: patientCount
+        label: 涉及患者数
+        dataType: Integer
+        sourceExpression: prescription.patientId
+        aggregateFunction: COUNT_DISTINCT
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: false
+      - name: formulaCode
+        label: 方剂编码
+        dataType: String
+        sourceExpression: formula.formulaCode
+        aggregateFunction: NONE
+        format: null
+        nullable: true  # 饮片维度不展示本列
+        visible: true
+        sortable: true
+      - name: formulaName
+        label: 方剂名称
+        dataType: String
+        sourceExpression: formula.formulaName
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: true
+      - name: formulaType
+        label: 方剂类型
+        dataType: DictionaryRef
+        sourceExpression: formula.formulaType
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: true
+      - name: formulaRefCount
+        label: 引用张数
+        dataType: Integer
+        # 引用张数：同一处方含多味饮片，预聚合后每张处方仍有多个饮片行，故必须用处方号不重复计数
+        sourceExpression: prescription.prescriptionNo
+        aggregateFunction: COUNT_DISTINCT
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: formulaRefRatio
+        label: 引用占比
+        dataType: Decimal
+        # 引用占比 = 该模板引用张数 ÷ 统计范围内处方总张数；SUBTOTAL 为同一 WHERE 条件下的全量处方张数，分子分母同条件
+        sourceExpression: "COUNT(DISTINCT prescription.prescriptionNo) / NULLIF(SUBTOTAL(COUNT(DISTINCT prescription.prescriptionNo)), 0)"
+        aggregateFunction: NONE
+        format: "0.00%"
+        nullable: true
+        visible: true
+        sortable: true
+    # 默认执行「按饮片」维度分组；统计维度=FORMULA_TEMPLATE 时分组列替换为
+    # [formula.formulaCode, formula.formulaName, formula.formulaType]（两维度分别执行，不同时分组聚合）
+    groupBy:
+      - herb.herbCode
+      - herb.herbName
+      - herb.herbCategory
+      - herb.toxicityLevel
+    having: []
+    # 默认排序：饮片维度按累计用量降序、饮片编码升序；方剂维度改为引用张数降序、方剂编码升序
+    orderBy:
+      - expression: totalQuantity
+        direction: DESC
+      - expression: herbCode
+        direction: ASC
+    pagination:
+      enabled: true
+      defaultPageSize: 20
+      maxPageSize: 100
+    reportOptions:
+      title: 方剂与饮片使用统计
+      layout: TABLE
+      # 饮片维度按饮片分组；方剂维度改为按方剂模板分组（formulaCode / formulaName）
+      groupFields: [herbCode, herbName, formulaCode, formulaName]
+      subtotalFields: []
+      # 底部合计：累计用量与总张数（剂数、处方张数、引用张数）；单剂平均用量与引用占比为比率列，不参与合计
+      totalFields: [doseCount, totalQuantity, prescriptionCount, formulaRefCount]
+      exportFormats: [XLSX, CSV]
+      emptyValueDisplay: "-"
+    referenceSql: null
+    version: "1.0"
+
+  # ══════════════════════════════════════════════════════════
+  # REP-04 就诊与处方记录查询（列表查询·主从三级 → LIST_QUERY）｜唯一查询行为 Q-04
+  # 口径（需求 5.5）：就诊记录为主表，LEFT JOIN 患者；处方为从表按就诊号关联；明细为三级从表按处方号关联；
+  #                   本查询不做跨表金额或数量聚合，避免一对多放大。
+  # 一对多处理：处方（就诊下一对多）与处方明细（处方下一对多）经 preAggregation 先汇总再 join——
+  #             itemAgg 按处方号预聚合（药味数 / 单剂剂量合计），visitPrescriptionAgg 按就诊号预聚合（处方张数 / 剂数合计）；
+  #             明细展示列取自处方明细原始来源，不参与任何聚合。
+  # ══════════════════════════════════════════════════════════
+  - id: QR-VISIT-PRESCRIPTION-001
+    name: 就诊与处方记录查询
+    alias: visitPrescriptionQuery
+    objectType: LIST_QUERY
+    description: 按多种业务条件检索患者就诊与对应处方记录（主从三级结构），供门诊、药房日常查询与历史追溯
+    behaviorRef: Visit_QueryVisitAndPrescription
+    sourceObjects:
+      - objectRef: AGG-VISIT-001
+        alias: visit
+        primary: true
+      - objectRef: AGG-PATIENT-001
+        alias: patient
+        primary: false
+      - objectRef: AGG-PRESCRIPTION-001
+        alias: prescription
+        primary: false
+      # 三级从表明细（原始行）：仅用于明细展示列，不参与聚合
+      - objectRef: AGG-PRESCRIPTION-001
+        alias: prescriptionItem
+        entityPath: PrescriptionItem
+        primary: false
+      # 处方明细预聚合：按处方号汇总，供「处方药味数 / 处方总量」计算列使用，避免明细行放大处方级数值
+      - objectRef: AGG-PRESCRIPTION-001
+        alias: itemAgg
+        entityPath: PrescriptionItem
+        primary: false
+        preAggregation:
+          groupBy: [prescriptionId]
+          columns:
+            - name: itemCount
+              sourceExpression: itemId
+              aggregateFunction: COUNT
+            - name: doseTotal
+              sourceExpression: singleDose
+              aggregateFunction: SUM
+      # 处方按就诊号预聚合：供「汇总当前结果的处方张数与总剂数」使用，避免被明细行放大
+      - objectRef: AGG-PRESCRIPTION-001
+        alias: visitPrescriptionAgg
+        primary: false
+        preAggregation:
+          groupBy: [visitId]
+          columns:
+            - name: prescriptionCount
+              sourceExpression: prescriptionNo
+              aggregateFunction: COUNT
+            - name: doseSum
+              sourceExpression: doses
+              aggregateFunction: SUM
+    joins:
+      - joinId: J01
+        joinType: LEFT
+        leftSource: visit
+        rightSource: patient
+        conditionExpression: "visit.patientId == patient.id"
+      - joinId: J02
+        joinType: LEFT
+        leftSource: visit
+        rightSource: prescription
+        conditionExpression: "prescription.visitId == visit.id"
+      - joinId: J03
+        joinType: LEFT
+        leftSource: prescription
+        rightSource: prescriptionItem
+        conditionExpression: "prescriptionItem.prescriptionId == prescription.id"
+      - joinId: J04
+        joinType: LEFT
+        leftSource: prescription
+        rightSource: itemAgg
+        conditionExpression: "itemAgg.prescriptionId == prescription.id"
+      - joinId: J05
+        joinType: LEFT
+        leftSource: visit
+        rightSource: visitPrescriptionAgg
+        conditionExpression: "visitPrescriptionAgg.visitId == visit.id"
+    parameters:
+      - name: patientName
+        label: 患者姓名
+        dataType: String
+        required: false
+        allowedOperators: [LIKE]
+        sourceField: patient.patientName
+      - name: patientNo
+        label: 患者编号
+        dataType: String
+        required: false
+        allowedOperators: [LIKE, EQ]
+        sourceField: patient.patientNo
+      - name: visitNo
+        label: 就诊号
+        dataType: String
+        required: false
+        allowedOperators: [LIKE, EQ]
+        sourceField: visit.visitNo
+      - name: prescriptionNo
+        label: 处方号
+        dataType: String
+        required: false
+        allowedOperators: [LIKE, EQ]
+        sourceField: prescription.prescriptionNo
+      - name: registerDateFrom
+        label: 挂号日期起
+        dataType: Date
+        required: false
+        allowedOperators: [GE]
+        sourceField: visit.registerTime
+      - name: registerDateTo
+        label: 挂号日期止
+        dataType: Date
+        required: false
+        allowedOperators: [LE]
+        sourceField: visit.registerTime
+      - name: visitStatus
+        label: 就诊状态
+        dataType: Enum
+        required: false
+        allowedOperators: [IN]
+        sourceField: visit.visitStatus
+      - name: prescriptionStatus
+        label: 处方状态
+        dataType: Enum
+        required: false
+        allowedOperators: [IN]
+        sourceField: prescription.prescriptionStatus
+      - name: visitType
+        label: 就诊类型
+        dataType: Enum
+        required: false
+        allowedOperators: [EQ]
+        sourceField: visit.visitType
+      - name: doctorId
+        label: 接诊医师
+        dataType: String
+        required: false
+        allowedOperators: [EQ]
+        sourceField: visit.doctorId
+      - name: reviewerId
+        label: 审核药师
+        dataType: String
+        required: false
+        allowedOperators: [EQ]
+        sourceField: prescription.reviewerId
+    conditions:
+      - conditionId: C01
+        leftExpression: patient.patientName
+        operator: LIKE
+        parameterRef: patientName
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C02
+        leftExpression: patient.patientNo
+        operator: LIKE
+        parameterRef: patientNo
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C03
+        leftExpression: visit.visitNo
+        operator: LIKE
+        parameterRef: visitNo
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C04
+        leftExpression: prescription.prescriptionNo
+        operator: LIKE
+        parameterRef: prescriptionNo
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C05
+        leftExpression: visit.registerTime
+        operator: GE
+        parameterRef: registerDateFrom
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C06
+        leftExpression: visit.registerTime
+        operator: LE
+        parameterRef: registerDateTo
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C07
+        leftExpression: visit.visitStatus
+        operator: IN
+        parameterRef: visitStatus
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C08
+        leftExpression: prescription.prescriptionStatus
+        operator: IN
+        parameterRef: prescriptionStatus
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C09
+        leftExpression: visit.visitType
+        operator: EQ
+        parameterRef: visitType
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C10
+        leftExpression: visit.doctorId
+        operator: EQ
+        parameterRef: doctorId
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C11
+        leftExpression: prescription.reviewerId
+        operator: EQ
+        parameterRef: reviewerId
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+    resultColumns:
+      # —— 主表：就诊记录 ——
+      - name: visitNo
+        label: 就诊号
+        dataType: String
+        sourceExpression: visit.visitNo
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: patientNo
+        label: 患者编号
+        dataType: String
+        sourceExpression: patient.patientNo
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: true
+      - name: patientName
+        label: 患者姓名
+        dataType: String
+        sourceExpression: patient.patientName
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: true
+      - name: gender
+        label: 性别
+        dataType: DictionaryRef
+        sourceExpression: patient.gender
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: false
+      - name: age
+        label: 年龄
+        dataType: Integer
+        sourceExpression: patient.age
+        aggregateFunction: NONE
+        format: "#,##0"
+        nullable: true
+        visible: true
+        sortable: false
+      - name: visitType
+        label: 就诊类型
+        dataType: Enum
+        sourceExpression: visit.visitType
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: registerTime
+        label: 挂号时间
+        dataType: DateTime
+        sourceExpression: visit.registerTime
+        aggregateFunction: NONE
+        format: "yyyy-MM-dd HH:mm"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: receiveTime
+        label: 接诊时间
+        dataType: DateTime
+        sourceExpression: visit.receiveTime
+        aggregateFunction: NONE
+        format: "yyyy-MM-dd HH:mm"
+        nullable: true
+        visible: true
+        sortable: true
+      - name: doctorId
+        label: 接诊医师
+        dataType: String
+        sourceExpression: visit.doctorId
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: deptCode
+        label: 科室
+        dataType: DictionaryRef
+        sourceExpression: visit.deptCode
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: visitStatus
+        label: 就诊状态
+        dataType: Enum
+        sourceExpression: visit.visitStatus
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      # —— 从表：处方 ——
+      - name: prescriptionNo
+        label: 处方号
+        dataType: String
+        sourceExpression: prescription.prescriptionNo
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: true
+      - name: prescriptionStatus
+        label: 处方状态
+        dataType: Enum
+        sourceExpression: prescription.prescriptionStatus
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: true
+      - name: prescriptionType
+        label: 处方类型
+        dataType: DictionaryRef
+        sourceExpression: prescription.prescriptionType
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: false
+      - name: doses
+        label: 剂数
+        dataType: Integer
+        sourceExpression: prescription.doses
+        aggregateFunction: NONE
+        format: "#,##0"
+        nullable: true
+        visible: true
+        sortable: false
+      - name: usageMethod
+        label: 用法
+        dataType: DictionaryRef
+        sourceExpression: prescription.usageMethod
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: false
+      - name: prescribeTime
+        label: 开方时间
+        dataType: DateTime
+        sourceExpression: prescription.prescribeTime
+        aggregateFunction: NONE
+        format: "yyyy-MM-dd HH:mm"
+        nullable: true
+        visible: true
+        sortable: true
+      - name: reviewerId
+        label: 审核人
+        dataType: String
+        sourceExpression: prescription.reviewerId
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: false
+      - name: reviewTime
+        label: 审核时间
+        dataType: DateTime
+        sourceExpression: prescription.reviewTime
+        aggregateFunction: NONE
+        format: "yyyy-MM-dd HH:mm"
+        nullable: true
+        visible: true
+        sortable: false
+      - name: rejectReason
+        label: 驳回原因
+        dataType: String
+        sourceExpression: prescription.rejectReason
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: false
+      # —— 计算列（处方级，经预聚合保证不被明细行放大）——
+      - name: itemsPerPrescription
+        label: 处方药味数
+        dataType: Integer
+        sourceExpression: itemAgg.itemCount
+        aggregateFunction: NONE
+        format: "#,##0"
+        nullable: true
+        visible: true
+        sortable: true
+      - name: prescriptionTotalDose
+        label: 处方总量（g）
+        dataType: Decimal
+        # 处方总量 = Σ（单剂剂量 × 剂数）＝ 单剂剂量合计 × 剂数
+        sourceExpression: "itemAgg.doseTotal * prescription.doses"
+        aggregateFunction: NONE
+        format: "#,##0.00"
+        nullable: true
+        visible: true
+        sortable: true
+      # —— 汇总列（当前结果的处方张数与总剂数，按就诊号预聚合，避免明细行放大）——
+      - name: visitPrescriptionCount
+        label: 处方张数
+        dataType: Integer
+        sourceExpression: visitPrescriptionAgg.prescriptionCount
+        aggregateFunction: NONE
+        format: "#,##0"
+        nullable: true
+        visible: true
+        sortable: false
+      - name: visitDoseTotal
+        label: 总剂数
+        dataType: Integer
+        sourceExpression: visitPrescriptionAgg.doseSum
+        aggregateFunction: NONE
+        format: "#,##0"
+        nullable: true
+        visible: true
+        sortable: false
+      # —— 三级从表：处方明细（逐张处方展开，不参与聚合）——
+      - name: itemHerbName
+        label: 药味名称
+        dataType: String
+        # 药味名称由处方明细的饮片引用（→ AGG-HERB-001）解析显示；需求 5.5 来源对象清单未含 OBJ-07，故不引入饮片来源
+        sourceExpression: prescriptionItem.herbId
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: false
+      - name: itemSingleDose
+        label: 单剂剂量（g）
+        dataType: Decimal
+        sourceExpression: prescriptionItem.singleDose
+        aggregateFunction: NONE
+        format: "#,##0.00"
+        nullable: true
+        visible: true
+        sortable: false
+      - name: itemDecoctionMethod
+        label: 特殊煎法
+        dataType: DictionaryRef
+        sourceExpression: prescriptionItem.decoctionMethod
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: false
+    # 需求 5.5：默认不分组；「可汇总当前结果的处方张数与总剂数」由汇总列 visitPrescriptionCount / visitDoseTotal 提供
+    groupBy: []
+    having: []
+    orderBy:
+      - expression: registerTime
+        direction: DESC
+      - expression: visitNo
+        direction: ASC
+      - expression: prescriptionNo
+        direction: ASC
+      - expression: "prescriptionItem.seqNo"
+        direction: ASC
+    pagination:
+      # 主表分页；从表随主表记录展开、不分页（需求 5.5）
+      enabled: true
+      defaultPageSize: 20
+      maxPageSize: 100
+    reportOptions: null
+    referenceSql: null
+    version: "1.0"
+
+  # ══════════════════════════════════════════════════════════
+  # REP-05 饮片库存与预警查询（列表查询 → LIST_QUERY）｜唯一查询行为 Q-05
+  # 口径（需求 5.6）：以饮片为主表；出入库流水取 MAX(业务日期) 分别作为最近入库日期（数量>0）与最近出库日期（数量<0）；
+  #                   库存数量直接取饮片主表字段（与流水的一致性由 M3 规则校验，不在查询中重算）；
+  #                   预警判断写在查询条件与计算列中，不建模为业务规则。
+  # ══════════════════════════════════════════════════════════
+  - id: QR-HERB-STOCK-001
+    name: 饮片库存与预警查询
+    alias: herbStockAlertQuery
+    objectType: LIST_QUERY
+    description: 查看饮片当前库存与低库存预警清单，支撑补货决策与调剂可用性判断
+    behaviorRef: Herb_QueryStockAndAlert
+    sourceObjects:
+      - objectRef: AGG-HERB-001
+        alias: herb
+        primary: true
+      # 出入库流水（聚合内子实体）预聚合：按所属饮片汇总，取最近入库/出库业务日期
+      - objectRef: AGG-HERB-001
+        alias: flowAgg
+        entityPath: HerbStockFlow
+        primary: false
+        preAggregation:
+          groupBy: [herbId]
+          columns:
+            - name: latestInboundDate
+              sourceExpression: "CASE WHEN quantity > 0 THEN bizDate END"
+              aggregateFunction: MAX
+            - name: latestOutboundDate
+              sourceExpression: "CASE WHEN quantity < 0 THEN bizDate END"
+              aggregateFunction: MAX
+    joins:
+      - joinId: J01
+        joinType: LEFT
+        leftSource: herb
+        rightSource: flowAgg
+        conditionExpression: "flowAgg.herbId == herb.id"
+    parameters:
+      - name: herbName
+        label: 饮片名称
+        dataType: String
+        required: false
+        allowedOperators: [LIKE]
+        sourceField: herb.herbName
+      - name: herbCode
+        label: 饮片编码
+        dataType: String
+        required: false
+        allowedOperators: [EQ]
+        sourceField: herb.herbCode
+      - name: herbCategory
+        label: 药材类别
+        dataType: DictionaryRef
+        required: false
+        allowedOperators: [EQ]
+        sourceField: herb.herbCategory
+      - name: toxicityLevel
+        label: 毒性分级
+        dataType: Enum
+        required: false
+        allowedOperators: [EQ]
+        sourceField: herb.toxicityLevel
+      - name: herbStatus
+        label: 状态
+        dataType: Enum
+        required: false
+        allowedOperators: [EQ]
+        sourceField: herb.herbStatus
+      - name: stockQuantityFrom
+        label: 库存数量下限（g）
+        dataType: Decimal
+        required: false
+        allowedOperators: [GE]
+        sourceField: herb.stockQuantity
+      - name: stockQuantityTo
+        label: 库存数量上限（g）
+        dataType: Decimal
+        required: false
+        allowedOperators: [LE]
+        sourceField: herb.stockQuantity
+      - name: onlyAlert
+        label: 仅看预警项
+        dataType: Boolean
+        required: false
+        defaultValue: false  # 默认关闭（需求 5.6）
+        allowedOperators: [EQ]
+        sourceField: herb.stockQuantity
+    conditions:
+      - conditionId: C01
+        leftExpression: herb.herbName
+        operator: LIKE
+        parameterRef: herbName
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C02
+        leftExpression: herb.herbCode
+        operator: EQ
+        parameterRef: herbCode
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C03
+        leftExpression: herb.herbCategory
+        operator: EQ
+        parameterRef: herbCategory
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C04
+        leftExpression: herb.toxicityLevel
+        operator: EQ
+        parameterRef: toxicityLevel
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C05
+        leftExpression: herb.herbStatus
+        operator: EQ
+        parameterRef: herbStatus
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C06
+        leftExpression: herb.stockQuantity
+        operator: GE
+        parameterRef: stockQuantityFrom
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C07
+        leftExpression: herb.stockQuantity
+        operator: LE
+        parameterRef: stockQuantityTo
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      # 预警筛选条件组：仅当「仅看预警项」开关开启（onlyAlert = true）时应用；关闭（默认）时整组跳过。
+      # 约定 13：开关参数显式声明在 switchParameterRef（此前仅写在注释里 → 引擎无法定位，静默按整组恒参与，
+      # 导致本报表忽略 onlyAlert、永远只返回预警项；v2.1 修正）。
+      - conditionId: C08
+        leftExpression: herb.stockQuantity
+        operator: LT
+        parameterRef: null
+        fixedValue: "herb.lowStockThreshold"
+        logicalConnector: AND
+        group: ALERT_FILTER
+        skipWhenParameterEmpty: false
+        switchParameterRef: onlyAlert    # 约定 13：本组开关参数（Boolean）
+        switchActivateValue: true        # 开关为 true 时本组参与；false/未传（defaultValue=false）整组跳过
+    resultColumns:
+      - name: herbCode
+        label: 饮片编码
+        dataType: String
+        sourceExpression: herb.herbCode
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: herbName
+        label: 饮片名称
+        dataType: String
+        sourceExpression: herb.herbName
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: aliasName
+        label: 别名
+        dataType: String
+        sourceExpression: herb.aliasName
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: false
+      - name: herbCategory
+        label: 药材类别
+        dataType: DictionaryRef
+        sourceExpression: herb.herbCategory
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: true
+      - name: toxicityLevel
+        label: 毒性分级
+        dataType: DictionaryRef
+        sourceExpression: herb.toxicityLevel
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: spec
+        label: 规格
+        dataType: String
+        sourceExpression: herb.spec
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: false
+      - name: origin
+        label: 产地
+        dataType: String
+        sourceExpression: herb.origin
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: false
+      - name: stockQuantity
+        label: 库存数量（g）
+        dataType: Decimal
+        # 库存数量直接取饮片主表字段（需求 5.6，不在查询中按流水重算）
+        sourceExpression: herb.stockQuantity
+        aggregateFunction: NONE
+        format: "#,##0.00"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: lowStockThreshold
+        label: 低库存预警值
+        dataType: Decimal
+        sourceExpression: herb.lowStockThreshold
+        aggregateFunction: NONE
+        format: "#,##0.00"
+        nullable: true
+        visible: true
+        sortable: true
+      - name: alertStatus
+        label: 预警状态
+        dataType: String
+        # 预警状态 = 库存数量 < 低库存预警值 时为「预警」，否则为「正常」（计算列，不建模为业务规则）
+        sourceExpression: "CASE WHEN herb.stockQuantity < herb.lowStockThreshold THEN '预警' ELSE '正常' END"
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: alertGap
+        label: 预警差额（g）
+        dataType: Decimal
+        # 预警差额 = 低库存预警值 − 库存数量，仅预警项显示
+        sourceExpression: "herb.lowStockThreshold - herb.stockQuantity"
+        aggregateFunction: NONE
+        format: "#,##0.00"
+        nullable: true
+        visible: true
+        sortable: true
+      - name: minCommonDose
+        label: 常用最小量
+        dataType: Decimal
+        sourceExpression: herb.minCommonDose
+        aggregateFunction: NONE
+        format: "#,##0.00"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: maxCommonDose
+        label: 常用最大量
+        dataType: Decimal
+        sourceExpression: herb.maxCommonDose
+        aggregateFunction: NONE
+        format: "#,##0.00"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: latestInboundDate
+        label: 最近入库日期
+        dataType: DateTime
+        sourceExpression: flowAgg.latestInboundDate
+        aggregateFunction: NONE
+        format: "yyyy-MM-dd"
+        nullable: true
+        visible: true
+        sortable: true
+      - name: latestOutboundDate
+        label: 最近出库日期
+        dataType: DateTime
+        sourceExpression: flowAgg.latestOutboundDate
+        aggregateFunction: NONE
+        format: "yyyy-MM-dd"
+        nullable: true
+        visible: true
+        sortable: true
+    # 默认不分组（明细列表）；「分组汇总：按药材类别汇总饮片品目数与预警品目数」为可选汇总——
+    # 切换时 groupBy 改为 [herb.herbCategory]，结果列增加 品目数 COUNT_DISTINCT(herb.herbCode) 与 预警品目数 COUNT_DISTINCT(CASE WHEN 预警 THEN herb.herbCode END)
+    groupBy: []
+    having: []
+    # 默认排序：预警项优先，其次库存数量升序，再次饮片编码升序
+    orderBy:
+      - expression: "CASE WHEN herb.stockQuantity < herb.lowStockThreshold THEN 0 ELSE 1 END"
+        direction: ASC
+      - expression: stockQuantity
+        direction: ASC
+      - expression: herbCode
+        direction: ASC
+    pagination:
+      enabled: true
+      defaultPageSize: 20
+      maxPageSize: 100
+    reportOptions: null
+    referenceSql: null
+    version: "1.0"
+
+  # ══════════════════════════════════════════════════════════
+  # REP-06 超量/毒性处方审核台账（列表查询 → LIST_QUERY）｜唯一查询行为 Q-06
+  # 口径（需求 5.7.1）：处方明细 JOIN 饮片 JOIN 处方，按「单剂剂量 > 常用最大量 OR 毒性分级 ≠ 无毒」过滤；
+  #                     仅做明细级展示，不做跨处方聚合；超出倍数 = 单剂剂量 ÷ 常用最大量（仅超量明细显示）。
+  # 一对多说明：参与联接的一对多来源只有处方明细一条（处方→明细），且不与其他一对多来源同时聚合，
+  #             明细条数/处方张数分别用 COUNT 与 COUNT(DISTINCT) 计数，不存在用量或张数被放大的情形。
+  # ══════════════════════════════════════════════════════════
+  - id: QR-PRESCRIPTION-OVERDOSE-001
+    name: 超量毒性处方审核台账
+    alias: prescriptionOverdoseReview
+    objectType: LIST_QUERY
+    description: 集中查看超出常用量上限或含毒性饮片的处方及其审核处理情况，用于用药安全复盘
+    behaviorRef: Prescription_QueryOverdoseReview
+    sourceObjects:
+      - objectRef: AGG-PRESCRIPTION-001
+        alias: prescription
+        primary: true
+      - objectRef: AGG-PRESCRIPTION-001
+        alias: prescriptionItem
+        entityPath: PrescriptionItem
+        primary: false
+      - objectRef: AGG-HERB-001
+        alias: herb
+        primary: false
+      - objectRef: AGG-PATIENT-001
+        alias: patient
+        primary: false
+    joins:
+      - joinId: J01
+        joinType: INNER
+        leftSource: prescription
+        rightSource: prescriptionItem
+        conditionExpression: "prescriptionItem.prescriptionId == prescription.id"
+      - joinId: J02
+        joinType: INNER
+        leftSource: prescriptionItem
+        rightSource: herb
+        conditionExpression: "prescriptionItem.herbId == herb.id"
+      - joinId: J03
+        joinType: LEFT
+        leftSource: prescription
+        rightSource: patient
+        conditionExpression: "prescription.patientId == patient.id"
+    parameters:
+      - name: prescribeDateFrom
+        label: 开方日期起
+        dataType: Date
+        required: false
+        allowedOperators: [GE]
+        sourceField: prescription.prescribeTime
+      - name: prescribeDateTo
+        label: 开方日期止
+        dataType: Date
+        required: false
+        allowedOperators: [LE]
+        sourceField: prescription.prescribeTime
+      - name: triggerType
+        label: 触发类型
+        dataType: Enum
+        required: false
+        defaultValue: BOTH
+        enumValues: [OVERDOSE, TOXIC, BOTH]  # 取值 OVERDOSE（超量）/ TOXIC（毒性饮片）/ BOTH（两者，默认）：选择 TRIGGER 条件组中生效的条件
+        allowedOperators: [EQ]
+        sourceField: herb.maxCommonDose
+      - name: prescriptionStatus
+        label: 处方状态
+        dataType: Enum
+        required: false
+        allowedOperators: [EQ, IN]
+        sourceField: prescription.prescriptionStatus
+      - name: reviewerId
+        label: 审核药师
+        dataType: String
+        required: false
+        allowedOperators: [EQ]
+        sourceField: prescription.reviewerId
+      - name: reviewResult
+        label: 处理结果
+        dataType: Enum
+        required: false
+        allowedOperators: [IN]
+        sourceField: prescription.prescriptionStatus  # 取值 审核通过 / 已驳回（M1 未单列「审核处理结果」字段，审核结论落在处方状态上）
+    conditions:
+      - conditionId: C01
+        leftExpression: prescription.prescribeTime
+        operator: GE
+        parameterRef: prescribeDateFrom
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C02
+        leftExpression: prescription.prescribeTime
+        operator: LE
+        parameterRef: prescribeDateTo
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      # 触发条件组：默认「两者」，即 C03 OR C04；触发类型 = 超量 时仅 C03 生效，= 毒性饮片 时仅 C04 生效
+      - conditionId: C03
+        leftExpression: prescriptionItem.singleDose
+        operator: GT
+        parameterRef: null
+        fixedValue: "herb.maxCommonDose"
+        logicalConnector: OR
+        group: TRIGGER
+        skipWhenParameterEmpty: false
+        triggerKind: OVERDOSE
+        switchParameterRef: triggerType   # 约定 13：本组开关参数
+      - conditionId: C04
+        leftExpression: herb.toxicityLevel
+        operator: NE
+        parameterRef: null
+        fixedValue: "NONE"
+        logicalConnector: OR
+        group: TRIGGER
+        skipWhenParameterEmpty: false
+        triggerKind: TOXIC
+        switchParameterRef: triggerType   # 约定 13：本组开关参数
+      - conditionId: C05
+        leftExpression: prescription.prescriptionStatus
+        operator: IN
+        parameterRef: prescriptionStatus
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C06
+        leftExpression: prescription.reviewerId
+        operator: EQ
+        parameterRef: reviewerId
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C07
+        leftExpression: prescription.prescriptionStatus
+        operator: IN
+        parameterRef: reviewResult
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+    resultColumns:
+      - name: prescriptionNo
+        label: 处方号
+        dataType: String
+        sourceExpression: prescription.prescriptionNo
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: patientName
+        label: 患者姓名
+        dataType: String
+        sourceExpression: patient.patientName
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: true
+      - name: prescribeDate
+        label: 开方日期
+        dataType: DateTime
+        sourceExpression: prescription.prescribeTime
+        aggregateFunction: NONE
+        format: "yyyy-MM-dd"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: doctorId
+        label: 接诊医师
+        dataType: String
+        sourceExpression: prescription.doctorId
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: herbName
+        label: 超量药味
+        dataType: String
+        sourceExpression: herb.herbName
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: singleDose
+        label: 单剂剂量（g）
+        dataType: Decimal
+        sourceExpression: prescriptionItem.singleDose
+        aggregateFunction: NONE
+        format: "#,##0.00"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: maxCommonDose
+        label: 常用最大量（g）
+        dataType: Decimal
+        sourceExpression: herb.maxCommonDose
+        aggregateFunction: NONE
+        format: "#,##0.00"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: exceedRatio
+        label: 超出倍数
+        dataType: Decimal
+        # 超出倍数 = 单剂剂量 ÷ 常用最大量（仅超量明细显示，非超量的毒性饮片明细为空值）
+        sourceExpression: "prescriptionItem.singleDose / NULLIF(herb.maxCommonDose, 0)"
+        aggregateFunction: NONE
+        format: "0.00"
+        nullable: true
+        visible: true
+        sortable: true
+      - name: toxicityLevel
+        label: 毒性分级
+        dataType: DictionaryRef
+        sourceExpression: herb.toxicityLevel
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: overDoseReason
+        label: 超量理由
+        dataType: String
+        sourceExpression: prescriptionItem.overDoseReason
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: false
+      - name: prescriptionStatus
+        label: 处方状态
+        dataType: Enum
+        sourceExpression: prescription.prescriptionStatus
+        aggregateFunction: NONE
+        format: null
+        nullable: false
+        visible: true
+        sortable: true
+      - name: reviewerId
+        label: 审核人
+        dataType: String
+        sourceExpression: prescription.reviewerId
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: false
+      - name: reviewTime
+        label: 审核时间
+        dataType: DateTime
+        sourceExpression: prescription.reviewTime
+        aggregateFunction: NONE
+        format: "yyyy-MM-dd HH:mm"
+        nullable: true
+        visible: true
+        sortable: true
+      - name: rejectReason
+        label: 驳回原因
+        dataType: String
+        sourceExpression: prescription.rejectReason
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: false
+    # 默认不分组（明细台账）；「可汇总超量明细条数、涉及处方张数与驳回张数」为可选汇总——
+    # 切换时结果列增加 超量明细条数 COUNT(prescriptionItem.itemId)、涉及处方张数 COUNT_DISTINCT(prescription.prescriptionNo)、
+    # 驳回张数 COUNT_DISTINCT(CASE WHEN prescription.prescriptionStatus = 'REJECTED' THEN prescription.prescriptionNo END)
+    groupBy: []
+    having: []
+    orderBy:
+      - expression: prescribeDate
+        direction: DESC
+      - expression: exceedRatio
+        direction: DESC
+    pagination:
+      enabled: true
+      defaultPageSize: 20
+      maxPageSize: 100
+    reportOptions: null
+    referenceSql: null
+    version: "1.0"
+
+  # ══════════════════════════════════════════════════════════
+  # REP-07 随访完成与失访分析（统计分析 → REPORT）｜唯一查询行为 Q-07
+  # 口径（需求 5.7.2）：以随访记录为主表，按计划随访日期范围与状态过滤；JOIN 就诊记录取科室与医师；
+  #                     按统计期间/科室/医师分别 COUNT 各状态条数；完成率、失访率、有效率的分子分母同源同条件。
+  # 一对多说明：随访记录→就诊记录、随访记录→患者均为多对一，联接不放大行数，无需预聚合。
+  # ══════════════════════════════════════════════════════════
+  - id: RPT-FOLLOWUP-COMPLETION-001
+    name: 随访完成与失访分析
+    alias: followUpCompletion
+    objectType: REPORT
+    description: 统计复诊随访的完成率、失访率与疗效分布，评估治疗依从性与疗效；底部合计
+    behaviorRef: FollowUp_QueryCompletion
+    sourceObjects:
+      - objectRef: AGG-FOLLOWUP-001
+        alias: followUp
+        primary: true
+      # 就诊记录来源：取科室与接诊医师（随访记录→就诊记录 多对一）
+      - objectRef: AGG-VISIT-001
+        alias: visit
+        primary: false
+      # 患者来源：需求 5.7.2 关联对象 OBJ-01 患者（多对一，用于患者口径校验与展示）
+      - objectRef: AGG-PATIENT-001
+        alias: patient
+        primary: false
+    joins:
+      - joinId: J01
+        joinType: LEFT
+        leftSource: followUp
+        rightSource: visit
+        conditionExpression: "followUp.sourceVisitId == visit.id"
+      - joinId: J02
+        joinType: LEFT
+        leftSource: followUp
+        rightSource: patient
+        conditionExpression: "followUp.patientId == patient.id"
+    parameters:
+      - name: plannedDateFrom
+        label: 计划随访日期起
+        dataType: Date
+        required: false
+        defaultValue: MONTH_START  # 默认本月首日（需求 5.7.2「默认本月」）
+        allowedOperators: [GE]
+        sourceField: followUp.plannedFollowUpDate
+      - name: plannedDateTo
+        label: 计划随访日期止
+        dataType: Date
+        required: false
+        defaultValue: MONTH_END  # 默认本月末日（需求 5.7.2「默认本月」）
+        allowedOperators: [LE]
+        sourceField: followUp.plannedFollowUpDate
+      - name: deptCode
+        label: 科室
+        dataType: DictionaryRef
+        required: false
+        allowedOperators: [EQ]
+        sourceField: visit.deptCode
+      - name: doctorId
+        label: 接诊医师
+        dataType: String
+        required: false
+        allowedOperators: [EQ]
+        sourceField: visit.doctorId
+      - name: recordStatus
+        label: 随访状态
+        dataType: Enum
+        required: false
+        allowedOperators: [EQ, IN]
+        sourceField: followUp.recordStatus
+      - name: efficacyLevel
+        label: 疗效评价
+        dataType: Enum
+        required: false
+        allowedOperators: [EQ, IN]
+        sourceField: followUp.efficacyLevel
+    conditions:
+      - conditionId: C01
+        leftExpression: followUp.plannedFollowUpDate
+        operator: GE
+        parameterRef: plannedDateFrom
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C02
+        leftExpression: followUp.plannedFollowUpDate
+        operator: LE
+        parameterRef: plannedDateTo
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C03
+        leftExpression: visit.deptCode
+        operator: EQ
+        parameterRef: deptCode
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C04
+        leftExpression: visit.doctorId
+        operator: EQ
+        parameterRef: doctorId
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C05
+        leftExpression: followUp.recordStatus
+        operator: IN
+        parameterRef: recordStatus
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+      - conditionId: C06
+        leftExpression: followUp.efficacyLevel
+        operator: IN
+        parameterRef: efficacyLevel
+        logicalConnector: AND
+        group: BASE
+        skipWhenParameterEmpty: true
+    resultColumns:
+      - name: statPeriod
+        label: 统计期间
+        dataType: Date
+        # 统计期间：按计划随访日期按月统计（需求 5.7.2「统计期间」）
+        sourceExpression: "DATE_TRUNC(followUp.plannedFollowUpDate, MONTH)"
+        aggregateFunction: NONE
+        format: "yyyy-MM"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: deptCode
+        label: 科室
+        dataType: DictionaryRef
+        sourceExpression: visit.deptCode
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: true
+      - name: doctorId
+        label: 接诊医师
+        dataType: String
+        sourceExpression: visit.doctorId
+        aggregateFunction: NONE
+        format: null
+        nullable: true
+        visible: true
+        sortable: true
+      - name: plannedCount
+        label: 计划随访数
+        dataType: Integer
+        sourceExpression: followUp.followUpNo
+        aggregateFunction: COUNT
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: completedCount
+        label: 已完成数
+        dataType: Integer
+        sourceExpression: "SUM(CASE WHEN followUp.recordStatus = 'COMPLETED' THEN 1 ELSE 0 END)"
+        aggregateFunction: NONE
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: lostCount
+        label: 已失访数
+        dataType: Integer
+        sourceExpression: "SUM(CASE WHEN followUp.recordStatus = 'LOST' THEN 1 ELSE 0 END)"
+        aggregateFunction: NONE
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: true
+      - name: completionRatio
+        label: 完成率
+        dataType: Decimal
+        # 完成率 = 已完成数 ÷ 计划随访数（同分组、同条件）
+        sourceExpression: "SUM(CASE WHEN followUp.recordStatus = 'COMPLETED' THEN 1 ELSE 0 END) / NULLIF(COUNT(followUp.followUpNo), 0)"
+        aggregateFunction: NONE
+        format: "0.00%"
+        nullable: true
+        visible: true
+        sortable: true
+      - name: lostRatio
+        label: 失访率
+        dataType: Decimal
+        # 失访率 = 已失访数 ÷ 计划随访数（同分组、同条件）
+        sourceExpression: "SUM(CASE WHEN followUp.recordStatus = 'LOST' THEN 1 ELSE 0 END) / NULLIF(COUNT(followUp.followUpNo), 0)"
+        aggregateFunction: NONE
+        format: "0.00%"
+        nullable: true
+        visible: true
+        sortable: true
+      - name: curedCount
+        label: 痊愈数
+        dataType: Integer
+        sourceExpression: "SUM(CASE WHEN followUp.efficacyLevel = 'CURED' THEN 1 ELSE 0 END)"
+        aggregateFunction: NONE
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: false
+      - name: markedEffectCount
+        label: 显效数
+        dataType: Integer
+        sourceExpression: "SUM(CASE WHEN followUp.efficacyLevel = 'MARKED_EFFECT' THEN 1 ELSE 0 END)"
+        aggregateFunction: NONE
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: false
+      - name: effectiveCount
+        label: 有效数
+        dataType: Integer
+        sourceExpression: "SUM(CASE WHEN followUp.efficacyLevel = 'EFFECTIVE' THEN 1 ELSE 0 END)"
+        aggregateFunction: NONE
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: false
+      - name: ineffectiveCount
+        label: 无效数
+        dataType: Integer
+        sourceExpression: "SUM(CASE WHEN followUp.efficacyLevel = 'INEFFECTIVE' THEN 1 ELSE 0 END)"
+        aggregateFunction: NONE
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: false
+      - name: aggravatedCount
+        label: 加重数
+        dataType: Integer
+        sourceExpression: "SUM(CASE WHEN followUp.efficacyLevel = 'AGGRAVATED' THEN 1 ELSE 0 END)"
+        aggregateFunction: NONE
+        format: "#,##0"
+        nullable: false
+        visible: true
+        sortable: false
+      - name: effectiveRatio
+        label: 有效率
+        dataType: Decimal
+        # 有效率 = （痊愈 + 显效 + 有效）÷ 已完成数（分子分母同分组、同条件）
+        sourceExpression: "SUM(CASE WHEN followUp.efficacyLevel IN ('CURED', 'MARKED_EFFECT', 'EFFECTIVE') THEN 1 ELSE 0 END) / NULLIF(SUM(CASE WHEN followUp.recordStatus = 'COMPLETED' THEN 1 ELSE 0 END), 0)"
+        aggregateFunction: NONE
+        format: "0.00%"
+        nullable: true
+        visible: true
+        sortable: true
+    groupBy:
+      - "DATE_TRUNC(followUp.plannedFollowUpDate, MONTH)"
+      - visit.deptCode
+      - visit.doctorId
+    having: []
+    orderBy:
+      - expression: statPeriod
+        direction: DESC
+      - expression: deptCode
+        direction: ASC
+    pagination:
+      enabled: true
+      defaultPageSize: 20
+      maxPageSize: 100
+    reportOptions:
+      title: 随访完成与失访分析
+      layout: TABLE
+      groupFields: [statPeriod, deptCode, doctorId]
+      subtotalFields: [plannedCount, completedCount, lostCount]
+      # 底部合计；完成率/失访率/有效率为比率列，不参与合计
+      totalFields: [plannedCount, completedCount, lostCount, curedCount, markedEffectCount, effectiveCount, ineffectiveCount, aggravatedCount]
+      exportFormats: [XLSX, CSV]
+      emptyValueDisplay: "-"
+    referenceSql: null
+    version: "1.0"

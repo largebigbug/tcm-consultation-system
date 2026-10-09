@@ -1,0 +1,32 @@
+# 应用配置（所有可变项配置化，禁止硬编码）
+app:
+  name: 中医问诊系统
+  host: 0.0.0.0
+  port: 5000
+  secret_key: change-me-in-production
+  database: data/app.db
+
+auth:
+  jwt_secret: please-change-this-jwt-secret
+  jwt_expires_hours: 2
+  default_admin: admin
+  default_admin_password: admin123
+
+# AI 对话（批次 5：右侧 AI 对话框后端编排层）
+# 生效优先级：环境变量 > 本文件 > 内置默认值
+#   AI_PROVIDER → ai.provider；AI_API_KEY → ai.api_key；AI_BASE_URL → ai.base_url
+# 未配置凭据（api_key 空且无 DEEPSEEK_API_KEY）时接口走未启用降级口径（enabled:false + 中文 hint）。
+ai:
+  enabled: true          # 总开关（false 时同「未启用」口径）
+  provider: deepseek     # deepseek | mock
+  api_key: ""            # 留空则读环境变量 DEEPSEEK_API_KEY（禁止硬编码密钥）
+  base_url: "https://api.deepseek.com"
+  model: "deepseek-chat"
+  max_tokens: 2048
+  timeout_seconds: 30
+  sql_limits: {default_limit: 100, max_limit: 500, timeout_seconds: 3}
+
+# 只读动态 SQL 边界
+sql_readonly:
+  max_rows: 200
+  timeout_seconds: 5

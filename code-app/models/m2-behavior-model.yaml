@@ -1,0 +1,780 @@
+# M2 行为模型元文件 - m2-behavior-model.yaml
+# 依据《中医问诊系统-需求规格说明书-V9.md》第二部分 2.2 功能详述 + 附录 C.2
+# 行为 id 格式：{EntityAlias}_{ActionName}（本体框架 §3.2.1）
+# 计数：人工命令行为 24 + 查询行为 7 + 系统自动行为 6（B-01～B-06）= 37
+# 字段路径约定：M1 聚合别名（小驼峰，如 visit./prescription./dispenseRecord.）+ 属性名；
+#   子实体集合写「聚合别名.子实体别名」（如 prescription.PrescriptionItem、herb.HerbStockFlow），
+#   别名以 m1-object-model.yaml 为准（SyndromeDiagnosis/SyndromeType/FormulaTemplate 等）。
+# 建模补全说明：B-05/B-06 为本次建模新增的系统自动行为——
+#   需求文档 3.12 定义了调剂发药记录「待调剂 → 已取消」的联动迁移与「默认待调剂」初态，
+#   但未显式给出该记录的创建与取消行为；本模型补齐：
+#   B-05 处方审核通过后由审批流分支创建待调剂记录（否则「待调剂」状态不可达）；
+#   B-06 处方作废（待调剂分支）联动取消该记录（R-04 分派结果）。已同步回需求文档 B-05/B-06 编号。
+model_type: BEHAVIOR
+version: "1.0"
+domain: "中医问诊"
+
+behaviors:
+  # ══════════════════════════════════════════════════════════
+  # 患者（FUNC-01）
+  # ══════════════════════════════════════════════════════════
+  - id: Patient_Save
+    name: 患者建档与修改
+    ownerEntity: AGG-PATIENT-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: 对应 FUNC-01；新增患者档案或修改既有档案基本信息
+    preconditions:
+      - "患者姓名为必填且长度 2～20 字"
+      - "出生日期与年龄至少填写一项"
+      - "同一「证件类型 + 证件号码」不存在重复建档（INV-01）"
+    postconditions:
+      - field: patient.patientStatus
+        setValue: "在用（新增时按默认值写入）"
+      - field: patient.age
+        setValue: "有出生日期时按出生日期自动计算"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-PATIENT-SAVE
+    syncTriggers: []
+
+  - id: Patient_ChangeStatus
+    name: 患者停用与启用
+    ownerEntity: AGG-PATIENT-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: 对应 FUNC-01（停用并入建档功能，D-23）；不物理删除患者档案
+    preconditions:
+      - "停用时该患者不存在「已挂号」或「接诊中」的就诊记录"
+      - "patient.patientStatus == '在用'（停用）或 '停用'（启用）"
+    postconditions:
+      - field: patient.patientStatus
+        setValue: "停用 或 在用"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-PATIENT-STATUS
+    syncTriggers: []
+
+  # ══════════════════════════════════════════════════════════
+  # 就诊（FUNC-02 / FUNC-03 / FUNC-04 / FUNC-16）
+  # ══════════════════════════════════════════════════════════
+  - id: Visit_Register
+    name: 门诊挂号
+    ownerEntity: AGG-VISIT-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: 对应 FUNC-02；为患者在门诊挂号并建立就诊记录
+    preconditions:
+      - "patient.patientStatus == '在用'"
+      - "就诊类型为复诊时必须选定上次就诊记录"
+    postconditions:
+      - field: visit.visitStatus
+        setValue: "已挂号"
+      - field: visit.registerTime
+        setValue: "NOW()"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-VISIT-REGISTER
+    syncTriggers: []
+
+  - id: Visit_Receive
+    name: 接诊开单
+    ownerEntity: AGG-VISIT-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: 对应 FUNC-03；医师开始接诊，记录接诊时间与接诊医师
+    preconditions:
+      - "visit.visitStatus == '已挂号'"
+      - "主诉已填写，长度不超过 200 字（该环节负责录入主诉）"
+    postconditions:
+      - field: visit.visitStatus
+        setValue: "接诊中"
+      - field: visit.receiveTime
+        setValue: "NOW()"
+      - field: visit.doctorId
+        setValue: "当前登录用户"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-VISIT-RECEIVE
+    syncTriggers: []
+
+  - id: Visit_SaveFourDiagnosis
+    name: 录入四诊信息
+    ownerEntity: AGG-VISIT-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: 对应 FUNC-04；录入或修改本次就诊的望闻问切结构化记录（聚合内子实体，同事务）
+    preconditions:
+      - "visit.visitStatus == '接诊中'"
+      - "脉象为必填项"
+    postconditions:
+      - field: visit.FourDiagnosis.pulseCode
+        setValue: "按录入值保存"
+      - field: visit.FourDiagnosis
+        setValue: "新增或更新本次就诊唯一一份四诊信息"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-VISIT-FOURDIAGNOSIS
+    syncTriggers: []
+
+  - id: Visit_Cancel
+    name: 撤销就诊
+    ownerEntity: AGG-VISIT-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: 对应 FUNC-16；患者未就诊或误挂号时撤销就诊，不物理删除
+    preconditions:
+      - "visit.visitStatus IN ['已挂号', '接诊中']"
+      - "该就诊下不存在任何处方"
+      - "撤销原因已填写（记入备注）"
+    postconditions:
+      - field: visit.visitStatus
+        setValue: "已取消"
+      - field: visit.remark
+        setValue: "追加撤销原因"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-VISIT-CANCEL
+    syncTriggers: []
+
+  # ══════════════════════════════════════════════════════════
+  # 辨证（FUNC-05）
+  # ══════════════════════════════════════════════════════════
+  - id: Diagnosis_Save
+    name: 保存辨证结论草稿
+    ownerEntity: AGG-DIAGNOSIS-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: 对应 FUNC-05；保存辨证结论草稿，可反复修改
+    preconditions:
+      - "所属就诊存在四诊信息"
+      - "证型、辨证方法、证型性质已选择"
+      - "辨证依据不少于 10 字"
+    postconditions:
+      - field: syndromeDiagnosis.conclusionStatus
+        setValue: "草稿"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-DIAGNOSIS-SAVE
+    syncTriggers: []
+
+  - id: Diagnosis_Confirm
+    name: 确认辨证结论
+    ownerEntity: AGG-DIAGNOSIS-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: 对应 FUNC-05；结论定稿，之后可据此开方
+    preconditions:
+      - "所属就诊未完成（visit.visitStatus == '接诊中'）"
+      - "主证性质结论在同一就诊下唯一（INV-02）"
+      - "治法已填写"
+    postconditions:
+      - field: syndromeDiagnosis.conclusionStatus
+        setValue: "已确认"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-DIAGNOSIS-CONFIRM
+    syncTriggers: []
+
+  # ══════════════════════════════════════════════════════════
+  # 证型字典（FUNC-15）
+  # ══════════════════════════════════════════════════════════
+  - id: Syndrome_Save
+    name: 证型字典新增与修改
+    ownerEntity: AGG-SYNDROME-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: 对应 FUNC-15；维护证型标准化定义
+    preconditions:
+      - "证型编码符合 Z + 三位流水号规则"
+      - "证型名称唯一"
+      - "所属辨证体系已选择"
+    postconditions:
+      - field: syndromeType.syndromeCode
+        setValue: "按规则生成或保存"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-SYNDROME-SAVE
+    syncTriggers: []
+
+  - id: Syndrome_ChangeStatus
+    name: 证型字典停用与启用
+    ownerEntity: AGG-SYNDROME-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: 对应 FUNC-15；被引用后不可删除，只能停用
+    preconditions:
+      - "syndromeType.syndromeStatus == '启用'（停用）或 '停用'（启用）"
+    postconditions:
+      - field: syndromeType.syndromeStatus
+        setValue: "停用 或 启用"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-SYNDROME-STATUS
+    syncTriggers: []
+
+  # ══════════════════════════════════════════════════════════
+  # 方剂模板（FUNC-14）
+  # ══════════════════════════════════════════════════════════
+  - id: Formula_Save
+    name: 方剂模板新增与修改
+    ownerEntity: AGG-FORMULA-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: 对应 FUNC-14；维护方剂模板及其组成明细（聚合内子实体，同事务）
+    preconditions:
+      - "方剂编码符合 F + 三位流水号规则"
+      - "方剂名称唯一"
+      - "组成明细至少一味药味，且药味不重复"
+    postconditions:
+      - field: formulaTemplate.formulaCode
+        setValue: "按规则生成或保存"
+      - field: formulaTemplate.FormulaItem
+        setValue: "全量覆盖保存组成明细"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-FORMULA-SAVE
+    syncTriggers: []
+
+  - id: Formula_ChangeStatus
+    name: 方剂模板停用与启用
+    ownerEntity: AGG-FORMULA-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: 对应 FUNC-14；被处方引用后不可删除，只能停用
+    preconditions:
+      - "formulaTemplate.formulaStatus == '启用'（停用）或 '停用'（启用）"
+    postconditions:
+      - field: formulaTemplate.formulaStatus
+        setValue: "停用 或 启用"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-FORMULA-STATUS
+    syncTriggers: []
+
+  # ══════════════════════════════════════════════════════════
+  # 中药饮片与库存（FUNC-11 / FUNC-12）
+  # ══════════════════════════════════════════════════════════
+  - id: Herb_Save
+    name: 饮片建档与修改
+    ownerEntity: AGG-HERB-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: 对应 FUNC-11；建立或修改饮片品目基础信息（常用量区间、毒性分级、预警值等）
+    preconditions:
+      - "饮片编码符合 Y + 四位流水号规则"
+      - "饮片名称唯一"
+      - "常用最小量 > 0 且常用最大量 ≥ 常用最小量"
+      - "毒性分级已选择"
+    postconditions:
+      - field: herb.herbCode
+        setValue: "按规则生成或保存"
+      - field: herb.stockQuantity
+        setValue: "新增时为 0，不由本行为直接修改"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-HERB-SAVE
+    syncTriggers: []
+
+  - id: Herb_Inbound
+    name: 饮片入库登记
+    ownerEntity: AGG-HERB-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: |-
+      对应 FUNC-11；登记合格入库数量与入库单号（饮片验收留线下，D-27），
+      同时追加「入库」流水并增加库存，二者属同一聚合、同一事务
+    preconditions:
+      - "入伙数量大于 0"
+      - "herb.herbStatus == '启用'"
+      - "入库单号已填写"
+    postconditions:
+      - field: herb.stockQuantity
+        setValue: "stockQuantity + 入库数量"
+      - field: herb.HerbStockFlow
+        setValue: "追加一条业务类型为「入库」的流水（数量为正）"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-HERB-INBOUND
+    syncTriggers: []
+
+  - id: Herb_ChangeStatus
+    name: 饮片停用与启用
+    ownerEntity: AGG-HERB-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: 对应 FUNC-11（停用并入建档入库功能，D-31）；产生过流水或被处方引用后不可删除
+    preconditions:
+      - "herb.herbStatus == '启用'（停用）或 '停用'（启用）"
+    postconditions:
+      - field: herb.herbStatus
+        setValue: "停用 或 启用"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-HERB-STATUS
+    syncTriggers: []
+
+  - id: Herb_Stocktake
+    name: 饮片库存盘点调整
+    ownerEntity: AGG-HERB-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: |-
+      对应 FUNC-12；按实盘结果登记盘点调整或报损（追加流水并修正库存），
+      盘点前调用 R-06 输出账实差异供人工确认；低库存预警只做查询呈现，不推送（D-22）
+    preconditions:
+      - "盘点调整原因或报损原因已填写"
+      - "调整数量不得为 0（REF-13）"
+      - "调整后库存数量不得为负（REF-08）"
+    postconditions:
+      - field: herb.stockQuantity
+        setValue: "stockQuantity + 调整数量"
+      - field: herb.HerbStockFlow
+        setValue: "追加一条业务类型为「盘点调整」或「报损」的流水"
+    appliedRules:
+      - RULE-HERB-STOCK-RECONCILE
+    requiredPermissions:
+      - PERM-HERB-STOCKTAKE
+    syncTriggers: []
+
+  # ══════════════════════════════════════════════════════════
+  # 处方（FUNC-06 / FUNC-07 / FUNC-09）
+  # ══════════════════════════════════════════════════════════
+  - id: Prescription_Save
+    name: 开具处方与保存草稿
+    ownerEntity: AGG-PRESCRIPTION-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: |-
+      对应 FUNC-06；开具或修改处方主表与明细（聚合内同事务）。
+      超量处理结论由 R-01 判定：NEED_REASON 时超量理由必填，BLOCK 时不允许保存
+    preconditions:
+      - "visit.visitStatus == '接诊中'；或处方状态为「已驳回」时允许修改后重新提交（M6 Q04 驳回重提闭环，此时就诊已随提交收尾为「已完成」）"
+      - "所属就诊存在「已确认」的辨证结论"
+      - "剂数在 1 到 30 之间（REF-10）"
+      - "同一处方内饮片不重复，单剂剂量大于 0（REF-12）"
+    postconditions:
+      - field: prescription.prescriptionStatus
+        setValue: "草稿"
+      - field: prescription.prescribeTime
+        setValue: "NOW()（首次保存时）"
+      - field: prescription.PrescriptionItem
+        setValue: "全量覆盖保存处方明细（含超量理由）"
+    appliedRules:
+      - RULE-PRESCRIPTION-DOSE-LIMIT-CHECK
+    requiredPermissions:
+      - PERM-PRESCRIPTION-SAVE
+    syncTriggers: []
+
+  - id: Prescription_Submit
+    name: 提交处方送审
+    ownerEntity: AGG-PRESCRIPTION-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: |-
+      对应 FUNC-07；处方明细非空（INV-04）后提交进入药师审核队列，
+      并同步触发就诊状态收尾（B-04）。超常用量上限 2 倍或超毒性上限由规则阻断
+    preconditions:
+      - "prescription.prescriptionStatus IN ['草稿', '已驳回']"
+      - "处方明细至少一味饮片（INV-04）"
+      - "超量药味已填写超量理由"
+    postconditions:
+      - field: prescription.prescriptionStatus
+        setValue: "待审核"
+      - field: prescription.submitTime
+        setValue: "NOW()"
+    appliedRules:
+      - RULE-PRESCRIPTION-DOSE-LIMIT-CHECK
+      - RULE-HERB-TOXIC-TOTAL-LIMIT-CHECK
+    requiredPermissions:
+      - PERM-PRESCRIPTION-SUBMIT
+    syncTriggers:
+      - behaviorRef: Visit_Complete
+        description: 处方提交成功后同步触发就诊状态收尾（就诊置「已完成」）
+
+  - id: Prescription_Cancel
+    name: 处方退回与作废
+    ownerEntity: AGG-PRESCRIPTION-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: |-
+      对应 FUNC-09；作废按 R-04 三分派执行——无调剂记录或「待调剂」记录时仅作废并取消待调剂记录；
+      「已调剂」时作废并回冲库存；「已发药」时阻断作废（退药走线下）。不物理删除处方
+    preconditions:
+      - "prescription.prescriptionStatus IN ['草稿', '待审核', '审核通过', '已调剂']"
+      - "R-04 判定结果不为 BLOCK（已发药/已作废不可作废）"
+      - "作废原因已填写"
+    postconditions:
+      - field: prescription.prescriptionStatus
+        setValue: "已作废"
+      - field: prescription.cancelReason
+        setValue: "写入作废原因"
+    appliedRules:
+      - RULE-PRESCRIPTION-VOID-DISPATCH
+    requiredPermissions:
+      - PERM-PRESCRIPTION-CANCEL
+    syncTriggers:
+      - ruleRef: RULE-PRESCRIPTION-VOID-DISPATCH
+        behaviorRef: Dispense_CancelPending
+        description: 作废分派为 VOID_ONLY 时，同步取消该处方「待调剂」的调剂发药记录
+      - ruleRef: RULE-PRESCRIPTION-VOID-DISPATCH
+        behaviorRef: Herb_ReturnStock
+        description: 作废分派为 VOID_WITH_ROLLBACK 时，同步回冲已调剂饮片库存并生成作废回冲流水
+
+  # ══════════════════════════════════════════════════════════
+  # 处方审核（B-APP-01，审批行为）
+  # ══════════════════════════════════════════════════════════
+  - id: Prescription_Review
+    name: 处方审核
+    ownerEntity: AGG-PRESCRIPTION-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: |-
+      对应审批行为 B-APP-01；中药师单节点审核（D-24：不做会签与条件加签，复核人选填）。
+      审核通过置「审核通过」并进入调剂；驳回须填驳回原因并置「已驳回」，医师修改后可重新提交
+    preconditions:
+      - "prescription.prescriptionStatus == '待审核'"
+      - "驳回时驳回原因已填写"
+      - "当前用户具备中药师角色（ROLE-03）"
+    postconditions:
+      - field: prescription.prescriptionStatus
+        setValue: "审核通过 或 已驳回"
+      - field: prescription.reviewerId
+        setValue: "当前登录用户"
+      - field: prescription.reviewTime
+        setValue: "NOW()"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-PRESCRIPTION-REVIEW
+    syncTriggers: []
+
+  # ══════════════════════════════════════════════════════════
+  # 调剂发药（FUNC-10）
+  # ══════════════════════════════════════════════════════════
+  - id: Dispense_Confirm
+    name: 确认调剂
+    ownerEntity: AGG-DISPENSE-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: |-
+      对应 FUNC-10；确认调剂并同步扣减饮片库存（D-14）。库存不足由 R-02 阻断，
+      不允许先调剂后补库
+    preconditions:
+      - "dispenseRecord.recordStatus == '待调剂'"
+      - "对应处方状态为「审核通过」"
+      - "R-02 判定全部饮片库存充足"
+    postconditions:
+      - field: dispenseRecord.recordStatus
+        setValue: "已调剂"
+      - field: dispenseRecord.dispenseTime
+        setValue: "NOW()"
+      - field: dispenseRecord.dispenserId
+        setValue: "当前登录用户"
+      - field: prescription.prescriptionStatus
+        setValue: "已调剂"
+    appliedRules:
+      - RULE-HERB-STOCK-SUFFICIENT
+    requiredPermissions:
+      - PERM-DISPENSE-CONFIRM
+    syncTriggers:
+      - ruleRef: RULE-HERB-STOCK-SUFFICIENT
+        behaviorRef: Herb_DeductStock
+        description: 库存校验通过后同步扣减各味饮片库存并生成调剂出库流水（跨聚合联动）
+
+  - id: Dispense_Issue
+    name: 发药确认
+    ownerEntity: AGG-DISPENSE-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: 对应 FUNC-10；确认发药，处方业务闭环（库存已在确认调剂时扣减）
+    preconditions:
+      - "dispenseRecord.recordStatus == '已调剂'"
+    postconditions:
+      - field: dispenseRecord.recordStatus
+        setValue: "已发药"
+      - field: dispenseRecord.issueTime
+        setValue: "NOW()"
+      - field: prescription.prescriptionStatus
+        setValue: "已发药"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-DISPENSE-ISSUE
+    syncTriggers: []
+
+  # ══════════════════════════════════════════════════════════
+  # 复诊随访（FUNC-13）
+  # ══════════════════════════════════════════════════════════
+  - id: FollowUp_Complete
+    name: 复诊登记与疗效评价
+    ownerEntity: AGG-FOLLOWUP-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: 对应 FUNC-13；患者实际复诊时回填本次就诊并记录疗效评价
+    preconditions:
+      - "followUp.recordStatus == '待随访'"
+      - "实际随访日期不早于上次就诊挂号时间（R-05）"
+      - "本次就诊记录已选定"
+    postconditions:
+      - field: followUp.recordStatus
+        setValue: "已完成"
+      - field: followUp.actualVisitId
+        setValue: "本次就诊记录"
+      - field: followUp.actualFollowUpDate
+        setValue: "按填入值保存"
+      - field: followUp.efficacyLevel
+        setValue: "按评价结果保存"
+    appliedRules:
+      - RULE-FOLLOWUP-DATE-ORDER
+    requiredPermissions:
+      - PERM-FOLLOWUP-COMPLETE
+    syncTriggers: []
+
+  - id: FollowUp_MarkLost
+    name: 标记失访
+    ownerEntity: AGG-FOLLOWUP-001
+    behaviorType: COMMAND
+    triggerType: USER_ACTION
+    description: 对应 FUNC-13；计划随访日期超期且患者未复诊时标记失访，不物理删除
+    preconditions:
+      - "followUp.recordStatus == '待随访'"
+      - "计划随访日期已超期"
+      - "失访原因已填写"
+    postconditions:
+      - field: followUp.recordStatus
+        setValue: "已失访"
+      - field: followUp.remark
+        setValue: "追加失访原因"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-FOLLOWUP-LOST
+    syncTriggers: []
+
+  # ══════════════════════════════════════════════════════════
+  # 查询行为（Q-01～Q-07，与 M7 严格一对一）
+  # ══════════════════════════════════════════════════════════
+  - id: Visit_QueryStats
+    name: 查询门诊量统计
+    ownerEntity: AGG-VISIT-001
+    behaviorType: QUERY
+    triggerType: USER_ACTION
+    description: 对应 Q-01
+    preconditions: []
+    postconditions: []
+    appliedRules: []
+    requiredPermissions:
+      - PERM-QUERY-VISIT-STATS
+    syncTriggers: []
+    queryReportRef: RPT-VISIT-STATS-001
+
+  - id: Diagnosis_QuerySyndromeDistribution
+    name: 查询证型分布统计
+    ownerEntity: AGG-DIAGNOSIS-001
+    behaviorType: QUERY
+    triggerType: USER_ACTION
+    description: 对应 Q-02
+    preconditions: []
+    postconditions: []
+    appliedRules: []
+    requiredPermissions:
+      - PERM-QUERY-SYNDROME-DIST
+    syncTriggers: []
+    queryReportRef: RPT-SYNDROME-DIST-001
+
+  - id: Prescription_QueryHerbUsage
+    name: 查询方剂与饮片使用统计
+    ownerEntity: AGG-PRESCRIPTION-001
+    behaviorType: QUERY
+    triggerType: USER_ACTION
+    description: 对应 Q-03
+    preconditions: []
+    postconditions: []
+    appliedRules: []
+    requiredPermissions:
+      - PERM-QUERY-HERB-USAGE
+    syncTriggers: []
+    queryReportRef: RPT-HERB-USAGE-001
+
+  - id: Visit_QueryVisitAndPrescription
+    name: 查询就诊与处方记录
+    ownerEntity: AGG-VISIT-001
+    behaviorType: QUERY
+    triggerType: USER_ACTION
+    description: 对应 Q-04
+    preconditions: []
+    postconditions: []
+    appliedRules: []
+    requiredPermissions:
+      - PERM-QUERY-VISIT-PRESCRIPTION
+    syncTriggers: []
+    queryReportRef: QR-VISIT-PRESCRIPTION-001
+
+  - id: Herb_QueryStockAndAlert
+    name: 查询饮片库存与预警
+    ownerEntity: AGG-HERB-001
+    behaviorType: QUERY
+    triggerType: USER_ACTION
+    description: 对应 Q-05
+    preconditions: []
+    postconditions: []
+    appliedRules: []
+    requiredPermissions:
+      - PERM-QUERY-HERB-STOCK
+    syncTriggers: []
+    queryReportRef: QR-HERB-STOCK-001
+
+  - id: Prescription_QueryOverdoseReview
+    name: 查询超量毒性处方审核台账
+    ownerEntity: AGG-PRESCRIPTION-001
+    behaviorType: QUERY
+    triggerType: USER_ACTION
+    description: 对应 Q-06
+    preconditions: []
+    postconditions: []
+    appliedRules: []
+    requiredPermissions:
+      - PERM-QUERY-OVERDOSE-REVIEW
+    syncTriggers: []
+    queryReportRef: QR-PRESCRIPTION-OVERDOSE-001
+
+  - id: FollowUp_QueryCompletion
+    name: 查询随访完成与失访分析
+    ownerEntity: AGG-FOLLOWUP-001
+    behaviorType: QUERY
+    triggerType: USER_ACTION
+    description: 对应 Q-07
+    preconditions: []
+    postconditions: []
+    appliedRules: []
+    requiredPermissions:
+      - PERM-QUERY-FOLLOWUP
+    syncTriggers: []
+    queryReportRef: RPT-FOLLOWUP-COMPLETION-001
+
+  # ══════════════════════════════════════════════════════════
+  # 系统自动行为（B-01～B-06，由 ROLE-07 承载，经 syncTriggers 同步调用）
+  # ══════════════════════════════════════════════════════════
+  - id: Visit_Complete
+    name: 就诊状态收尾
+    ownerEntity: AGG-VISIT-001
+    behaviorType: COMMAND
+    triggerType: SYSTEM
+    description: 对应 B-04；处方提交送审成功后由 Prescription_Submit 同步触发，就诊置「已完成」
+    preconditions:
+      - "visit.visitStatus == '接诊中'"
+      - "存在已提交成功的处方"
+    postconditions:
+      - field: visit.visitStatus
+        setValue: "已完成"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-AUTO-VISIT-COMPLETE
+    syncTriggers:
+      - behaviorRef: FollowUp_CreatePlan
+        description: 就诊完成后同步生成复诊随访记录（无条件联动）
+
+  - id: FollowUp_CreatePlan
+    name: 复诊提醒生成
+    ownerEntity: AGG-FOLLOWUP-001
+    behaviorType: COMMAND
+    triggerType: SYSTEM
+    description: 对应 B-03；就诊完成后生成待随访记录，计划随访日期 = 就诊日 + 剂数 × 1 天（D-17）
+    preconditions:
+      - "就诊状态为「已完成」"
+      - "该次就诊存在提交成功的处方"
+    postconditions:
+      - field: followUp.followUpNo
+        setValue: "系统生成"
+      - field: followUp.recordStatus
+        setValue: "待随访"
+      - field: followUp.plannedFollowUpDate
+        setValue: "就诊日期 + 剂数 × 1 天（按用法折算）"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-AUTO-FOLLOWUP-PLAN
+    syncTriggers: []
+
+  - id: Herb_DeductStock
+    name: 饮片库存扣减
+    ownerEntity: AGG-HERB-001
+    behaviorType: COMMAND
+    triggerType: SYSTEM
+    description: |-
+      对应 B-01；确认调剂时经 R-02 校验通过后同步执行，
+      按单剂剂量 × 剂数扣减各味饮片库存并追加调剂出库流水（同一聚合、同一事务）
+    preconditions:
+      - "R-02 判定库存充足"
+      - "扣减后库存不为负（REF-08）"
+    postconditions:
+      - field: herb.stockQuantity
+        setValue: "stockQuantity - 单剂剂量 × 剂数"
+      - field: herb.HerbStockFlow
+        setValue: "逐味追加业务类型为「调剂出库」的流水（数量为负）"
+    appliedRules:
+      - RULE-HERB-STOCK-SUFFICIENT
+    requiredPermissions:
+      - PERM-AUTO-STOCK-DEDUCT
+    syncTriggers: []
+
+  - id: Herb_ReturnStock
+    name: 饮片库存回冲
+    ownerEntity: AGG-HERB-001
+    behaviorType: COMMAND
+    triggerType: SYSTEM
+    description: |-
+      对应 B-02；处方作废经 R-04 判定为「已调剂」分支时同步执行，
+      按原出库量回冲库存并追加作废回冲流水
+    preconditions:
+      - "R-04 判定结果为 VOID_WITH_ROLLBACK"
+      - "对应调剂出库流水存在"
+    postconditions:
+      - field: herb.stockQuantity
+        setValue: "stockQuantity + 原出库数量"
+      - field: herb.HerbStockFlow
+        setValue: "逐味追加业务类型为「作废回冲」的流水（数量为正）"
+    appliedRules:
+      - RULE-PRESCRIPTION-VOID-DISPATCH
+    requiredPermissions:
+      - PERM-AUTO-STOCK-RETURN
+    syncTriggers: []
+
+  - id: Dispense_CreatePending
+    name: 创建待调剂记录
+    ownerEntity: AGG-DISPENSE-001
+    behaviorType: COMMAND
+    triggerType: SYSTEM
+    description: |-
+      对应 B-05（建模补全）；处方审核通过后由审批流「通过」分支调用，
+      生成该处方的调剂发药记录（状态「待调剂」），成为药剂师调剂入口
+    preconditions:
+      - "prescription.prescriptionStatus == '审核通过'"
+      - "该处方不存在调剂发药记录（一对一约束）"
+    postconditions:
+      - field: dispenseRecord.dispenseNo
+        setValue: "系统生成"
+      - field: dispenseRecord.recordStatus
+        setValue: "待调剂"
+    appliedRules: []
+    requiredPermissions:
+      - PERM-AUTO-DISPENSE-CREATE
+    syncTriggers: []
+
+  - id: Dispense_CancelPending
+    name: 取消待调剂记录
+    ownerEntity: AGG-DISPENSE-001
+    behaviorType: COMMAND
+    triggerType: SYSTEM
+    description: |-
+      对应 B-06（建模补全）；处方作废经 R-04 判定为「无记录/待调剂」分支时同步执行，
+      取消该处方的待调剂记录（已发药记录不可取消）
+    preconditions:
+      - "R-04 判定结果为 VOID_ONLY"
+      - "dispenseRecord.recordStatus == '待调剂'"
+      - "处方状态已为「已作废」"
+    postconditions:
+      - field: dispenseRecord.recordStatus
+        setValue: "已取消"
+    appliedRules:
+      - RULE-PRESCRIPTION-VOID-DISPATCH
+    requiredPermissions:
+      - PERM-AUTO-DISPENSE-CANCEL
+    syncTriggers: []

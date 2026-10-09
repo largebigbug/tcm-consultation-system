@@ -1,0 +1,28 @@
+{
+  "model_type": "MANIFEST",
+  "version": "1.0",
+  "domain": "中医问诊",
+  "project": "tcm-consultation",
+  "source_requirements": "中医问诊系统-需求规格说明书-V9.md",
+  "framework": "ontology_modeling_framework_v9.md",
+  "model_files": [
+    "m1-object-model.yaml",
+    "m2-behavior-model.yaml",
+    "m3-rule-model.yaml",
+    "m5-actor-model.yaml",
+    "m6-flow-model.yaml",
+    "m7-report-model.yaml",
+    "mu-ui-model.yaml"
+  ],
+  "modeling_sequence": [
+    "m1-object-model.yaml",
+    "m5-actor-model.yaml",
+    "m3-rule-model.yaml",
+    "m2-behavior-model.yaml",
+    "m7-report-model.yaml",
+    "m6-flow-model.yaml",
+    "mu-ui-model.yaml"
+  ],
+  "model_scope": "业务应用层：覆盖 OBJ-01～OBJ-12、FUNC-01～FUNC-17（FUNC-08 编号保留不复用）、B-APP-01、B-01～B-06、Q-01～Q-07、R-01～R-06、REP-01～REP-07、ROLE-01～ROLE-07、PROC-01～PROC-03、PROC-APP-01、UI-01～UI-19",
+  "version_note": "阶段二本体建模产出；跨模型破坏性变更须记录在 CHANGELOG.md"
+}

@@ -1,0 +1,648 @@
+# M6 流程模型元文件 - m6-flow-model.yaml
+# 依据《中医问诊系统-需求规格说明书-V9.md》1.4 端到端业务流程全景、4.3 协同流、4.4 审批流 + 附录 C.5
+# 计数：3 条端到端协同流（COLLABORATION）+ 1 条人工审批流（APPROVAL）
+# 引用约束：roleRef 只引用 M5 角色；behaviorRef 只引用 M2 行为；ruleRef 只引用 M3 规则；subFlowRef 只引用本文件流程
+# 跨对象联动不在此重复定义：由 M2 行为的 syncTriggers 承载，本文件仅用 SYSTEM_TASK 标注联动结果活动
+#
+# 与需求文档的两处差异（均已同步回文档）：
+# 1. 4.4.1 的审批流图把「确认调剂/发药确认」画在同一张图内；本模型把 PROC-APP-01 的边界收敛为
+#    「提交 → 审批 → 通过/驳回 → 通过后创建待调剂记录」，调剂与发药归属 PROC-01/PROC-02（框架 §6.1：审批流围绕提交、审批、驳回、通过）；
+# 2. PROC-01/PROC-02 在审核通过分支新增 SYSTEM_TASK「创建待调剂记录（B-05）」，
+#    使调剂发药记录的「待调剂」初态可达，与 3.12 状态机及 R-04 三分派一致。
+model_type: FLOW
+version: "1.0"
+domain: "中医问诊"
+
+flows:
+  # ══════════════════════════════════════════════════════════
+  # PROC-01 门诊问诊开方主流程
+  # ══════════════════════════════════════════════════════════
+  - id: FLOW-VISIT-001
+    name: 门诊问诊开方主流程
+    flowType: COLLABORATION
+    description: 完成一名患者从建档挂号、四诊采集、辨证开方、处方审核到调剂发药的全过程
+    businessObjectRefs:
+      - AGG-PATIENT-001
+      - AGG-VISIT-001
+      - AGG-DIAGNOSIS-001
+      - AGG-FORMULA-001
+      - AGG-PRESCRIPTION-001
+      - AGG-HERB-001
+      - AGG-DISPENSE-001
+      - AGG-FOLLOWUP-001
+    roleRefs:
+      - ROLE-01
+      - ROLE-02
+      - ROLE-03
+      - ROLE-05
+    trigger:
+      triggerType: MANUAL
+    preconditions:
+      - "患者到达门诊（新患者需先建档，老患者直接挂号）"
+      - "导诊员具备挂号权限、中医师具备接诊与开方权限"
+    postconditions:
+      - "正常结束：处方已发药，就诊记录已完成，复诊随访记录已生成"
+      - "异常终止：处方作废（或作废被阻断）、调剂阻断、就诊撤销"
+    startActivity: A01
+    endActivities: [E01, E02, E03, E04]
+    activities:
+      - activityId: A01
+        name: 开始（患者到达门诊）
+        activityType: START
+        nextActivities: [A02]
+      - activityId: A02
+        name: 患者建档（老患者跳过）
+        activityType: USER_TASK
+        roleRef: ROLE-01
+        behaviorRef: Patient_Save
+        nextActivities: [A03]
+      - activityId: A03
+        name: 门诊挂号
+        activityType: USER_TASK
+        roleRef: ROLE-01
+        behaviorRef: Visit_Register
+        nextActivities: [A04, A17]
+      - activityId: A04
+        name: 接诊开单
+        activityType: USER_TASK
+        roleRef: ROLE-02
+        behaviorRef: Visit_Receive
+        nextActivities: [A05]
+      - activityId: A05
+        name: 录入四诊信息
+        activityType: USER_TASK
+        roleRef: ROLE-02
+        behaviorRef: Visit_SaveFourDiagnosis
+        nextActivities: [A06]
+      - activityId: A06
+        name: 辨证判定并确认结论
+        activityType: USER_TASK
+        roleRef: ROLE-02
+        behaviorRef: Diagnosis_Confirm
+        nextActivities: [A07]
+      - activityId: A07
+        name: 开具处方（可引用方剂模板）
+        activityType: USER_TASK
+        roleRef: ROLE-02
+        behaviorRef: Prescription_Save
+        nextActivities: [A08]
+      - activityId: A08
+        name: 提交处方送审
+        activityType: USER_TASK
+        roleRef: ROLE-02
+        behaviorRef: Prescription_Submit
+        nextActivities: [G01, A15]
+      - activityId: G01
+        name: 剂量超常用量上限判定
+        activityType: GATEWAY
+        ruleRef: RULE-PRESCRIPTION-DOSE-LIMIT-CHECK
+        branches:
+          - branchName: 超过常用上限 2 倍（阻断提交）
+            conditionExpression: "RULE-PRESCRIPTION-DOSE-LIMIT-CHECK.result == 'BLOCK'"
+            targetActivity: A07
+            isDefault: false
+          - branchName: 未超上限，或超 1~2 倍且已填写超量理由
+            conditionExpression: null
+            targetActivity: G02
+            isDefault: true
+      - activityId: G02
+        name: 毒性饮片单张处方总量判定
+        activityType: GATEWAY
+        ruleRef: RULE-HERB-TOXIC-TOTAL-LIMIT-CHECK
+        branches:
+          - branchName: 超过毒性饮片总量上限（阻断提交）
+            conditionExpression: "RULE-HERB-TOXIC-TOTAL-LIMIT-CHECK.result == false"
+            targetActivity: A07
+            isDefault: false
+          - branchName: 未超限
+            conditionExpression: null
+            targetActivity: A09
+            isDefault: true
+      - activityId: A09
+        name: 就诊状态收尾
+        activityType: SYSTEM_TASK
+        behaviorRef: Visit_Complete
+        description: B-04；由 A08 提交成功经 syncTriggers 同步执行，流程仅标注联动结果活动
+        nextActivities: [A10]
+      - activityId: A10
+        name: 生成复诊随访记录
+        activityType: SYSTEM_TASK
+        behaviorRef: FollowUp_CreatePlan
+        description: B-03；由 A09 经 syncTriggers 同步执行；计划随访日期 = 就诊日 + 剂数 × 1 天
+        nextActivities: [A11]
+      - activityId: A11
+        name: 中药处方审核
+        activityType: SUB_FLOW_CALL
+        subFlowRef: FLOW-PRESCRIPTION-APPROVAL-001
+        nextActivities: [G03]
+      - activityId: G03
+        name: 处方审核结果判定
+        activityType: GATEWAY
+        branches:
+          - branchName: 驳回（医师修改后重新提交）
+            approvalOutcome: REJECT
+            targetActivity: A07
+            isDefault: false
+          - branchName: 审核通过
+            approvalOutcome: APPROVE
+            targetActivity: A12
+            isDefault: true
+      - activityId: A12
+        name: 创建待调剂记录
+        activityType: SYSTEM_TASK
+        behaviorRef: Dispense_CreatePending
+        description: B-05；审核通过后生成待调剂记录（药剂师调剂入口）
+        nextActivities: [A13]
+      - activityId: A13
+        name: 确认调剂（按明细配齐饮片）
+        activityType: USER_TASK
+        roleRef: ROLE-03
+        behaviorRef: Dispense_Confirm
+        nextActivities: [G04, A15]
+      - activityId: G04
+        name: 饮片库存充足性判定
+        activityType: GATEWAY
+        ruleRef: RULE-HERB-STOCK-SUFFICIENT
+        branches:
+          - branchName: 库存不足（阻断调剂，补库后重新调剂）
+            conditionExpression: "RULE-HERB-STOCK-SUFFICIENT.result == false"
+            targetActivity: E01
+            isDefault: false
+          - branchName: 库存充足
+            conditionExpression: null
+            targetActivity: A14
+            isDefault: true
+      - activityId: A14
+        name: 发药确认（与患者核对交接）
+        activityType: USER_TASK
+        roleRef: ROLE-03
+        behaviorRef: Dispense_Issue
+        nextActivities: [E02]
+      - activityId: A15
+        name: 处方作废（未调剂前）
+        activityType: USER_TASK
+        roleRef: ROLE-02
+        behaviorRef: Prescription_Cancel
+        nextActivities: [G05]
+      - activityId: G05
+        name: 处方作废处理判定
+        activityType: GATEWAY
+        ruleRef: RULE-PRESCRIPTION-VOID-DISPATCH
+        branches:
+          - branchName: 已发药（阻断作废，退药走线下）
+            conditionExpression: "RULE-PRESCRIPTION-VOID-DISPATCH.result == 'BLOCK'"
+            targetActivity: E04
+            isDefault: false
+          - branchName: 已调剂未发药（作废并回冲库存）
+            conditionExpression: "RULE-PRESCRIPTION-VOID-DISPATCH.result == 'VOID_WITH_ROLLBACK'"
+            targetActivity: A16
+            isDefault: false
+          - branchName: 无调剂记录或待调剂（仅作废并取消待调剂记录）
+            conditionExpression: null
+            targetActivity: A18
+            isDefault: true
+      - activityId: A16
+        name: 饮片库存回冲
+        activityType: SYSTEM_TASK
+        behaviorRef: Herb_ReturnStock
+        description: B-02；由 A15 经 R-04 判定的 syncTriggers 同步执行，生成作废回冲流水
+        nextActivities: [E03]
+      - activityId: A17
+        name: 撤销就诊（患者未就诊或误挂号）
+        activityType: USER_TASK
+        roleRef: ROLE-01
+        behaviorRef: Visit_Cancel
+        nextActivities: [E05]
+      - activityId: A18
+        name: 取消待调剂记录
+        activityType: SYSTEM_TASK
+        behaviorRef: Dispense_CancelPending
+        description: B-06；由 A15 经 R-04 判定的 syncTriggers 同步执行
+        nextActivities: [E03]
+      - activityId: E01
+        name: 异常终止（调剂阻断：饮片库存不足）
+        activityType: END
+        nextActivities: []
+      - activityId: E02
+        name: 正常结束（处方已发药）
+        activityType: END
+        nextActivities: []
+      - activityId: E03
+        name: 异常终止（处方已作废）
+        activityType: END
+        nextActivities: []
+      - activityId: E04
+        name: 阻断（处方已发药，不可作废）
+        activityType: END
+        nextActivities: []
+      - activityId: E05
+        name: 异常终止（就诊已取消）
+        activityType: END
+        nextActivities: []
+
+  # ══════════════════════════════════════════════════════════
+  # PROC-02 复诊调方流程
+  # ══════════════════════════════════════════════════════════
+  - id: FLOW-FOLLOWUP-001
+    name: 复诊调方流程
+    flowType: COLLABORATION
+    description: 基于上次就诊的疗效评价完成调方，并闭合随访管理
+    businessObjectRefs:
+      - AGG-PATIENT-001
+      - AGG-VISIT-001
+      - AGG-DIAGNOSIS-001
+      - AGG-PRESCRIPTION-001
+      - AGG-HERB-001
+      - AGG-DISPENSE-001
+      - AGG-FOLLOWUP-001
+    roleRefs:
+      - ROLE-01
+      - ROLE-02
+      - ROLE-03
+      - ROLE-05
+    trigger:
+      triggerType: MANUAL
+    preconditions:
+      - "存在该患者的「待随访」记录，或患者以「复诊」类型挂号并关联上次就诊"
+    postconditions:
+      - "正常结束：新处方已发药，本次疗效评价已记录，并生成新的待随访记录"
+      - "异常终止：标记已失访、处方作废、调剂阻断"
+    startActivity: P01
+    endActivities: [E01, E02, E03, E04]
+    activities:
+      - activityId: P01
+        name: 开始（存在待随访记录或复诊挂号）
+        activityType: START
+        nextActivities: [P02, P10]
+      - activityId: P02
+        name: 复诊挂号并关联上次就诊
+        activityType: USER_TASK
+        roleRef: ROLE-01
+        behaviorRef: Visit_Register
+        nextActivities: [P03]
+      - activityId: P03
+        name: 选择待随访记录并回填本次就诊
+        activityType: USER_TASK
+        roleRef: ROLE-01
+        behaviorRef: FollowUp_Complete
+        description: |-
+          挂号环节将随访记录的「本次就诊」回填为本次就诊（ActualVisitId）；
+          疗效评价与记录置「已完成」在 P06 由同一行为第二次执行时收口
+        nextActivities: [G01]
+      - activityId: G01
+        name: 随访日期顺序判定
+        activityType: GATEWAY
+        ruleRef: RULE-FOLLOWUP-DATE-ORDER
+        branches:
+          - branchName: 实际随访日期早于上次就诊（需修正）
+            conditionExpression: "RULE-FOLLOWUP-DATE-ORDER.result == false"
+            targetActivity: P03
+            isDefault: false
+          - branchName: 日期合法
+            conditionExpression: null
+            targetActivity: P04
+            isDefault: true
+      - activityId: P04
+        name: 接诊开单（调阅上次四诊与处方）
+        activityType: USER_TASK
+        roleRef: ROLE-02
+        behaviorRef: Visit_Receive
+        nextActivities: [P05]
+      - activityId: P05
+        name: 重新录入四诊信息
+        activityType: USER_TASK
+        roleRef: ROLE-02
+        behaviorRef: Visit_SaveFourDiagnosis
+        nextActivities: [P06]
+      - activityId: P06
+        name: 录入疗效评价、症状变化与是否继续用药
+        activityType: USER_TASK
+        roleRef: ROLE-02
+        behaviorRef: FollowUp_Complete
+        nextActivities: [P07]
+      - activityId: P07
+        name: 辨证复判
+        activityType: USER_TASK
+        roleRef: ROLE-02
+        behaviorRef: Diagnosis_Confirm
+        nextActivities: [P08]
+      - activityId: P08
+        name: 调方（加减药味与剂量）
+        activityType: USER_TASK
+        roleRef: ROLE-02
+        behaviorRef: Prescription_Save
+        nextActivities: [P09]
+      - activityId: P09
+        name: 提交处方送审
+        activityType: USER_TASK
+        roleRef: ROLE-02
+        behaviorRef: Prescription_Submit
+        nextActivities: [P11, P13]
+      - activityId: P10
+        name: 标记已失访（超期未复诊）
+        activityType: USER_TASK
+        roleRef: ROLE-01
+        behaviorRef: FollowUp_MarkLost
+        nextActivities: [E03]
+      - activityId: P11
+        name: 就诊状态收尾
+        activityType: SYSTEM_TASK
+        behaviorRef: Visit_Complete
+        description: B-04；由 P09 提交成功经 syncTriggers 同步执行
+        nextActivities: [P12]
+      - activityId: P12
+        name: 生成新的待随访记录
+        activityType: SYSTEM_TASK
+        behaviorRef: FollowUp_CreatePlan
+        description: B-03；由 P11 经 syncTriggers 同步执行
+        nextActivities: [P14]
+      - activityId: P13
+        name: 处方作废（未调剂前）
+        activityType: USER_TASK
+        roleRef: ROLE-05
+        behaviorRef: Prescription_Cancel
+        nextActivities: [G03]
+      - activityId: P14
+        name: 中药处方审核
+        activityType: SUB_FLOW_CALL
+        subFlowRef: FLOW-PRESCRIPTION-APPROVAL-001
+        nextActivities: [G02]
+      - activityId: G02
+        name: 处方审核结果判定
+        activityType: GATEWAY
+        branches:
+          - branchName: 驳回（医师修改后重新提交）
+            approvalOutcome: REJECT
+            targetActivity: P08
+            isDefault: false
+          - branchName: 审核通过
+            approvalOutcome: APPROVE
+            targetActivity: P15
+            isDefault: true
+      - activityId: P15
+        name: 创建待调剂记录
+        activityType: SYSTEM_TASK
+        behaviorRef: Dispense_CreatePending
+        description: B-05；审核通过后生成待调剂记录
+        nextActivities: [P16]
+      - activityId: P16
+        name: 确认调剂
+        activityType: USER_TASK
+        roleRef: ROLE-03
+        behaviorRef: Dispense_Confirm
+        nextActivities: [G04]
+      - activityId: G04
+        name: 饮片库存充足性判定
+        activityType: GATEWAY
+        ruleRef: RULE-HERB-STOCK-SUFFICIENT
+        branches:
+          - branchName: 库存不足（阻断调剂）
+            conditionExpression: "RULE-HERB-STOCK-SUFFICIENT.result == false"
+            targetActivity: E01
+            isDefault: false
+          - branchName: 库存充足
+            conditionExpression: null
+            targetActivity: P17
+            isDefault: true
+      - activityId: P17
+        name: 发药确认
+        activityType: USER_TASK
+        roleRef: ROLE-03
+        behaviorRef: Dispense_Issue
+        nextActivities: [P18]
+      - activityId: P18
+        name: 本次随访记录置已完成
+        activityType: USER_TASK
+        roleRef: ROLE-02
+        behaviorRef: FollowUp_Complete
+        nextActivities: [E02]
+      - activityId: G03
+        name: 处方作废处理判定
+        activityType: GATEWAY
+        ruleRef: RULE-PRESCRIPTION-VOID-DISPATCH
+        branches:
+          - branchName: 已发药（阻断作废）
+            conditionExpression: "RULE-PRESCRIPTION-VOID-DISPATCH.result == 'BLOCK'"
+            targetActivity: E04
+            isDefault: false
+          - branchName: 已调剂未发药（作废并回冲库存）
+            conditionExpression: "RULE-PRESCRIPTION-VOID-DISPATCH.result == 'VOID_WITH_ROLLBACK'"
+            targetActivity: P19
+            isDefault: false
+          - branchName: 无调剂记录或待调剂（仅作废并取消待调剂记录）
+            conditionExpression: null
+            targetActivity: P20
+            isDefault: true
+      - activityId: P19
+        name: 饮片库存回冲
+        activityType: SYSTEM_TASK
+        behaviorRef: Herb_ReturnStock
+        description: B-02；由 P13 经 R-04 判定的 syncTriggers 同步执行
+        nextActivities: [E05]
+      - activityId: P20
+        name: 取消待调剂记录
+        activityType: SYSTEM_TASK
+        behaviorRef: Dispense_CancelPending
+        description: B-06；由 P13 经 R-04 判定的 syncTriggers 同步执行
+        nextActivities: [E05]
+      - activityId: E01
+        name: 异常终止（调剂阻断：饮片库存不足）
+        activityType: END
+        nextActivities: []
+      - activityId: E02
+        name: 正常结束（调方发药且随访闭环）
+        activityType: END
+        nextActivities: []
+      - activityId: E03
+        name: 异常终止（随访终止：已失访）
+        activityType: END
+        nextActivities: []
+      - activityId: E04
+        name: 阻断（处方已发药，不可作废）
+        activityType: END
+        nextActivities: []
+      - activityId: E05
+        name: 异常终止（处方已作废）
+        activityType: END
+        nextActivities: []
+
+  # ══════════════════════════════════════════════════════════
+  # PROC-03 饮片入库流程
+  # ══════════════════════════════════════════════════════════
+  - id: FLOW-HERB-INBOUND-001
+    name: 饮片入库流程
+    flowType: COLLABORATION
+    description: 完成饮片到货验收、品目建档、入库登记与库存更新；本流程对象同属中药饮片聚合，不涉及跨对象联动
+    businessObjectRefs:
+      - AGG-HERB-001
+    roleRefs:
+      - ROLE-04
+      - ROLE-03
+    trigger:
+      triggerType: MANUAL
+    preconditions:
+      - "饮片实物到场并由库房管理员验收"
+    postconditions:
+      - "正常结束：入库记录已登记且库存数量已更新，库存可查"
+      - "异常终止：验收不合格不入库，线下退货"
+    startActivity: H01
+    endActivities: [E01, E02]
+    activities:
+      - activityId: H01
+        name: 开始（饮片到货）
+        activityType: START
+        nextActivities: [H02]
+      - activityId: H02
+        name: 线下验收（核对随货清单、数量与质量）
+        activityType: USER_TASK
+        roleRef: ROLE-04
+        description: 线下活动，无系统功能点（D-27：饮片验收留线下，系统只登记合格入库数量与单号）
+        nextActivities: [G01]
+      - activityId: G01
+        name: 验收是否合格
+        activityType: GATEWAY
+        branches:
+          - branchName: 不合格（不入库，线下退货）
+            conditionExpression: "验收结论 == '不合格'"
+            targetActivity: H03
+            isDefault: false
+          - branchName: 合格
+            conditionExpression: null
+            targetActivity: G02
+            isDefault: true
+      - activityId: H03
+        name: 线下退货
+        activityType: USER_TASK
+        roleRef: ROLE-04
+        description: 线下活动，无系统功能点
+        nextActivities: [E01]
+      - activityId: G02
+        name: 品目是否已建档
+        activityType: GATEWAY
+        branches:
+          - branchName: 未建档（先行建档）
+            conditionExpression: "herb IS NULL"
+            targetActivity: H04
+            isDefault: false
+          - branchName: 已建档
+            conditionExpression: null
+            targetActivity: H05
+            isDefault: true
+      - activityId: H04
+        name: 饮片建档
+        activityType: USER_TASK
+        roleRef: ROLE-04
+        behaviorRef: Herb_Save
+        nextActivities: [H05]
+      - activityId: H05
+        name: 入库登记（录入数量、入库单号）
+        activityType: USER_TASK
+        roleRef: ROLE-04
+        behaviorRef: Herb_Inbound
+        description: |-
+          同一聚合同事务完成「追加入库流水 + 增加库存数量」，
+          对应需求文档 1.4.3 步骤 3 与步骤 4，不拆分为两个活动
+        nextActivities: [H06]
+      - activityId: H06
+        name: 库存盘点与差异调整
+        activityType: USER_TASK
+        roleRef: ROLE-04
+        behaviorRef: Herb_Stocktake
+        ruleRef: RULE-HERB-STOCK-RECONCILE
+        nextActivities: [H07]
+      - activityId: H07
+        name: 查看库存与低库存预警清单
+        activityType: USER_TASK
+        roleRef: ROLE-04
+        behaviorRef: Herb_QueryStockAndAlert
+        nextActivities: [E02]
+      - activityId: E01
+        name: 异常终止（验收不合格，不入库）
+        activityType: END
+        nextActivities: []
+      - activityId: E02
+        name: 正常结束（入库完成，库存已更新）
+        activityType: END
+        nextActivities: []
+
+  # ══════════════════════════════════════════════════════════
+  # PROC-APP-01 中药处方审核流（唯一人工审批流）
+  # ══════════════════════════════════════════════════════════
+  - id: FLOW-PRESCRIPTION-APPROVAL-001
+    name: 中药处方审核流
+    flowType: APPROVAL
+    description: |-
+      中药师对中医师提交的处方做单节点审核（D-24：不做会签、或签与条件加签，复核人选填）；
+      通过后生成待调剂记录进入调剂环节，驳回后由中医师修改并重新提交（可多次循环）。
+      按 D-25 不支持撤回，改方走作废后重开。
+    businessObjectRefs:
+      - AGG-PRESCRIPTION-001
+      - AGG-DISPENSE-001
+    roleRefs:
+      - ROLE-02
+      - ROLE-03
+    trigger:
+      triggerType: BEHAVIOR
+      behaviorRef: Prescription_Submit
+    preconditions:
+      - "prescription.prescriptionStatus == '待审核'"
+      - "处方明细非空（INV-04）"
+      - "R-01 剂量与 R-03 毒性上限校验通过"
+    postconditions:
+      - "审批通过：处方置「审核通过」并生成待调剂记录"
+      - "驳回：处方置「已驳回」并记录驳回原因，可修改后重新提交"
+      - "终止：处方被作废（作废入口在协同流 PROC-01/PROC-02）"
+    startActivity: Q01
+    endActivities: [QE01, QE02]
+    activities:
+      - activityId: Q01
+        name: 开始（中医师提交处方送审）
+        activityType: START
+        nextActivities: [Q02]
+      - activityId: Q02
+        name: 中药师审核处方
+        activityType: APPROVAL_TASK
+        roleRef: ROLE-03
+        behaviorRef: Prescription_Review
+        approvalOutcomes: [APPROVE, REJECT]
+        description: |-
+          单节点审批；超量与毒性提示、超量理由在本节点展示给审批人，不增加审批节点。
+          本系统不单设「退回修改」结论：退回等同于驳回（D-25），故 approvalOutcomes 只有 APPROVE 与 REJECT
+        nextActivities: [Q03]
+      - activityId: Q03
+        name: 审核结果判定
+        activityType: GATEWAY
+        branches:
+          - branchName: 处方已被作废（协同流发起作废）
+            conditionExpression: "prescription.prescriptionStatus == '已作废'"
+            targetActivity: QE02
+            isDefault: false
+          - branchName: 驳回（状态置已驳回并填写驳回原因）
+            approvalOutcome: REJECT
+            targetActivity: Q04
+            isDefault: false
+          - branchName: 审核通过
+            approvalOutcome: APPROVE
+            targetActivity: Q05
+            isDefault: true
+      - activityId: Q04
+        name: 中医师修改处方并重新提交
+        activityType: USER_TASK
+        roleRef: ROLE-02
+        behaviorRef: Prescription_Submit
+        description: 已驳回处方可多次修改重提（FUNC-06 修改 → FUNC-07 重新提交）
+        nextActivities: [Q02]
+      - activityId: Q05
+        name: 创建待调剂记录
+        activityType: SYSTEM_TASK
+        behaviorRef: Dispense_CreatePending
+        description: B-05；审核通过后生成状态为「待调剂」的调剂发药记录（药剂师调剂入口）
+        nextActivities: [QE01]
+      - activityId: QE01
+        name: 审批通过结束
+        activityType: END
+        nextActivities: []
+      - activityId: QE02
+        name: 终止（处方已作废，审批实例结束）
+        activityType: END
+        nextActivities: []

@@ -1,0 +1,2411 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# MU UI 模型元文件 - mu-ui-model.yaml
+# 依据：《中医问诊系统-需求规格说明书-V9.md》附录 D
+#       （D.1 布局基础要求、D.2 控件类型映射、D.3 菜单树、D.4 界面清单、
+#         D.5 逐屏 ASCII 布局、D.6 界面与操作功能点映射总表）
+#       与《ontology_modeling_framework_v9.md》第八章 MU UI 模型规范（§8.1～§8.7）
+# 引用：M1 对象模型（m1-object-model.yaml）、M2 行为模型（m2-behavior-model.yaml）、
+#       M5 主体模型（m5-actor-model.yaml）、M7 查询统计与报表模型（m7-report-model.yaml）
+#
+# ── 建模范围 ────────────────────────────────────────────────────────────────
+# 本文件只建 19 个业务屏幕：UI-01 患者建档 … UI-19 随访完成与失访分析。
+# 需求文档 D.3 菜单树中的「系统管理」一级菜单及其 UI-20 用户管理 /
+# UI-21 角色与权限配置 / UI-22 菜单管理三屏，属技术底座内置的系统管理模块
+# （FUNC-17，平台功能不进 M1/M2 本体模型），不写入本文件；详见文件末尾「建模边界说明」。
+# 因此菜单树一级菜单为 6 个（无「系统管理」），二级菜单 19 个。
+#
+# ── 书写约定 ────────────────────────────────────────────────────────────────
+# 1. 控件类型严格遵循 §8.3 强制映射：Date/DateTime→DATEPICKER；Enum/DictionaryRef→COMBO；
+#    AggregateRootRef→POPUP_SELECT；Boolean→CHECKBOX；String 长文本/备注→TEXTAREA；
+#    其他标量（String/Integer/Decimal/Money）→TEXTBOX / NUMBER；表格→GRID；按钮→BUTTON。
+# 2. dataBinding 取值为「M1 聚合别名.属性名」；从表（子实体）取「M1 聚合别名.子实体别名」。
+#    两种取值均可在 m1-object-model.yaml 中逐字解析。GRID 的 dataSource 指向 M7 对象 id。
+# 3. layout 中每个控件均标注为 elementId（文本框/按钮 [id]、下拉 (id)、日期 {id}、
+#    跳选框 [id…]、表格 @id）；布局中出现的每个 elementId 必须在本屏 elements 中存在。
+# 4. 无审批流的屏幕只提供「保存」；UI-06 开具处方带审批流，提供「保存草稿」(DRAFT) 与
+#    「提交」(SUBMIT) 两个独立功能点（§8.5）；UI-07 审批评审提供「通过」(APPROVE) 与
+#    「驳回」(REJECT)。
+# 5. 「导出」无独立 M2 行为：按需求文档第六部分 6.4「查询报表访问权限绑定唯一 Q 行为，
+#    导出权限随对应 Q 行为一并授予」，导出功能点复用该屏查询行为（与 D.6 的映射一致）。
+# 6. 「检查剂量」（R-01）与「对账检查」（R-06）为规则调用，无 M2 行为入口，仅作界面元素，
+#    不设操作功能点。
+# 7. M1 将接诊医师 doctorId / 调剂人 dispenserId / 复核人 checkerId / 审核人 reviewerId 定义为
+#    String 标量，按 §8.3 使用文本框（原型中的跳选框为视觉表达，模型以 §8.3 强制映射为准）。
+model_type: UI
+version: "1.0"
+domain: "中医问诊"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 总体界面：一级菜单 6 个 + 二级菜单 19 个（严格两级，仅二级菜单关联屏幕）
+# ══════════════════════════════════════════════════════════════════════════════
+application:
+  name: 中医问诊系统
+  menus:
+    - menuId: menu-outpatient
+      name: 门诊管理
+      children:
+        - menuId: menu-outpatient-patient
+          name: 患者建档
+          screenRef: frmPatientCreate
+        - menuId: menu-outpatient-register
+          name: 门诊挂号
+          screenRef: frmVisitRegister
+        - menuId: menu-outpatient-receive
+          name: 接诊开单
+          screenRef: frmVisitReceive
+        - menuId: menu-outpatient-fourdiagnosis
+          name: 四诊录入
+          screenRef: frmFourDiagnosis
+        - menuId: menu-outpatient-diagnosis
+          name: 辨证判定
+          screenRef: frmDiagnosisJudge
+        - menuId: menu-outpatient-prescription
+          name: 开具处方
+          screenRef: frmPrescription
+    - menuId: menu-pharmacy
+      name: 药房管理
+      children:
+        - menuId: menu-pharmacy-review
+          name: 处方审核
+          screenRef: frmPrescriptionReview
+        - menuId: menu-pharmacy-dispense
+          name: 调剂发药
+          screenRef: frmDispense
+    - menuId: menu-stock
+      name: 库存管理
+      children:
+        - menuId: menu-stock-herb
+          name: 饮片建档与入库
+          screenRef: frmHerbMaintain
+        - menuId: menu-stock-alert
+          name: 饮片库存与预警
+          screenRef: frmHerbStock
+    - menuId: menu-followup
+      name: 随访管理
+      children:
+        - menuId: menu-followup-register
+          name: 复诊随访登记
+          screenRef: frmFollowUp
+    - menuId: menu-report
+      name: 统计报表
+      children:
+        - menuId: menu-report-visit-stats
+          name: 门诊量统计
+          screenRef: frmVisitStats
+        - menuId: menu-report-syndrome-dist
+          name: 证型分布统计
+          screenRef: frmSyndromeDist
+        - menuId: menu-report-herb-usage
+          name: 方剂与饮片使用统计
+          screenRef: frmHerbUsageStats
+        - menuId: menu-report-visit-prescription
+          name: 就诊与处方记录查询
+          screenRef: frmVisitPrescriptionQuery
+        - menuId: menu-report-overdose-ledger
+          name: 超量·毒性处方审核台账
+          screenRef: frmOverdoseLedger
+        - menuId: menu-report-followup-analysis
+          name: 随访完成与失访分析
+          screenRef: frmFollowUpAnalysis
+    - menuId: menu-masterdata
+      name: 基础数据
+      children:
+        - menuId: menu-masterdata-syndrome
+          name: 证型字典维护
+          screenRef: frmSyndromeMaintain
+        - menuId: menu-masterdata-formula
+          name: 方剂模板维护
+          screenRef: frmFormulaMaintain
+
+screens:
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-01 患者建档（SINGLE_FORM，一行 2 个控件，长文本一行 1 个）
+  # 行为：FUNC-01 → Patient_Save / Patient_ChangeStatus（D-23：停用并入建档功能）
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmPatientCreate
+    name: 患者建档
+    screenType: SINGLE_FORM
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 门诊管理 / 患者建档                                        │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │          患者编号: [txtPatientNo 只读]         患者状态: (cboPatientStatus 只读) │
+      │          患者姓名: [txtPatientName]            性别    : (cboGender)        │
+      │          出生日期: {dtpBirthDate}              年龄    : [numAge]           │
+      │          证件类型: (cboIdType)                 证件号码: [txtIdNo]          │
+      │          联系电话: [txtPhone]                  职业    : [txtOccupation]    │
+      │          联系地址: [txaAddress]                                            │
+      │          过敏史  : [txaAllergyHistory]                                     │
+      │          备注    : [txaRemark]                                             │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ [btnSave 保存] [btnChangeStatus 停用患者]                                  │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: txtPatientNo
+        type: TEXTBOX
+        label: 患者编号
+        io: O
+        required: true
+        dataBinding: Patient.patientNo
+        # 系统生成、只读展示
+      - id: cboPatientStatus
+        type: COMBO
+        label: 患者状态
+        io: O
+        required: true
+        dataBinding: Patient.patientStatus
+        # 由 Patient_Save / Patient_ChangeStatus 写入，界面只读回显
+      - id: txtPatientName
+        type: TEXTBOX
+        label: 患者姓名
+        io: I
+        required: true
+        dataBinding: Patient.patientName
+      - id: cboGender
+        type: COMBO
+        label: 性别
+        io: I
+        required: true
+        dataBinding: Patient.gender
+      - id: dtpBirthDate
+        type: DATEPICKER
+        label: 出生日期
+        io: I
+        dataBinding: Patient.birthDate
+      - id: numAge
+        type: NUMBER
+        label: 年龄
+        io: I
+        dataBinding: Patient.age
+        # 出生日期与年龄至少填写一项；有出生日期时由行为自动计算
+      - id: cboIdType
+        type: COMBO
+        label: 证件类型
+        io: I
+        dataBinding: Patient.idType
+      - id: txtIdNo
+        type: TEXTBOX
+        label: 证件号码
+        io: I
+        dataBinding: Patient.idNo
+        # 「证件类型 + 证件号码」不得重复建档（INV-01）
+      - id: txtPhone
+        type: TEXTBOX
+        label: 联系电话
+        io: I
+        required: true
+        dataBinding: Patient.phone
+      - id: txtOccupation
+        type: TEXTBOX
+        label: 职业
+        io: I
+        dataBinding: Patient.occupation
+      - id: txaAddress
+        type: TEXTAREA
+        label: 联系地址
+        io: I
+        dataBinding: Patient.address
+      - id: txaAllergyHistory
+        type: TEXTAREA
+        label: 过敏史
+        io: I
+        dataBinding: Patient.allergyHistory
+      - id: txaRemark
+        type: TEXTAREA
+        label: 备注
+        io: I
+        dataBinding: Patient.remark
+      - id: btnSave
+        type: BUTTON
+        label: 保存
+      - id: btnChangeStatus
+        type: BUTTON
+        label: 停用患者
+        # 同一功能点承载「停用 / 启用」双向迁移；停用时若存在「已挂号 / 接诊中」就诊将被阻断（D-23）
+    actions:
+      - actionId: actSave
+        name: 保存
+        actionType: BUTTON
+        behaviorRef: Patient_Save
+        permissionRef: [PERM-PATIENT-SAVE]
+      - actionId: actChangeStatus
+        name: 停用患者
+        actionType: BUTTON
+        behaviorRef: Patient_ChangeStatus
+        permissionRef: [PERM-PATIENT-STATUS]
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-02 门诊挂号（含撤销就诊）（SINGLE_FORM）
+  # 行为：FUNC-02 → Visit_Register；FUNC-16 → Visit_Cancel
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmVisitRegister
+    name: 门诊挂号（含撤销就诊）
+    screenType: SINGLE_FORM
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 门诊管理 / 门诊挂号                                        │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │          就诊号  : [txtVisitNo 只读]          患者    : [pslPatient…]      │
+      │          就诊类型: (cboVisitType)             上次就诊: [pslPreviousVisit…] │
+      │          挂号时间: {dtpRegisterTime}          科室    : (cboDeptCode)      │
+      │          接诊医师: [txtDoctorId]              就诊状态: (cboVisitStatus 只读) │
+      │          备注    : [txaRemark]                                            │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ [btnSave 保存] [btnCancelVisit 撤销就诊] [btnClear 清空]                    │
+      │ 撤销就诊：仅就诊状态=已挂号/接诊中且该就诊无处方时可用，需填写作废原因        │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: txtVisitNo
+        type: TEXTBOX
+        label: 就诊号
+        io: O
+        required: true
+        dataBinding: Visit.visitNo
+        # 系统生成、只读展示
+      - id: pslPatient
+        type: POPUP_SELECT
+        label: 患者
+        io: I
+        required: true
+        dataBinding: Visit.patientId
+        # 跳选框：仅可选择「患者状态=在用」的患者档案
+      - id: cboVisitType
+        type: COMBO
+        label: 就诊类型
+        io: I
+        required: true
+        dataBinding: Visit.visitType
+      - id: pslPreviousVisit
+        type: POPUP_SELECT
+        label: 上次就诊
+        io: I
+        dataBinding: Visit.previousVisitId
+        # 就诊类型为复诊时必填
+      - id: dtpRegisterTime
+        type: DATEPICKER
+        label: 挂号时间
+        io: I
+        required: true
+        dataBinding: Visit.registerTime
+      - id: cboDeptCode
+        type: COMBO
+        label: 科室
+        io: I
+        required: true
+        dataBinding: Visit.deptCode
+      - id: txtDoctorId
+        type: TEXTBOX
+        label: 接诊医师
+        io: I
+        required: true
+        dataBinding: Visit.doctorId
+        # M1 将 doctorId 定义为 String（医师工号），按 §8.3 使用文本框
+      - id: cboVisitStatus
+        type: COMBO
+        label: 就诊状态
+        io: O
+        required: true
+        dataBinding: Visit.visitStatus
+        # 挂号成功后由 Visit_Register 置「已挂号」，界面只读回显
+      - id: txaRemark
+        type: TEXTAREA
+        label: 备注
+        io: I
+        dataBinding: Visit.remark
+        # 撤销就诊时由 Visit_Cancel 追加撤销原因
+      - id: btnSave
+        type: BUTTON
+        label: 保存
+      - id: btnCancelVisit
+        type: BUTTON
+        label: 撤销就诊
+      - id: btnClear
+        type: BUTTON
+        label: 清空
+        # 纯界面清空动作，不调用 M2 行为，故不设操作功能点
+    actions:
+      - actionId: actSave
+        name: 保存
+        actionType: BUTTON
+        behaviorRef: Visit_Register
+        permissionRef: [PERM-VISIT-REGISTER]
+      - actionId: actCancelVisit
+        name: 撤销就诊
+        actionType: BUTTON
+        behaviorRef: Visit_Cancel
+        permissionRef: [PERM-VISIT-CANCEL]
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-03 接诊开单（SINGLE_FORM）
+  # 行为：FUNC-03 → Visit_Receive（已挂号 → 接诊中，写入接诊时间与接诊医师）
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmVisitReceive
+    name: 接诊开单
+    screenType: SINGLE_FORM
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 门诊管理 / 接诊开单                                        │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │          就诊号  : [txtVisitNo 只读]          患者    : [lblPatientInfo 只读] │
+      │          挂号时间: {dtpRegisterTime 只读}     接诊时间: {dtpReceiveTime}    │
+      │          接诊医师: [txtDoctorId]              科室    : (cboDeptCode)      │
+      │          生命体征: [txtVitalSigns]                                        │
+      │          主诉    : [txaChiefComplaint]                                    │
+      │          现病史  : [txaPresentIllness]                                    │
+      │          既往史  : [txaPastHistory]                                       │
+      │          备注    : [txaRemark]                                            │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ [btnSave 保存] [btnBack 返回待诊列表]                                      │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: txtVisitNo
+        type: TEXTBOX
+        label: 就诊号
+        io: O
+        required: true
+        dataBinding: Visit.visitNo
+      - id: lblPatientInfo
+        type: TEXTBOX
+        label: 患者
+        io: O
+        dataBinding: Patient.patientName
+        # 只读展示（String 标量 → 文本框）
+      - id: dtpRegisterTime
+        type: DATEPICKER
+        label: 挂号时间
+        io: O
+        required: true
+        dataBinding: Visit.registerTime
+      - id: dtpReceiveTime
+        type: DATEPICKER
+        label: 接诊时间
+        io: I
+        dataBinding: Visit.receiveTime
+        # 接诊开单成功时由 Visit_Receive 写入 NOW()
+      - id: txtDoctorId
+        type: TEXTBOX
+        label: 接诊医师
+        io: I
+        required: true
+        dataBinding: Visit.doctorId
+        # M1 定义为 String（医师工号），按 §8.3 使用文本框
+      - id: cboDeptCode
+        type: COMBO
+        label: 科室
+        io: I
+        required: true
+        dataBinding: Visit.deptCode
+      - id: txtVitalSigns
+        type: TEXTBOX
+        label: 生命体征
+        io: I
+        dataBinding: Visit.vitalSigns
+      - id: txaChiefComplaint
+        type: TEXTAREA
+        label: 主诉
+        io: I
+        required: true
+        dataBinding: Visit.chiefComplaint
+      - id: txaPresentIllness
+        type: TEXTAREA
+        label: 现病史
+        io: I
+        dataBinding: Visit.presentIllness
+      - id: txaPastHistory
+        type: TEXTAREA
+        label: 既往史
+        io: I
+        dataBinding: Visit.pastHistory
+      - id: txaRemark
+        type: TEXTAREA
+        label: 备注
+        io: I
+        dataBinding: Visit.remark
+      - id: btnSave
+        type: BUTTON
+        label: 保存
+      - id: btnBack
+        type: BUTTON
+        label: 返回待诊列表
+        # 导航动作，不调用 M2 行为
+    actions:
+      - actionId: actSave
+        name: 保存
+        actionType: BUTTON
+        behaviorRef: Visit_Receive
+        permissionRef: [PERM-VISIT-RECEIVE]
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-04 四诊录入（SINGLE_FORM）
+  # 行为：FUNC-04 → Visit_SaveFourDiagnosis（就诊聚合内子实体「四诊信息」，同事务）
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmFourDiagnosis
+    name: 四诊录入
+    screenType: SINGLE_FORM
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 门诊管理 / 四诊录入                                        │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │          就诊号  : [txtVisitNo 只读]          患者    : [lblPatientName 只读] │
+      │          问诊-寒热: [txtInquiryColdHeat]      问诊-汗出: [txtInquirySweat]   │
+      │          问诊-头身: [txtInquiryHeadBody]      问诊-饮食: [txtInquiryDiet]    │
+      │          问诊-睡眠: [txtInquirySleep]         问诊-二便: [txtInquiryExcretion]│
+      │          问诊-情志与妇科: [txaInquiryEmotion]                              │
+      │          望诊-面色: [txtInspectionFace]       望诊-形态: [txtInspectionShape]│
+      │          舌质    : (cboTongueBody)            舌苔    : (cboTongueCoating)  │
+      │          闻诊-声音气息: [txtAuscultationVoice] 闻诊-气味: [txtAuscultationSmell]│
+      │          脉象    : (cboPulseCode)             脉象文本补充: [txtPulseDetail] │
+      │          四诊摘要: [txaFourDiagnosisSummary]                              │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ [btnSave 保存] [btnSummary 四诊摘要]                                       │
+      │ 脉象为必填项；舌质/舌苔/脉象为数据字典下拉（DICT-TCM-SIGN）                  │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: txtVisitNo
+        type: TEXTBOX
+        label: 就诊号
+        io: O
+        required: true
+        dataBinding: Visit.visitNo
+      - id: lblPatientName
+        type: TEXTBOX
+        label: 患者
+        io: O
+        dataBinding: Patient.patientName
+        # 只读展示（String 标量 → 文本框）
+      - id: txtInquiryColdHeat
+        type: TEXTBOX
+        label: 问诊-寒热
+        io: I
+        dataBinding: Visit.FourDiagnosis.inquiryColdHeat
+      - id: txtInquirySweat
+        type: TEXTBOX
+        label: 问诊-汗出
+        io: I
+        dataBinding: Visit.FourDiagnosis.inquirySweat
+      - id: txtInquiryHeadBody
+        type: TEXTBOX
+        label: 问诊-头身
+        io: I
+        dataBinding: Visit.FourDiagnosis.inquiryHeadBody
+      - id: txtInquiryDiet
+        type: TEXTBOX
+        label: 问诊-饮食口味
+        io: I
+        dataBinding: Visit.FourDiagnosis.inquiryDiet
+      - id: txtInquirySleep
+        type: TEXTBOX
+        label: 问诊-睡眠
+        io: I
+        dataBinding: Visit.FourDiagnosis.inquirySleep
+      - id: txtInquiryExcretion
+        type: TEXTBOX
+        label: 问诊-二便
+        io: I
+        dataBinding: Visit.FourDiagnosis.inquiryExcretion
+      - id: txaInquiryEmotion
+        type: TEXTAREA
+        label: 问诊-情志与妇科
+        io: I
+        dataBinding: Visit.FourDiagnosis.inquiryEmotion
+      - id: txtInspectionFace
+        type: TEXTBOX
+        label: 望诊-面色
+        io: I
+        dataBinding: Visit.FourDiagnosis.inspectionFace
+      - id: txtInspectionShape
+        type: TEXTBOX
+        label: 望诊-形态
+        io: I
+        dataBinding: Visit.FourDiagnosis.inspectionShape
+      - id: cboTongueBody
+        type: COMBO
+        label: 舌质
+        io: I
+        dataBinding: Visit.FourDiagnosis.tongueBody
+      - id: cboTongueCoating
+        type: COMBO
+        label: 舌苔
+        io: I
+        dataBinding: Visit.FourDiagnosis.tongueCoating
+      - id: txtAuscultationVoice
+        type: TEXTBOX
+        label: 闻诊-声音气息
+        io: I
+        dataBinding: Visit.FourDiagnosis.auscultationVoice
+      - id: txtAuscultationSmell
+        type: TEXTBOX
+        label: 闻诊-气味
+        io: I
+        dataBinding: Visit.FourDiagnosis.auscultationSmell
+      - id: cboPulseCode
+        type: COMBO
+        label: 脉象
+        io: I
+        required: true
+        dataBinding: Visit.FourDiagnosis.pulseCode
+      - id: txtPulseDetail
+        type: TEXTBOX
+        label: 脉象文本补充
+        io: I
+        dataBinding: Visit.FourDiagnosis.pulseDetail
+        # 原型「脉象-六部脉」在 M1 四诊信息中无独立属性，并入 pulseDetail（脉象补充说明），见建模边界说明
+      - id: txaFourDiagnosisSummary
+        type: TEXTAREA
+        label: 四诊摘要
+        io: I
+        dataBinding: Visit.FourDiagnosis.fourDiagnosisSummary
+      - id: btnSave
+        type: BUTTON
+        label: 保存
+      - id: btnSummary
+        type: BUTTON
+        label: 四诊摘要
+        # 界面内摘要生成动作，不调用 M2 行为
+    actions:
+      - actionId: actSave
+        name: 保存
+        actionType: BUTTON
+        behaviorRef: Visit_SaveFourDiagnosis
+        permissionRef: [PERM-VISIT-FOURDIAGNOSIS]
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-05 辨证判定（MASTER_DETAIL_FORM，主表一行 3 个控件 + 从表表格化）
+  # 行为：FUNC-05 → Diagnosis_Save（草稿）/ Diagnosis_Confirm（确认结论）
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmDiagnosisJudge
+    name: 辨证判定
+    screenType: MASTER_DETAIL_FORM
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 门诊管理 / 辨证判定                                        │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ 主表：就诊摘要（只读）                                                    │
+      │       就诊号: [txtVisitNo 只读]   患者: [lblPatientName 只读]   接诊医师: [txtDoctorId 只读] │
+      │       四诊摘要: [txaFourDiagnosisSummary 只读]                            │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ 从表：辨证结论（AGG-DIAGNOSIS-001，表格内动态维护）                        │
+      │ @grdDiagnosis                                                             │
+      │  序号 | 辨证方法(下拉) | 证型(跳选框) | 性质(下拉) | 辨证依据 | 治法 | 删除  │
+      │  [btnAddDiagnosisRow 添加辨证结论]                                        │
+      │ 规则提示：主证性质在同一就诊下唯一（INV-02，从表内「主证」只能一行）         │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ [btnSave 保存] [btnConfirm 确认结论] [btnBack 返回]                        │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: txtVisitNo
+        type: TEXTBOX
+        label: 就诊号
+        io: O
+        required: true
+        dataBinding: Visit.visitNo
+      - id: lblPatientName
+        type: TEXTBOX
+        label: 患者
+        io: O
+        dataBinding: Patient.patientName
+        # 只读展示（String 标量 → 文本框）
+      - id: txtDoctorId
+        type: TEXTBOX
+        label: 接诊医师
+        io: O
+        required: true
+        dataBinding: Visit.doctorId
+      - id: txaFourDiagnosisSummary
+        type: TEXTAREA
+        label: 四诊摘要
+        io: O
+        dataBinding: Visit.FourDiagnosis.fourDiagnosisSummary
+      - id: grdDiagnosis
+        type: GRID
+        label: 辨证结论
+        io: I_O
+        # 从表为同一就诊下的辨证结论集合（独立聚合 AGG-DIAGNOSIS-001，按 diagnosis.visitId 关联），
+        # 非就诊聚合内子实体，故不设 dataBinding；行内维护辨证方法/证型/性质/依据/治法
+      - id: btnAddDiagnosisRow
+        type: BUTTON
+        label: 添加辨证结论
+      - id: btnSave
+        type: BUTTON
+        label: 保存
+      - id: btnConfirm
+        type: BUTTON
+        label: 确认结论
+      - id: btnBack
+        type: BUTTON
+        label: 返回
+        # 导航动作，不调用 M2 行为
+    actions:
+      - actionId: actSave
+        name: 保存
+        actionType: BUTTON
+        behaviorRef: Diagnosis_Save
+        permissionRef: [PERM-DIAGNOSIS-SAVE]
+      - actionId: actConfirm
+        name: 确认结论
+        actionType: BUTTON
+        behaviorRef: Diagnosis_Confirm
+        permissionRef: [PERM-DIAGNOSIS-CONFIRM]
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-06 开具处方（MASTER_DETAIL_FORM，主表一行 3 个控件 + 从表表格化）
+  # 带审批流：必须含「保存草稿」(DRAFT) 与「提交」(SUBMIT) 两个独立功能点（§8.5）
+  # 行为：FUNC-06 → Prescription_Save（→草稿）；FUNC-07 → Prescription_Submit（→待审核，启动审批流）
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmPrescription
+    name: 开具处方
+    screenType: MASTER_DETAIL_FORM
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 门诊管理 / 开具处方                                        │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ 主表：处方（AGG-PRESCRIPTION-001）                                        │
+      │       处方号: [txtPrescriptionNo 只读]  就诊号: [txtVisitNo 只读]   患者: [lblPatientName 只读] │
+      │       处方类型: (cboPrescriptionType)  引用方剂: [pslFormulaTemplate…]  剂数: [numDoses] │
+      │       用法: (cboUsageMethod)            煎服说明: [txtDecoctionInstruction] │
+      │       医嘱嘱托: [txaMedicalAdvice]                                        │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ 从表：处方明细（AGG-PRESCRIPTION-001 子实体 PrescriptionItem，表格内动态维护） │
+      │ @grdPrescriptionItems                                                     │
+      │  序号 | 饮片(跳选框) | 单剂剂量（g） | 常用量区间 | 特殊煎法(下拉) | 超量理由 | 删除 │
+      │  [btnAddHerbRow 添加药味] [btnRecheckDose 检查剂量]                        │
+      │ 规则提示：R-01 超量需填写超量理由并强制审核、超常用上限 2 倍阻断；             │
+      │           R-03 毒性饮片总量超上限阻断提交                                  │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ [btnSaveDraft 保存草稿] [btnSubmit 提交] [btnBack 返回]                    │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: txtPrescriptionNo
+        type: TEXTBOX
+        label: 处方号
+        io: O
+        required: true
+        dataBinding: Prescription.prescriptionNo
+        # 系统生成、只读展示
+      - id: txtVisitNo
+        type: TEXTBOX
+        label: 就诊号
+        io: O
+        required: true
+        dataBinding: Visit.visitNo
+      - id: lblPatientName
+        type: TEXTBOX
+        label: 患者
+        io: O
+        dataBinding: Patient.patientName
+        # 只读展示（String 标量 → 文本框）
+      - id: cboPrescriptionType
+        type: COMBO
+        label: 处方类型
+        io: I
+        required: true
+        dataBinding: Prescription.prescriptionType
+      - id: pslFormulaTemplate
+        type: POPUP_SELECT
+        label: 引用方剂
+        io: I
+        dataBinding: Prescription.formulaTemplateId
+        # 可选：引用方剂模板后带出组成明细；历史处方明细为快照，不受模板变更影响
+      - id: numDoses
+        type: NUMBER
+        label: 剂数
+        io: I
+        required: true
+        dataBinding: Prescription.doses
+        # 剂数取值 1～30（REF-10）
+      - id: cboUsageMethod
+        type: COMBO
+        label: 用法
+        io: I
+        required: true
+        dataBinding: Prescription.usageMethod
+      - id: txtDecoctionInstruction
+        type: TEXTBOX
+        label: 煎服说明
+        io: I
+        dataBinding: Prescription.decoctionInstruction
+      - id: txaMedicalAdvice
+        type: TEXTAREA
+        label: 医嘱嘱托
+        io: I
+        dataBinding: Prescription.medicalAdvice
+      - id: grdPrescriptionItems
+        type: GRID
+        label: 处方明细
+        io: I_O
+        dataBinding: Prescription.PrescriptionItem
+        # 就诊聚合内子实体集合「处方明细」，行内维护饮片/单剂剂量/特殊煎法/超量理由
+      - id: btnAddHerbRow
+        type: BUTTON
+        label: 添加药味
+      - id: btnRecheckDose
+        type: BUTTON
+        label: 检查剂量
+        # 调用 R-01 剂量上限判定规则，无 M2 行为入口，故不设操作功能点
+      - id: btnSaveDraft
+        type: BUTTON
+        label: 保存草稿
+      - id: btnSubmit
+        type: BUTTON
+        label: 提交
+      - id: btnBack
+        type: BUTTON
+        label: 返回
+    actions:
+      - actionId: actSaveDraft
+        name: 保存草稿
+        actionType: DRAFT
+        behaviorRef: Prescription_Save
+        permissionRef: [PERM-PRESCRIPTION-SAVE]
+        # 仅保存数据并置「草稿」，不触发审批
+      - actionId: actSubmit
+        name: 提交
+        actionType: SUBMIT
+        behaviorRef: Prescription_Submit
+        permissionRef: [PERM-PRESCRIPTION-SUBMIT]
+        # 置「待审核」并作为审批流 PROC-APP-01 启动入口；成功后同步联动就诊收尾（B-04）
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-07 处方审核（SINGLE_FORM，审批处理；中药师单节点审核 D-24）
+  # 行为：B-APP-01 → Prescription_Review（通过 / 驳回，必须有两条结果路径）
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmPrescriptionReview
+    name: 处方审核
+    screenType: SINGLE_FORM
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 药房管理 / 处方审核                                        │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │          处方号  : [txtPrescriptionNo 只读]   患者    : [lblPatientName 只读] │
+      │          开方医师: [txtDoctorId 只读]         剂数    : [numDoses 只读]     │
+      │          用法    : (cboUsageMethod 只读)      提交时间: {dtpSubmitTime 只读}│
+      │          辨证结论: [txaDiagnosisSummary 只读]                              │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ 处方明细（只读）                                                          │
+      │ @grdPrescriptionItems                                                     │
+      │  序号 | 饮片 | 单剂剂量 | 常用量区间 | 特殊煎法 | 超量/毒性标记             │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │          审核意见：驳回原因 [txaRejectReason]（驳回时必填）                 │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ [btnApprove 通过] [btnReject 驳回] [btnBack 返回待审队列]                   │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: txtPrescriptionNo
+        type: TEXTBOX
+        label: 处方号
+        io: O
+        required: true
+        dataBinding: Prescription.prescriptionNo
+      - id: lblPatientName
+        type: TEXTBOX
+        label: 患者
+        io: O
+        dataBinding: Patient.patientName
+        # 只读展示（String 标量 → 文本框）
+      - id: txtDoctorId
+        type: TEXTBOX
+        label: 开方医师
+        io: O
+        required: true
+        dataBinding: Prescription.doctorId
+      - id: numDoses
+        type: NUMBER
+        label: 剂数
+        io: O
+        required: true
+        dataBinding: Prescription.doses
+      - id: cboUsageMethod
+        type: COMBO
+        label: 用法
+        io: O
+        required: true
+        dataBinding: Prescription.usageMethod
+      - id: dtpSubmitTime
+        type: DATEPICKER
+        label: 提交时间
+        io: O
+        dataBinding: Prescription.submitTime
+      - id: txaDiagnosisSummary
+        type: TEXTAREA
+        label: 辨证结论
+        io: O
+        # 只读汇总：取自同一就诊下已确认的辨证结论（AGG-DIAGNOSIS-001），
+        # 无单一 M1 属性可绑定，故不设 dataBinding
+      - id: grdPrescriptionItems
+        type: GRID
+        label: 处方明细
+        io: O
+        dataBinding: Prescription.PrescriptionItem
+        # 只读核对，含超量/毒性标记
+      - id: txaRejectReason
+        type: TEXTAREA
+        label: 驳回原因
+        io: I
+        dataBinding: Prescription.rejectReason
+      - id: btnApprove
+        type: BUTTON
+        label: 通过
+      - id: btnReject
+        type: BUTTON
+        label: 驳回
+      - id: btnBack
+        type: BUTTON
+        label: 返回待审队列
+        # 导航动作，不调用 M2 行为
+    actions:
+      - actionId: actApprove
+        name: 通过
+        actionType: APPROVE
+        behaviorRef: Prescription_Review
+        permissionRef: [PERM-PRESCRIPTION-REVIEW]
+        # 处方置「审核通过」并进入调剂（创建待调剂记录）
+      - actionId: actReject
+        name: 驳回
+        actionType: REJECT
+        behaviorRef: Prescription_Review
+        permissionRef: [PERM-PRESCRIPTION-REVIEW]
+        # 处方置「已驳回」，驳回原因必填，医师修改后可重新提交
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-08 调剂发药（MASTER_DETAIL_FORM，主表 3 个控件 + 从表表格化）
+  # 行为：FUNC-10 → Dispense_Confirm（确认调剂，联动 B-01 扣减库存）/ Dispense_Issue（发药确认）
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmDispense
+    name: 调剂发药
+    screenType: MASTER_DETAIL_FORM
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 药房管理 / 调剂发药                                        │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ 主表：调剂发药记录（AGG-DISPENSE-001）                                    │
+      │       发药单号: [txtDispenseNo 只读]  处方号: [txtPrescriptionNo 只读]  患者: [lblPatientName 只读] │
+      │       调剂人: [txtDispenserId]        复核人: [txtCheckerId]   记录状态: (cboRecordStatus 只读) │
+      │       调剂时间: {dtpDispenseTime}     发药时间: {dtpIssueTime}             │
+      │       备注: [txaRemark]                                                   │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ 从表：处方明细核对（实时库存，只读 + 核对勾选）                             │
+      │ @grdStockCheck                                                            │
+      │  序号 | 饮片 | 需求用量（g） | 当前库存（g） | 是否充足 | 核对 | 备注           │
+      │ 规则提示：R-02 库存不足阻断调剂，不允许先调剂后补库                          │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ [btnConfirmDispense 确认调剂] [btnIssue 发药确认] [btnBack 返回队列]        │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: txtDispenseNo
+        type: TEXTBOX
+        label: 发药单号
+        io: O
+        required: true
+        dataBinding: DispenseRecord.dispenseNo
+      - id: txtPrescriptionNo
+        type: TEXTBOX
+        label: 处方号
+        io: O
+        required: true
+        dataBinding: Prescription.prescriptionNo
+      - id: lblPatientName
+        type: TEXTBOX
+        label: 患者
+        io: O
+        dataBinding: Patient.patientName
+        # 只读展示（String 标量 → 文本框）
+      - id: txtDispenserId
+        type: TEXTBOX
+        label: 调剂人
+        io: I
+        required: true
+        dataBinding: DispenseRecord.dispenserId
+        # M1 定义为 String（药师工号），按 §8.3 使用文本框
+      - id: txtCheckerId
+        type: TEXTBOX
+        label: 复核人
+        io: I
+        dataBinding: DispenseRecord.checkerId
+        # D-24：复核人选填，不做会签
+      - id: cboRecordStatus
+        type: COMBO
+        label: 记录状态
+        io: O
+        required: true
+        dataBinding: DispenseRecord.recordStatus
+      - id: dtpDispenseTime
+        type: DATEPICKER
+        label: 调剂时间
+        io: I
+        required: true
+        dataBinding: DispenseRecord.dispenseTime
+      - id: dtpIssueTime
+        type: DATEPICKER
+        label: 发药时间
+        io: I
+        dataBinding: DispenseRecord.issueTime
+      - id: txaRemark
+        type: TEXTAREA
+        label: 备注
+        io: I
+        dataBinding: DispenseRecord.remark
+      - id: grdStockCheck
+        type: GRID
+        label: 处方明细核对
+        io: O
+        dataBinding: Prescription.PrescriptionItem
+        # 行集来自处方明细；「需求用量」= 单剂剂量 × 剂数，「当前库存」取 Herb.stockQuantity 实时值，
+        # 「是否充足」由 R-02 判定，可在行内勾选完成核对
+      - id: btnConfirmDispense
+        type: BUTTON
+        label: 确认调剂
+      - id: btnIssue
+        type: BUTTON
+        label: 发药确认
+      - id: btnBack
+        type: BUTTON
+        label: 返回队列
+        # 导航动作，不调用 M2 行为
+    actions:
+      - actionId: actConfirmDispense
+        name: 确认调剂
+        actionType: BUTTON
+        behaviorRef: Dispense_Confirm
+        permissionRef: [PERM-DISPENSE-CONFIRM]
+        # 记录置「已调剂」；经 R-02 校验通过后同步联动 B-01 扣减饮片库存并生成调剂出库流水
+      - actionId: actIssue
+        name: 发药确认
+        actionType: BUTTON
+        behaviorRef: Dispense_Issue
+        permissionRef: [PERM-DISPENSE-ISSUE]
+        # 记录置「已发药」，处方业务闭环
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-09 饮片建档与入库（MASTER_DETAIL_FORM，主表 3 个控件 + 从表表格化）
+  # 行为：FUNC-11 → Herb_Save / Herb_Inbound（新增流水行即入库登记）/ Herb_ChangeStatus
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmHerbMaintain
+    name: 饮片建档与入库
+    screenType: MASTER_DETAIL_FORM
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 库存管理 / 饮片建档与入库                                  │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ 主表：中药饮片（AGG-HERB-001）                                            │
+      │       饮片编码: [txtHerbCode 只读]  饮片名称: [txtHerbName]   别名: [txtAliasName] │
+      │       药材类别: (cboHerbCategory)   性味归经: [txtNatureMeridian]  功效: [txtEfficacy] │
+      │       常用最小量: [numMinCommonDose] 常用最大量: [numMaxCommonDose] 毒性分级: (cboToxicityLevel) │
+      │       是否特殊管理: [chkSpecialManaged] 库存数量: [numStockQuantity 只读] 低库存预警值: [numLowStockThreshold] │
+      │       毒性总量上限: [numToxicDoseLimit]                                          │
+      │       规格: [txtSpec]               产地: [txtOrigin]        状态: (cboHerbStatus) │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ 从表：出入库流水（AGG-HERB-001 子实体 HerbStockFlow，只追加，不可修改删除）  │
+      │ @grdStockFlow                                                             │
+      │  流水号 | 业务类型(下拉) | 数量（g） | 入库单号 | 业务日期 | 操作人 | 备注     │
+      │  [btnAddFlowRow 新增流水行（入库登记）] [btnReconcile 对账检查]              │
+      │ 规则提示：R-06 账实差异核对（对账检查无 M2 行为入口）；调整后库存不得为负      │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ [btnSave 保存] [btnChangeStatus 停用品目] [btnBack 返回]                   │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: txtHerbCode
+        type: TEXTBOX
+        label: 饮片编码
+        io: O
+        required: true
+        dataBinding: Herb.herbCode
+        # 系统按 Y+四位流水号生成、只读展示
+      - id: txtHerbName
+        type: TEXTBOX
+        label: 饮片名称
+        io: I
+        required: true
+        dataBinding: Herb.herbName
+      - id: txtAliasName
+        type: TEXTBOX
+        label: 别名
+        io: I
+        dataBinding: Herb.aliasName
+      - id: cboHerbCategory
+        type: COMBO
+        label: 药材类别
+        io: I
+        dataBinding: Herb.herbCategory
+      - id: txtNatureMeridian
+        type: TEXTBOX
+        label: 性味归经
+        io: I
+        dataBinding: Herb.natureMeridian
+      - id: txtEfficacy
+        type: TEXTBOX
+        label: 功效
+        io: I
+        dataBinding: Herb.efficacy
+      - id: numMinCommonDose
+        type: NUMBER
+        label: 常用最小量
+        io: I
+        required: true
+        dataBinding: Herb.minCommonDose
+      - id: numMaxCommonDose
+        type: NUMBER
+        label: 常用最大量
+        io: I
+        required: true
+        dataBinding: Herb.maxCommonDose
+        # 常用最小量 > 0 且常用最大量 ≥ 常用最小量
+      - id: cboToxicityLevel
+        type: COMBO
+        label: 毒性分级
+        io: I
+        required: true
+        dataBinding: Herb.toxicityLevel
+      - id: chkSpecialManaged
+        type: CHECKBOX
+        label: 是否特殊管理
+        io: I
+        required: true
+        dataBinding: Herb.specialManaged
+      - id: numStockQuantity
+        type: NUMBER
+        label: 库存数量
+        io: O
+        required: true
+        dataBinding: Herb.stockQuantity
+        # 仅由入库/盘点/调剂扣减等行为变更，界面只读展示
+      - id: numLowStockThreshold
+        type: NUMBER
+        label: 低库存预警值
+        io: I
+        dataBinding: Herb.lowStockThreshold
+      - id: numToxicDoseLimit
+        type: NUMBER
+        label: 毒性单张处方总量上限
+        io: I
+        dataBinding: Herb.toxicDoseLimit
+        # 单位 g；毒性分级非「无毒」时维护，供 R-03 判定；为空表示不单独设限
+      - id: txtSpec
+        type: TEXTBOX
+        label: 规格
+        io: I
+        dataBinding: Herb.spec
+      - id: txtOrigin
+        type: TEXTBOX
+        label: 产地
+        io: I
+        dataBinding: Herb.origin
+      - id: cboHerbStatus
+        type: COMBO
+        label: 状态
+        io: I
+        required: true
+        dataBinding: Herb.herbStatus
+      - id: grdStockFlow
+        type: GRID
+        label: 出入库流水
+        io: I_O
+        dataBinding: Herb.HerbStockFlow
+        # 聚合内子实体集合，只追加；新增行填写业务类型/数量/入库单号/业务日期
+      - id: btnAddFlowRow
+        type: BUTTON
+        label: 新增流水行
+      - id: btnReconcile
+        type: BUTTON
+        label: 对账检查
+        # 调用 R-06 库存对账规则，无 M2 行为入口，故不设操作功能点
+      - id: btnSave
+        type: BUTTON
+        label: 保存
+      - id: btnChangeStatus
+        type: BUTTON
+        label: 停用品目
+        # 同一功能点承载「停用 / 启用」双向迁移；产生过流水或被处方引用后不可删除
+      - id: btnBack
+        type: BUTTON
+        label: 返回
+    actions:
+      - actionId: actSave
+        name: 保存
+        actionType: BUTTON
+        behaviorRef: Herb_Save
+        permissionRef: [PERM-HERB-SAVE]
+        # 饮片建档与修改（含常用量区间、毒性分级、预警值）
+      - actionId: actAddFlow
+        name: 新增流水行
+        actionType: BUTTON
+        behaviorRef: Herb_Inbound
+        permissionRef: [PERM-HERB-INBOUND]
+        # 入库登记：追加「入库」流水并增加库存（同一聚合、同一事务）
+      - actionId: actChangeStatus
+        name: 停用品目
+        actionType: BUTTON
+        behaviorRef: Herb_ChangeStatus
+        permissionRef: [PERM-HERB-STATUS]
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-10 饮片库存与预警（QUERY_LIST，查询条件一行 3 个 + 结果表格分页）
+  # 行为：Q-05 → Herb_QueryStockAndAlert；行操作「盘点」→ FUNC-12 → Herb_Stocktake（弹窗）
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmHerbStock
+    name: 饮片库存与预警（含盘点）
+    screenType: QUERY_LIST
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 库存管理 / 饮片库存与预警                                  │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │          饮片名称: [txtQryHerbName]  药材类别: (cboQryHerbCategory)  毒性分级: (cboQryToxicityLevel) │
+      │          预警状态: (cboQryAlertStatus) 库存数量: [numQryStockFrom] ~ [numQryStockTo]  [chkOnlyAlert 仅看预警项] │
+      │          [btnQuery 查询] [btnReset 重置] [btnExport 导出]                 │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ @grdResult                                                                │
+      │  饮片编码 | 饮片名称 | 类别 | 毒性 | 库存（g） | 预警值（g） | 预警状态 | 最近入库 | 操作 │
+      │ 分页: [lblPaging 共N条] [cboPageSize 每页20条] [btnPrev 上一页] [btnNext 下一页] │
+      │ 行操作「盘点」打开下方弹窗（FUNC-12）                                      │
+      └──────────────────────────────────────────────────────────────────────────┘
+
+      （行操作「盘点」弹出对话框，页面本身不展示以下表单）
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 库存盘点 / 报损                                                          │
+      │          饮片: [txtStocktakeHerbName 只读]    账面库存: [numStocktakeBookQty 只读] │
+      │          实盘数量: [numStocktakeQty]          调整数量: [numAdjustQuantity] │
+      │          业务类型: (cboFlowBizType)           业务日期: {dtpBizDate}       │
+      │          操作人: [txtOperatorId]                                          │
+      │          盘点/报损原因: [txaStocktakeRemark]                              │
+      │                                             [btnStocktake 盘点] [btnStocktakeCancel 取消] │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: txtQryHerbName
+        type: TEXTBOX
+        label: 饮片名称
+        io: I
+        dataBinding: Herb.herbName
+      - id: cboQryHerbCategory
+        type: COMBO
+        label: 药材类别
+        io: I
+        dataBinding: Herb.herbCategory
+      - id: cboQryToxicityLevel
+        type: COMBO
+        label: 毒性分级
+        io: I
+        dataBinding: Herb.toxicityLevel
+      - id: cboQryAlertStatus
+        type: COMBO
+        label: 预警状态
+        io: I
+        # 派生条件（库存数量 ≤ 低库存预警值），无对应 M1 属性，故不设 dataBinding
+      - id: numQryStockFrom
+        type: NUMBER
+        label: 库存数量从
+        io: I
+        dataBinding: Herb.stockQuantity
+      - id: numQryStockTo
+        type: NUMBER
+        label: 库存数量到
+        io: I
+        dataBinding: Herb.stockQuantity
+      - id: chkOnlyAlert
+        type: CHECKBOX
+        label: 仅看预警项
+        io: I
+      - id: grdResult
+        type: GRID
+        label: 库存与预警列表
+        io: O
+        dataSource: QR-HERB-STOCK-001
+      - id: lblPaging
+        type: LABEL
+        label: 分页信息
+        io: O
+      - id: cboPageSize
+        type: COMBO
+        label: 每页条数
+        io: I
+      - id: btnPrev
+        type: BUTTON
+        label: 上一页
+      - id: btnNext
+        type: BUTTON
+        label: 下一页
+      - id: btnQuery
+        type: BUTTON
+        label: 查询
+      - id: btnReset
+        type: BUTTON
+        label: 重置
+        # 纯界面筛选条件重置，不调用 M2 行为
+      - id: btnExport
+        type: BUTTON
+        label: 导出
+      - id: txtStocktakeHerbName
+        type: TEXTBOX
+        label: 饮片
+        io: O
+        dataBinding: Herb.herbName
+      - id: numStocktakeBookQty
+        type: NUMBER
+        label: 账面库存
+        io: O
+        required: true
+        dataBinding: Herb.stockQuantity
+      - id: numStocktakeQty
+        type: NUMBER
+        label: 实盘数量
+        io: I
+        # 实盘录入值，用于计算调整数量；不直接写入库存，库存由 Herb_Stocktake 调整
+      - id: numAdjustQuantity
+        type: NUMBER
+        label: 调整数量
+        io: I
+        dataBinding: Herb.HerbStockFlow.quantity
+        # 调整数量不得为 0（REF-13），调整后库存不得为负（REF-08）
+      - id: cboFlowBizType
+        type: COMBO
+        label: 业务类型
+        io: I
+        required: true
+        dataBinding: Herb.HerbStockFlow.bizType
+      - id: dtpBizDate
+        type: DATEPICKER
+        label: 业务日期
+        io: I
+        required: true
+        dataBinding: Herb.HerbStockFlow.bizDate
+      - id: txtOperatorId
+        type: TEXTBOX
+        label: 操作人
+        io: I
+        required: true
+        dataBinding: Herb.HerbStockFlow.operatorId
+      - id: txaStocktakeRemark
+        type: TEXTAREA
+        label: 盘点/报损原因
+        io: I
+        dataBinding: Herb.HerbStockFlow.remark
+      - id: btnStocktake
+        type: BUTTON
+        label: 盘点
+      - id: btnStocktakeCancel
+        type: BUTTON
+        label: 取消
+        # 关闭弹窗，不调用 M2 行为
+    actions:
+      - actionId: actQuery
+        name: 查询
+        actionType: BUTTON
+        behaviorRef: Herb_QueryStockAndAlert
+        permissionRef: [PERM-QUERY-HERB-STOCK]
+      - actionId: actExport
+        name: 导出
+        actionType: BUTTON
+        behaviorRef: Herb_QueryStockAndAlert
+        permissionRef: [PERM-QUERY-HERB-STOCK]
+        # 导出权限随对应 Q 行为一并授予（第六部分 6.4），无独立 M2 行为
+      - actionId: actStocktake
+        name: 盘点
+        actionType: BUTTON
+        behaviorRef: Herb_Stocktake
+        permissionRef: [PERM-HERB-STOCKTAKE]
+        # 行操作「盘点」与弹窗「盘点」共用本功能点：登记盘点调整或报损，追加流水并修正库存
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-11 复诊随访登记（LIST_MAINTENANCE：工具栏 + 列表 + 弹窗）
+  # 行为：FUNC-13 → FollowUp_Complete（评价）/ FollowUp_MarkLost（标记失访）；
+  #       列表查询入口引用 Q-07 行为 FollowUp_QueryCompletion（D.6 将 UI-11 归入 FUNC-13，
+  #       M2 未定义随访登记列表的独立查询行为，故以 Q-07 作为其查询入口，见建模边界说明）
+  # 说明：随访记录由系统自动行为 B-03（复诊提醒生成）产生，界面不提供「新增随访记录」。
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmFollowUp
+    name: 复诊随访登记
+    screenType: LIST_MAINTENANCE
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 随访管理 / 复诊随访登记                                    │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │          患者姓名: [txtQryPatientName]   计划随访日期: {dtpQryPlannedFrom} ~ {dtpQryPlannedTo} │
+      │          随访状态: (cboQryRecordStatus)                                   │
+      │          [btnQuery 查询] [btnExport 导出]                                  │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ @grdFollowUpList                                                          │
+      │  序号 | 随访号 | 患者 | 上次就诊 | 计划随访 | 实际随访 | 疗效 | 状态 | [评价/失访] │
+      │ 分页: [lblPaging 共N条] [cboPageSize 每页20条] [btnPrev 上一页] [btnNext 下一页] │
+      └──────────────────────────────────────────────────────────────────────────┘
+
+      （行操作「评价/失访」弹出对话框，页面本身不展示以下表单）
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 随访评价登记 / 标记失访                                                   │
+      │          随访号: [txtFollowUpNo 只读]          患者    : [lblPatientName 只读] │
+      │          上次就诊: [pslSourceVisitId 只读]     计划随访日期: {dtpPlannedFollowUpDate 只读} │
+      │          实际随访日期: {dtpActualFollowUpDate} 本次就诊: [pslActualVisitId…]  │
+      │          疗效评价: (cboEfficacyLevel)          随访状态: (cboFollowUpStatus 只读) │
+      │          症状变化: [txaSymptomChange]                                      │
+      │          是否继续用药: [chkContinueMedication] 备注/失访原因: [txaRemark]   │
+      │                                [btnSave 评价] [btnMarkLost 标记失访] [btnCancel 取消] │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: txtQryPatientName
+        type: TEXTBOX
+        label: 患者姓名
+        io: I
+        dataBinding: Patient.patientName
+      - id: dtpQryPlannedFrom
+        type: DATEPICKER
+        label: 计划随访日期从
+        io: I
+        dataBinding: FollowUp.plannedFollowUpDate
+      - id: dtpQryPlannedTo
+        type: DATEPICKER
+        label: 计划随访日期到
+        io: I
+        dataBinding: FollowUp.plannedFollowUpDate
+      - id: cboQryRecordStatus
+        type: COMBO
+        label: 随访状态
+        io: I
+        dataBinding: FollowUp.recordStatus
+      - id: grdFollowUpList
+        type: GRID
+        label: 随访登记列表
+        io: O
+        # 单聚合列表（AGG-FOLLOWUP-001），按 §7.2 单聚合简单查询不建 M7 对象，故不设 dataSource
+      - id: lblPaging
+        type: LABEL
+        label: 分页信息
+        io: O
+      - id: cboPageSize
+        type: COMBO
+        label: 每页条数
+        io: I
+      - id: btnPrev
+        type: BUTTON
+        label: 上一页
+      - id: btnNext
+        type: BUTTON
+        label: 下一页
+      - id: txtFollowUpNo
+        type: TEXTBOX
+        label: 随访号
+        io: O
+        required: true
+        dataBinding: FollowUp.followUpNo
+      - id: lblPatientName
+        type: TEXTBOX
+        label: 患者
+        io: O
+        dataBinding: Patient.patientName
+        # 只读展示（String 标量 → 文本框）
+      - id: pslSourceVisitId
+        type: POPUP_SELECT
+        label: 上次就诊
+        io: O
+        required: true
+        dataBinding: FollowUp.sourceVisitId
+      - id: dtpPlannedFollowUpDate
+        type: DATEPICKER
+        label: 计划随访日期
+        io: O
+        required: true
+        dataBinding: FollowUp.plannedFollowUpDate
+        # 计划随访日期 = 就诊日 + 剂数 × 1 天（D-17），由系统自动生成
+      - id: dtpActualFollowUpDate
+        type: DATEPICKER
+        label: 实际随访日期
+        io: I
+        dataBinding: FollowUp.actualFollowUpDate
+        # 不早于上次就诊挂号时间（R-05）
+      - id: pslActualVisitId
+        type: POPUP_SELECT
+        label: 本次就诊
+        io: I
+        dataBinding: FollowUp.actualVisitId
+      - id: cboEfficacyLevel
+        type: COMBO
+        label: 疗效评价
+        io: I
+        dataBinding: FollowUp.efficacyLevel
+        # 痊愈 / 显效 / 有效 / 无效 / 加重
+      - id: cboFollowUpStatus
+        type: COMBO
+        label: 随访状态
+        io: O
+        required: true
+        dataBinding: FollowUp.recordStatus
+      - id: txaSymptomChange
+        type: TEXTAREA
+        label: 症状变化
+        io: I
+        dataBinding: FollowUp.symptomChange
+      - id: chkContinueMedication
+        type: CHECKBOX
+        label: 是否继续用药
+        io: I
+        dataBinding: FollowUp.continueMedication
+      - id: txaRemark
+        type: TEXTAREA
+        label: 备注/失访原因
+        io: I
+        dataBinding: FollowUp.remark
+      - id: btnQuery
+        type: BUTTON
+        label: 查询
+      - id: btnExport
+        type: BUTTON
+        label: 导出
+      - id: btnSave
+        type: BUTTON
+        label: 评价
+      - id: btnMarkLost
+        type: BUTTON
+        label: 标记失访
+      - id: btnCancel
+        type: BUTTON
+        label: 取消
+        # 关闭弹窗，不调用 M2 行为
+    actions:
+      - actionId: actQuery
+        name: 查询
+        actionType: BUTTON
+        behaviorRef: FollowUp_QueryCompletion
+        permissionRef: [PERM-QUERY-FOLLOWUP]
+      - actionId: actExport
+        name: 导出
+        actionType: BUTTON
+        behaviorRef: FollowUp_QueryCompletion
+        permissionRef: [PERM-QUERY-FOLLOWUP]
+      - actionId: actSave
+        name: 评价
+        actionType: BUTTON
+        behaviorRef: FollowUp_Complete
+        permissionRef: [PERM-FOLLOWUP-COMPLETE]
+        # 复诊登记与疗效评价：记录置「已完成」，回填本次就诊与实际随访日期
+      - actionId: actMarkLost
+        name: 标记失访
+        actionType: BUTTON
+        behaviorRef: FollowUp_MarkLost
+        permissionRef: [PERM-FOLLOWUP-LOST]
+        # 计划随访日期超期且患者未复诊时标记失访，失访原因必填
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-12 证型字典维护（LIST_MAINTENANCE：工具栏 + 列表 + 弹窗）
+  # 行为：FUNC-15 → Syndrome_Save（新增 / 编辑）/ Syndrome_ChangeStatus（停用 / 启用）
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmSyndromeMaintain
+    name: 证型字典维护
+    screenType: LIST_MAINTENANCE
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 基础数据 / 证型字典维护                                    │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │          证型名称: [txtQrySyndromeName]  所属辨证体系: (cboQryDiagnosisMethod)  状态: (cboQrySyndromeStatus) │
+      │          [btnQuery 查询] [btnReset 重置] [btnAdd 新增]                     │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ @grdSyndromeList                                                          │
+      │  证型编码 | 证型名称 | 所属辨证体系 | 对应治法 | 状态 | [编辑] [停用/启用]    │
+      │ 分页: [lblPaging 共N条] [cboPageSize 每页20条] [btnPrev 上一页] [btnNext 下一页] │
+      └──────────────────────────────────────────────────────────────────────────┘
+
+      （点击「新增」/「编辑」弹出对话框，页面本身不展示以下表单）
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 新增证型 / 编辑证型                                                       │
+      │          证型编码: [txtSyndromeCode 只读]   证型名称: [txtSyndromeName]     │
+      │          所属辨证体系: (cboDiagnosisMethod) 状态: (cboSyndromeStatus)       │
+      │          证候描述: [txaSyndromeDescription]                                │
+      │          常见症状: [txaCommonSymptoms]                                     │
+      │          对应治法: [txtCorrespondingTreatment]                             │
+      │                                        [btnModalSave 保存] [btnModalCancel 取消] │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: txtQrySyndromeName
+        type: TEXTBOX
+        label: 证型名称
+        io: I
+        dataBinding: SyndromeType.syndromeName
+      - id: cboQryDiagnosisMethod
+        type: COMBO
+        label: 所属辨证体系
+        io: I
+        dataBinding: SyndromeType.diagnosisMethod
+      - id: cboQrySyndromeStatus
+        type: COMBO
+        label: 状态
+        io: I
+        dataBinding: SyndromeType.syndromeStatus
+      - id: grdSyndromeList
+        type: GRID
+        label: 证型字典列表
+        io: O
+        # 单聚合列表（AGG-SYNDROME-001），按 §7.2 不建 M7 对象，故不设 dataSource
+      - id: lblPaging
+        type: LABEL
+        label: 分页信息
+        io: O
+      - id: cboPageSize
+        type: COMBO
+        label: 每页条数
+        io: I
+      - id: btnPrev
+        type: BUTTON
+        label: 上一页
+      - id: btnNext
+        type: BUTTON
+        label: 下一页
+      - id: txtSyndromeCode
+        type: TEXTBOX
+        label: 证型编码
+        io: O
+        required: true
+        dataBinding: SyndromeType.syndromeCode
+        # 系统按 Z+三位流水号生成，弹窗内只读展示
+      - id: txtSyndromeName
+        type: TEXTBOX
+        label: 证型名称
+        io: I
+        required: true
+        dataBinding: SyndromeType.syndromeName
+      - id: cboDiagnosisMethod
+        type: COMBO
+        label: 所属辨证体系
+        io: I
+        required: true
+        dataBinding: SyndromeType.diagnosisMethod
+      - id: cboSyndromeStatus
+        type: COMBO
+        label: 状态
+        io: I
+        required: true
+        dataBinding: SyndromeType.syndromeStatus
+      - id: txaSyndromeDescription
+        type: TEXTAREA
+        label: 证候描述
+        io: I
+        dataBinding: SyndromeType.syndromeDescription
+      - id: txaCommonSymptoms
+        type: TEXTAREA
+        label: 常见症状
+        io: I
+        dataBinding: SyndromeType.commonSymptoms
+      - id: txtCorrespondingTreatment
+        type: TEXTBOX
+        label: 对应治法
+        io: I
+        dataBinding: SyndromeType.correspondingTreatment
+      - id: btnQuery
+        type: BUTTON
+        label: 查询
+      - id: btnReset
+        type: BUTTON
+        label: 重置
+      - id: btnAdd
+        type: BUTTON
+        label: 新增
+      - id: btnModalSave
+        type: BUTTON
+        label: 保存
+      - id: btnModalCancel
+        type: BUTTON
+        label: 取消
+        # 关闭弹窗，不调用 M2 行为
+    actions:
+      - actionId: actAdd
+        name: 新增
+        actionType: BUTTON
+        behaviorRef: Syndrome_Save
+        permissionRef: [PERM-SYNDROME-SAVE]
+        # 弹窗新增证型后由「保存」提交至同一行为
+      - actionId: actEdit
+        name: 编辑
+        actionType: BUTTON
+        behaviorRef: Syndrome_Save
+        permissionRef: [PERM-SYNDROME-SAVE]
+        # 行操作「编辑」预填弹窗后由「保存」提交至同一行为
+      - actionId: actChangeStatus
+        name: 停用/启用
+        actionType: BUTTON
+        behaviorRef: Syndrome_ChangeStatus
+        permissionRef: [PERM-SYNDROME-STATUS]
+        # 被辨证结论引用后不可删除，只能停用
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-13 方剂模板维护（MASTER_DETAIL_FORM，主表 3 个控件 + 从表表格化）
+  # 行为：FUNC-14 → Formula_Save（保存 / 添加药味，聚合内同事务）/ Formula_ChangeStatus（停用）
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmFormulaMaintain
+    name: 方剂模板维护
+    screenType: MASTER_DETAIL_FORM
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 基础数据 / 方剂模板维护                                    │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ 主表：方剂模板（AGG-FORMULA-001）                                         │
+      │       方剂编码: [txtFormulaCode 只读]  方剂名称: [txtFormulaName]  方剂类型: (cboFormulaType) │
+      │       出处: [txtSource]                常用剂数: [numDefaultDoses] 状态: (cboFormulaStatus) │
+      │       功用: [txaFunction]                                                 │
+      │       主治: [txaIndication]                                               │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ 从表：组成明细（AGG-FORMULA-001 子实体 FormulaItem，表格内动态维护）        │
+      │ @grdFormulaItems                                                          │
+      │  序号 | 药味(跳选框) | 常用剂量（g） | 特殊煎法(下拉) | 删除                  │
+      │  [btnAddItem 添加药味]                                                    │
+      │ 规则提示：组成明细至少一味药味且药味不重复                                  │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ [btnSave 保存] [btnChangeStatus 停用] [btnBack 返回]                       │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: txtFormulaCode
+        type: TEXTBOX
+        label: 方剂编码
+        io: O
+        required: true
+        dataBinding: FormulaTemplate.formulaCode
+        # 系统按 F+三位流水号生成、只读展示
+      - id: txtFormulaName
+        type: TEXTBOX
+        label: 方剂名称
+        io: I
+        required: true
+        dataBinding: FormulaTemplate.formulaName
+      - id: cboFormulaType
+        type: COMBO
+        label: 方剂类型
+        io: I
+        required: true
+        dataBinding: FormulaTemplate.formulaType
+      - id: txtSource
+        type: TEXTBOX
+        label: 出处
+        io: I
+        dataBinding: FormulaTemplate.source
+      - id: numDefaultDoses
+        type: NUMBER
+        label: 常用剂数
+        io: I
+        dataBinding: FormulaTemplate.defaultDoses
+      - id: cboFormulaStatus
+        type: COMBO
+        label: 状态
+        io: I
+        required: true
+        dataBinding: FormulaTemplate.formulaStatus
+      - id: txaFunction
+        type: TEXTAREA
+        label: 功用
+        io: I
+        dataBinding: FormulaTemplate.function
+      - id: txaIndication
+        type: TEXTAREA
+        label: 主治
+        io: I
+        dataBinding: FormulaTemplate.indication
+      - id: grdFormulaItems
+        type: GRID
+        label: 组成明细
+        io: I_O
+        dataBinding: FormulaTemplate.FormulaItem
+        # 聚合内子实体集合，行内维护药味/常用剂量/特殊煎法
+      - id: btnAddItem
+        type: BUTTON
+        label: 添加药味
+      - id: btnSave
+        type: BUTTON
+        label: 保存
+      - id: btnChangeStatus
+        type: BUTTON
+        label: 停用
+        # 同一功能点承载「停用 / 启用」双向迁移；被处方引用后不可删除
+      - id: btnBack
+        type: BUTTON
+        label: 返回
+    actions:
+      - actionId: actSave
+        name: 保存
+        actionType: BUTTON
+        behaviorRef: Formula_Save
+        permissionRef: [PERM-FORMULA-SAVE]
+      - actionId: actAddItem
+        name: 添加药味
+        actionType: BUTTON
+        behaviorRef: Formula_Save
+        permissionRef: [PERM-FORMULA-SAVE]
+        # 从表行编辑入口，明细随「保存」一并提交至 Formula_Save（聚合内同事务）
+      - actionId: actChangeStatus
+        name: 停用
+        actionType: BUTTON
+        behaviorRef: Formula_ChangeStatus
+        permissionRef: [PERM-FORMULA-STATUS]
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-14 门诊量统计（QUERY_LIST，查询条件一行 3 个 + 结果表格分页）
+  # 行为：Q-01 → Visit_QueryStats（dataSource REP-01 / RPT-VISIT-STATS-001）
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmVisitStats
+    name: 门诊量统计
+    screenType: QUERY_LIST
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 统计报表 / 门诊量统计                                      │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │          挂号日期: {dtpQryDateFrom} ~ {dtpQryDateTo}   日期粒度: (cboDateGranularity) │
+      │          科室: (cboQryDeptCode)   接诊医师: [txtQryDoctorId]   就诊类型: (cboQryVisitType) │
+      │          就诊状态: (cboQryVisitStatus)                                     │
+      │          [btnQuery 查询] [btnReset 重置] [btnExport 导出]                  │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ @grdResult                                                                │
+      │  统计日期 | 科室 | 接诊医师 | 就诊类型 | 就诊人数 | 就诊人次 | 初诊 | 复诊 | 已完成 | 已取消 │
+      │ 分页: [lblPaging 共N条] [cboPageSize 每页20条] [btnPrev 上一页] [btnNext 下一页] │
+      │ 口径提示：就诊人数=不重复患者数、就诊人次=记录条数（Q-01 / REP-01）          │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: dtpQryDateFrom
+        type: DATEPICKER
+        label: 挂号日期从
+        io: I
+        dataBinding: Visit.registerTime
+      - id: dtpQryDateTo
+        type: DATEPICKER
+        label: 挂号日期到
+        io: I
+        dataBinding: Visit.registerTime
+      - id: cboDateGranularity
+        type: COMBO
+        label: 日期粒度
+        io: I
+        # 统计维度参数（按日 / 按月），非 M1 属性，故不设 dataBinding
+      - id: cboQryDeptCode
+        type: COMBO
+        label: 科室
+        io: I
+        dataBinding: Visit.deptCode
+      - id: txtQryDoctorId
+        type: TEXTBOX
+        label: 接诊医师
+        io: I
+        dataBinding: Visit.doctorId
+      - id: cboQryVisitType
+        type: COMBO
+        label: 就诊类型
+        io: I
+        dataBinding: Visit.visitType
+      - id: cboQryVisitStatus
+        type: COMBO
+        label: 就诊状态
+        io: I
+        dataBinding: Visit.visitStatus
+      - id: grdResult
+        type: GRID
+        label: 门诊量统计结果
+        io: O
+        dataSource: RPT-VISIT-STATS-001
+      - id: lblPaging
+        type: LABEL
+        label: 分页信息
+        io: O
+      - id: cboPageSize
+        type: COMBO
+        label: 每页条数
+        io: I
+      - id: btnPrev
+        type: BUTTON
+        label: 上一页
+      - id: btnNext
+        type: BUTTON
+        label: 下一页
+      - id: btnQuery
+        type: BUTTON
+        label: 查询
+      - id: btnReset
+        type: BUTTON
+        label: 重置
+      - id: btnExport
+        type: BUTTON
+        label: 导出
+    actions:
+      - actionId: actQuery
+        name: 查询
+        actionType: BUTTON
+        behaviorRef: Visit_QueryStats
+        permissionRef: [PERM-QUERY-VISIT-STATS]
+      - actionId: actExport
+        name: 导出
+        actionType: BUTTON
+        behaviorRef: Visit_QueryStats
+        permissionRef: [PERM-QUERY-VISIT-STATS]
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-15 证型分布统计（QUERY_LIST）
+  # 行为：Q-02 → Diagnosis_QuerySyndromeDistribution（dataSource REP-02 / RPT-SYNDROME-DIST-001）
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmSyndromeDist
+    name: 证型分布统计
+    screenType: QUERY_LIST
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 统计报表 / 证型分布统计                                    │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │          就诊日期: {dtpQryDateFrom} ~ {dtpQryDateTo}   辨证体系: (cboQryDiagnosisMethod) │
+      │          证型性质: (cboQrySyndromeNature)  证型: [pslQrySyndromeId…]   汇总维度: (cboSummaryDimension) │
+      │          科室: (cboQryDeptCode)   接诊医师: [txtQryDoctorId]               │
+      │          [btnQuery 查询] [btnReset 重置] [btnExport 导出]                  │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ @grdResult                                                                │
+      │  证型编码 | 证型名称 | 所属辨证体系 | 证型性质 | 辨证例数 | 占比             │
+      │ 分页: [lblPaging 共N条] [cboPageSize 每页20条] [btnPrev 上一页] [btnNext 下一页] │
+      │ 口径提示：占比分子分母使用相同筛选条件（Q-02 / REP-02）                      │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: dtpQryDateFrom
+        type: DATEPICKER
+        label: 就诊日期从
+        io: I
+        dataBinding: Visit.registerTime
+      - id: dtpQryDateTo
+        type: DATEPICKER
+        label: 就诊日期到
+        io: I
+        dataBinding: Visit.registerTime
+      - id: cboQryDiagnosisMethod
+        type: COMBO
+        label: 辨证体系
+        io: I
+        dataBinding: SyndromeType.diagnosisMethod
+      - id: cboQrySyndromeNature
+        type: COMBO
+        label: 证型性质
+        io: I
+        dataBinding: SyndromeDiagnosis.syndromeNature
+      - id: pslQrySyndromeId
+        type: POPUP_SELECT
+        label: 证型
+        io: I
+        dataBinding: SyndromeDiagnosis.syndromeId
+      - id: cboSummaryDimension
+        type: COMBO
+        label: 汇总维度
+        io: I
+        # 统计维度参数（按证型 / 按科室 / 按医师），非 M1 属性，故不设 dataBinding
+      - id: cboQryDeptCode
+        type: COMBO
+        label: 科室
+        io: I
+        dataBinding: Visit.deptCode
+      - id: txtQryDoctorId
+        type: TEXTBOX
+        label: 接诊医师
+        io: I
+        dataBinding: Visit.doctorId
+      - id: grdResult
+        type: GRID
+        label: 证型分布统计结果
+        io: O
+        dataSource: RPT-SYNDROME-DIST-001
+      - id: lblPaging
+        type: LABEL
+        label: 分页信息
+        io: O
+      - id: cboPageSize
+        type: COMBO
+        label: 每页条数
+        io: I
+      - id: btnPrev
+        type: BUTTON
+        label: 上一页
+      - id: btnNext
+        type: BUTTON
+        label: 下一页
+      - id: btnQuery
+        type: BUTTON
+        label: 查询
+      - id: btnReset
+        type: BUTTON
+        label: 重置
+      - id: btnExport
+        type: BUTTON
+        label: 导出
+    actions:
+      - actionId: actQuery
+        name: 查询
+        actionType: BUTTON
+        behaviorRef: Diagnosis_QuerySyndromeDistribution
+        permissionRef: [PERM-QUERY-SYNDROME-DIST]
+      - actionId: actExport
+        name: 导出
+        actionType: BUTTON
+        behaviorRef: Diagnosis_QuerySyndromeDistribution
+        permissionRef: [PERM-QUERY-SYNDROME-DIST]
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-16 方剂与饮片使用统计（QUERY_LIST）
+  # 行为：Q-03 → Prescription_QueryHerbUsage（dataSource REP-03 / RPT-HERB-USAGE-001）
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmHerbUsageStats
+    name: 方剂与饮片使用统计
+    screenType: QUERY_LIST
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 统计报表 / 方剂与饮片使用统计                              │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │          开方日期: {dtpQryDateFrom} ~ {dtpQryDateTo}   统计维度: (cboStatDimension) │
+      │          饮片类别: (cboQryHerbCategory)  饮片: [pslQryHerbId…]  方剂模板: [pslQryFormulaTemplateId…] │
+      │          处方类型: (cboQryPrescriptionType)                                │
+      │          [btnQuery 查询] [btnReset 重置] [btnExport 导出]                  │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ @grdResult                                                                │
+      │  饮片编码 | 饮片名称 | 类别 | 毒性 | 使用剂数 | 累计用量（g） | 单剂均值（g） | 处方张数 | 患者数 │
+      │ 分页: [lblPaging 共N条] [cboPageSize 每页20条] [btnPrev 上一页] [btnNext 下一页] │
+      │ 口径提示：按饮片与按方剂模板两个维度分别查询，避免重复统计（Q-03 / REP-03）    │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: dtpQryDateFrom
+        type: DATEPICKER
+        label: 开方日期从
+        io: I
+        dataBinding: Prescription.prescribeTime
+      - id: dtpQryDateTo
+        type: DATEPICKER
+        label: 开方日期到
+        io: I
+        dataBinding: Prescription.prescribeTime
+      - id: cboStatDimension
+        type: COMBO
+        label: 统计维度
+        io: I
+        # 统计维度参数（按饮片 / 按方剂模板），非 M1 属性，故不设 dataBinding
+      - id: cboQryHerbCategory
+        type: COMBO
+        label: 饮片类别
+        io: I
+        dataBinding: Herb.herbCategory
+      - id: pslQryHerbId
+        type: POPUP_SELECT
+        label: 饮片
+        io: I
+        dataBinding: Prescription.PrescriptionItem.herbId
+      - id: pslQryFormulaTemplateId
+        type: POPUP_SELECT
+        label: 方剂模板
+        io: I
+        dataBinding: Prescription.formulaTemplateId
+      - id: cboQryPrescriptionType
+        type: COMBO
+        label: 处方类型
+        io: I
+        dataBinding: Prescription.prescriptionType
+      - id: grdResult
+        type: GRID
+        label: 方剂与饮片使用统计结果
+        io: O
+        dataSource: RPT-HERB-USAGE-001
+      - id: lblPaging
+        type: LABEL
+        label: 分页信息
+        io: O
+      - id: cboPageSize
+        type: COMBO
+        label: 每页条数
+        io: I
+      - id: btnPrev
+        type: BUTTON
+        label: 上一页
+      - id: btnNext
+        type: BUTTON
+        label: 下一页
+      - id: btnQuery
+        type: BUTTON
+        label: 查询
+      - id: btnReset
+        type: BUTTON
+        label: 重置
+      - id: btnExport
+        type: BUTTON
+        label: 导出
+    actions:
+      - actionId: actQuery
+        name: 查询
+        actionType: BUTTON
+        behaviorRef: Prescription_QueryHerbUsage
+        permissionRef: [PERM-QUERY-HERB-USAGE]
+      - actionId: actExport
+        name: 导出
+        actionType: BUTTON
+        behaviorRef: Prescription_QueryHerbUsage
+        permissionRef: [PERM-QUERY-HERB-USAGE]
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-17 就诊与处方记录查询（QUERY_LIST 主从）
+  # 行为：Q-04 → Visit_QueryVisitAndPrescription（dataSource REP-04 / QR-VISIT-PRESCRIPTION-001）；
+  #       行操作「作废」→ FUNC-09 → Prescription_Cancel（弹窗填写作废原因）
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmVisitPrescriptionQuery
+    name: 就诊与处方记录查询
+    screenType: QUERY_LIST
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 统计报表 / 就诊与处方记录查询                              │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │          患者姓名: [txtQryPatientName]  就诊号: [txtQryVisitNo]  处方号: [txtQryPrescriptionNo] │
+      │          挂号日期: {dtpQryDateFrom} ~ {dtpQryDateTo}   就诊状态: (cboQryVisitStatus) │
+      │          处方状态: (cboQryPrescriptionStatus)  接诊医师: [txtQryDoctorId]  审核药师: [txtQryReviewerId] │
+      │          [btnQuery 查询] [btnReset 重置] [btnExport 导出]                  │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ 主表：就诊记录                                                            │
+      │ @grdVisitResult                                                           │
+      │  就诊号 | 患者 | 性别 | 年龄 | 就诊类型 | 挂号时间 | 接诊医师 | 就诊状态 | [展开] │
+      │   └ 从表：处方（行「展开」后呈现）                                          │
+      │ @grdPrescriptionResult                                                    │
+      │     处方号 | 处方状态 | 剂数 | 用法 | 开方时间 | 审核人 | [作废]            │
+      │ 分页: [lblPaging 共N条] [cboPageSize 每页20条] [btnPrev 上一页] [btnNext 下一页] │
+      │ 行操作「作废」打开下方弹窗（FUNC-09；已发药由 R-04 阻断）                    │
+      └──────────────────────────────────────────────────────────────────────────┘
+
+      （行操作「作废」弹出对话框，页面本身不展示以下表单）
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 处方作废                                                                  │
+      │          处方号: [txtVoidPrescriptionNo 只读]                              │
+      │          作废原因: [txaVoidReason]                                        │
+      │                                             [btnVoid 作废] [btnVoidCancel 取消] │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: txtQryPatientName
+        type: TEXTBOX
+        label: 患者姓名
+        io: I
+        dataBinding: Patient.patientName
+      - id: txtQryVisitNo
+        type: TEXTBOX
+        label: 就诊号
+        io: I
+        dataBinding: Visit.visitNo
+      - id: txtQryPrescriptionNo
+        type: TEXTBOX
+        label: 处方号
+        io: I
+        dataBinding: Prescription.prescriptionNo
+      - id: dtpQryDateFrom
+        type: DATEPICKER
+        label: 挂号日期从
+        io: I
+        dataBinding: Visit.registerTime
+      - id: dtpQryDateTo
+        type: DATEPICKER
+        label: 挂号日期到
+        io: I
+        dataBinding: Visit.registerTime
+      - id: cboQryVisitStatus
+        type: COMBO
+        label: 就诊状态
+        io: I
+        dataBinding: Visit.visitStatus
+      - id: cboQryPrescriptionStatus
+        type: COMBO
+        label: 处方状态
+        io: I
+        dataBinding: Prescription.prescriptionStatus
+      - id: txtQryDoctorId
+        type: TEXTBOX
+        label: 接诊医师
+        io: I
+        dataBinding: Visit.doctorId
+      - id: txtQryReviewerId
+        type: TEXTBOX
+        label: 审核药师
+        io: I
+        dataBinding: Prescription.reviewerId
+      - id: grdVisitResult
+        type: GRID
+        label: 就诊记录（主表）
+        io: O
+        dataSource: QR-VISIT-PRESCRIPTION-001
+      - id: grdPrescriptionResult
+        type: GRID
+        label: 处方记录（从表）
+        io: O
+        dataSource: QR-VISIT-PRESCRIPTION-001
+        # 主从同源：主表行为就诊记录，从表为主表行「展开」后由同一次 Q-04 查询返回的处方与明细层级
+      - id: lblPaging
+        type: LABEL
+        label: 分页信息
+        io: O
+      - id: cboPageSize
+        type: COMBO
+        label: 每页条数
+        io: I
+      - id: btnPrev
+        type: BUTTON
+        label: 上一页
+      - id: btnNext
+        type: BUTTON
+        label: 下一页
+      - id: txtVoidPrescriptionNo
+        type: TEXTBOX
+        label: 处方号
+        io: O
+        required: true
+        dataBinding: Prescription.prescriptionNo
+      - id: txaVoidReason
+        type: TEXTAREA
+        label: 作废原因
+        io: I
+        dataBinding: Prescription.cancelReason
+        # 对应 M2 Prescription_Cancel 的后置条件 prescription.cancelReason
+        # （M1 处方聚合已补 cancelReason 属性，原 remark 缺口已消除）
+      - id: btnVoid
+        type: BUTTON
+        label: 作废
+      - id: btnVoidCancel
+        type: BUTTON
+        label: 取消
+        # 关闭弹窗，不调用 M2 行为
+      - id: btnQuery
+        type: BUTTON
+        label: 查询
+      - id: btnReset
+        type: BUTTON
+        label: 重置
+      - id: btnExport
+        type: BUTTON
+        label: 导出
+    actions:
+      - actionId: actQuery
+        name: 查询
+        actionType: BUTTON
+        behaviorRef: Visit_QueryVisitAndPrescription
+        permissionRef: [PERM-QUERY-VISIT-PRESCRIPTION]
+      - actionId: actExport
+        name: 导出
+        actionType: BUTTON
+        behaviorRef: Visit_QueryVisitAndPrescription
+        permissionRef: [PERM-QUERY-VISIT-PRESCRIPTION]
+      - actionId: actVoid
+        name: 作废
+        actionType: BUTTON
+        behaviorRef: Prescription_Cancel
+        permissionRef: [PERM-PRESCRIPTION-CANCEL]
+        # 按 R-04 三分派执行：无记录/待调剂→仅作废并取消待调剂记录；已调剂→作废并回冲库存；
+        # 已发药→阻断作废（退药走线下）
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-18 超量·毒性处方审核台账（QUERY_LIST）
+  # 行为：Q-06 → Prescription_QueryOverdoseReview（dataSource REP-06 / QR-PRESCRIPTION-OVERDOSE-001）
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmOverdoseLedger
+    name: 超量·毒性处方审核台账
+    screenType: QUERY_LIST
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 统计报表 / 超量·毒性处方审核台账                            │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │          开方日期: {dtpQryDateFrom} ~ {dtpQryDateTo}   触发类型: (cboQryTriggerType) │
+      │          处方状态: (cboQryPrescriptionStatus)  审核药师: [txtQryReviewerId]  处理结果: (cboQryHandleResult) │
+      │          [btnQuery 查询] [btnReset 重置] [btnExport 导出]                  │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ @grdResult                                                                │
+      │  处方号 | 患者 | 开方日期 | 开方医师 | 超量/毒性药味 | 剂量 | 上限 | 超出倍数 | 毒性 | 超量理由 | 处方状态 | 审核人 │
+      │ 分页: [lblPaging 共N条] [cboPageSize 每页20条] [btnPrev 上一页] [btnNext 下一页] │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: dtpQryDateFrom
+        type: DATEPICKER
+        label: 开方日期从
+        io: I
+        dataBinding: Prescription.prescribeTime
+      - id: dtpQryDateTo
+        type: DATEPICKER
+        label: 开方日期到
+        io: I
+        dataBinding: Prescription.prescribeTime
+      - id: cboQryTriggerType
+        type: COMBO
+        label: 触发类型
+        io: I
+        # 派生条件（超量 / 毒性 / 两者），无对应 M1 属性，故不设 dataBinding
+      - id: cboQryPrescriptionStatus
+        type: COMBO
+        label: 处方状态
+        io: I
+        dataBinding: Prescription.prescriptionStatus
+      - id: txtQryReviewerId
+        type: TEXTBOX
+        label: 审核药师
+        io: I
+        dataBinding: Prescription.reviewerId
+      - id: cboQryHandleResult
+        type: COMBO
+        label: 处理结果
+        io: I
+        # 派生条件（审核通过 / 已驳回），无对应 M1 属性，故不设 dataBinding
+      - id: grdResult
+        type: GRID
+        label: 超量·毒性处方审核台账
+        io: O
+        dataSource: QR-PRESCRIPTION-OVERDOSE-001
+      - id: lblPaging
+        type: LABEL
+        label: 分页信息
+        io: O
+      - id: cboPageSize
+        type: COMBO
+        label: 每页条数
+        io: I
+      - id: btnPrev
+        type: BUTTON
+        label: 上一页
+      - id: btnNext
+        type: BUTTON
+        label: 下一页
+      - id: btnQuery
+        type: BUTTON
+        label: 查询
+      - id: btnReset
+        type: BUTTON
+        label: 重置
+      - id: btnExport
+        type: BUTTON
+        label: 导出
+    actions:
+      - actionId: actQuery
+        name: 查询
+        actionType: BUTTON
+        behaviorRef: Prescription_QueryOverdoseReview
+        permissionRef: [PERM-QUERY-OVERDOSE-REVIEW]
+      - actionId: actExport
+        name: 导出
+        actionType: BUTTON
+        behaviorRef: Prescription_QueryOverdoseReview
+        permissionRef: [PERM-QUERY-OVERDOSE-REVIEW]
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # UI-19 随访完成与失访分析（QUERY_LIST）
+  # 行为：Q-07 → FollowUp_QueryCompletion（dataSource REP-07 / RPT-FOLLOWUP-COMPLETION-001）
+  # ════════════════════════════════════════════════════════════════════════════
+  - screenId: frmFollowUpAnalysis
+    name: 随访完成与失访分析
+    screenType: QUERY_LIST
+    layout: |
+      ┌──────────────────────────────────────────────────────────────────────────┐
+      │ 中医问诊系统 / 统计报表 / 随访完成与失访分析                              │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │          计划随访日期: {dtpQryPlannedFrom} ~ {dtpQryPlannedTo}   科室: (cboQryDeptCode) │
+      │          接诊医师: [txtQryDoctorId]   随访状态: (cboQryRecordStatus)   疗效评价: (cboQryEfficacyLevel) │
+      │          [btnQuery 查询] [btnReset 重置] [btnExport 导出]                  │
+      ├──────────────────────────────────────────────────────────────────────────┤
+      │ @grdResult                                                                │
+      │  统计期间 | 科室 | 接诊医师 | 计划随访 | 已完成 | 已失访 | 完成率 | 失访率 | 痊愈 | 显效 | 有效 | 无效 | 加重 │
+      │ 分页: [lblPaging 共N条] [cboPageSize 每页20条] [btnPrev 上一页] [btnNext 下一页] │
+      └──────────────────────────────────────────────────────────────────────────┘
+    elements:
+      - id: dtpQryPlannedFrom
+        type: DATEPICKER
+        label: 计划随访日期从
+        io: I
+        dataBinding: FollowUp.plannedFollowUpDate
+      - id: dtpQryPlannedTo
+        type: DATEPICKER
+        label: 计划随访日期到
+        io: I
+        dataBinding: FollowUp.plannedFollowUpDate
+      - id: cboQryDeptCode
+        type: COMBO
+        label: 科室
+        io: I
+        dataBinding: Visit.deptCode
+      - id: txtQryDoctorId
+        type: TEXTBOX
+        label: 接诊医师
+        io: I
+        dataBinding: Visit.doctorId
+      - id: cboQryRecordStatus
+        type: COMBO
+        label: 随访状态
+        io: I
+        dataBinding: FollowUp.recordStatus
+      - id: cboQryEfficacyLevel
+        type: COMBO
+        label: 疗效评价
+        io: I
+        dataBinding: FollowUp.efficacyLevel
+      - id: grdResult
+        type: GRID
+        label: 随访完成与失访分析结果
+        io: O
+        dataSource: RPT-FOLLOWUP-COMPLETION-001
+      - id: lblPaging
+        type: LABEL
+        label: 分页信息
+        io: O
+      - id: cboPageSize
+        type: COMBO
+        label: 每页条数
+        io: I
+      - id: btnPrev
+        type: BUTTON
+        label: 上一页
+      - id: btnNext
+        type: BUTTON
+        label: 下一页
+      - id: btnQuery
+        type: BUTTON
+        label: 查询
+      - id: btnReset
+        type: BUTTON
+        label: 重置
+      - id: btnExport
+        type: BUTTON
+        label: 导出
+    actions:
+      - actionId: actQuery
+        name: 查询
+        actionType: BUTTON
+        behaviorRef: FollowUp_QueryCompletion
+        permissionRef: [PERM-QUERY-FOLLOWUP]
+      - actionId: actExport
+        name: 导出
+        actionType: BUTTON
+        behaviorRef: FollowUp_QueryCompletion
+        permissionRef: [PERM-QUERY-FOLLOWUP]
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 建模边界说明
+# ══════════════════════════════════════════════════════════════════════════════
+# 1. 系统管理模块不进本模型
+#    需求文档 D.3 菜单树包含 7 个一级菜单，其中「系统管理」及其二级菜单
+#    UI-20 用户管理、UI-21 角色与权限配置、UI-22 菜单管理，属于技术底座内置的
+#    系统管理模块（对应平台功能 FUNC-17）。平台功能不进 M1/M2 本体模型
+#    （M2 行为模型中无对应用户/角色/菜单维护行为，M5 主体模型中 ROLE-06
+#    系统管理员的权限集合为空），故本 MU UI 模型不建立这三屏对应的屏幕、
+#    界面元素与操作功能点，菜单树中亦不出现「系统管理」一级菜单。
+#    本模型菜单树一级菜单为 6 个、二级菜单 19 个、屏幕 19 个，与建模范围一致。
+#
+# 2. 无 M2 行为入口的界面元素（仅作元素，不设操作功能点）
+#    - 「清空」（UI-02）、「返回 / 返回待诊队列 / 返回队列」（UI-03、UI-05～UI-09）、
+#      「四诊摘要」（UI-04）、「取消 / 关闭弹窗」（UI-10、UI-11、UI-12、UI-17）、
+#      「重置」（各查询屏）：纯界面导航或条件重置动作，不改变业务状态；
+#    - 「检查剂量」（UI-06）：调用 R-01 剂量上限判定规则，规则只判断不改变状态；
+#    - 「对账检查」（UI-09）：调用 R-06 库存对账规则。
+#
+# 3. 「导出」功能点的处理
+#    需求文档 D.6 为各查询屏列出了「导出」，但 M2 行为模型中未定义导出行为；
+#    按需求文档第六部分 6.4「查询报表访问权限绑定唯一 Q 行为，导出权限随对应 Q 行为
+#    一并授予」，本模型将「导出」操作功能点的 behaviorRef 指向该屏的查询行为，
+#    与 D.6「导出 → 对应 Q 行为」的映射一致，不新增 M2 行为。
+#
+# 4. 「盘点」与「作废」弹窗
+#    UI-10 的行操作「盘点」与 UI-17 的行操作「作废」均通过弹出对话框完成录入
+#    （分别调用 Herb_Stocktake 与 Prescription_Cancel），布局图中已画出弹窗草图；
+#    这两种界面类型为 QUERY_LIST，主区仍遵循「查询条件一行三个控件 + 结果表格分页」。
+#
+# 5. 控件类型与需求原型的差异（以 §8.3 强制映射为准）
+#    M1 将接诊医师 doctorId、调剂人 dispenserId、复核人 checkerId、审核人 reviewerId、
+#    操作人 operatorId、开方医师 doctorId 定义为 String 标量，将饮片规格 spec 定义为 String，
+#    故这些控件使用 TEXTBOX，而原型（D.5）以跳选框 / 下拉框示意；控件类型以本体框架
+#    §8.3 的强制映射为准，语义（可选择对象或字典项）由实现阶段的数据源提供。
+#
+# 6. 已知缺口（如实登记，未自行编造）
+#    a) 原型 UI-04「脉象-六部脉」（左寸/左关/左尺/右寸/右关/右尺）在 M1 就诊记录
+#       「四诊信息」子实体中无对应属性，本模型并入 pulseDetail（脉象补充说明）；
+#    b) 原型 UI-11 列表的查询按钮在 D.6 中归属 FUNC-13（命令行为，无法作查询入口），
+#       本模型以 Q-07 行为 FollowUp_QueryCompletion 作为该列表的查询入口；
+#    c) M2 与 M7 中未定义「随访登记列表」与「证型字典列表」等单聚合列表的查询对象，
+#       按 §7.2「单聚合简单查询可独立定义，不要求 M7」，相应 GRID 不设 dataSource；
+#    d) UI-05 的从表「辨证结论」为独立聚合（AGG-DIAGNOSIS-001），非就诊聚合内子实体，
+#       故该 GRID 不设 dataBinding，行集按 diagnosis.visitId 关联加载；
+#    e) 【已修复】M2 Prescription_Cancel 的后置条件原写「prescription.remark 追加作废原因」，
+#       而 M1 处方聚合（AGG-PRESCRIPTION-001）未定义 remark 属性（字段级不一致）。已改为
+#       prescription.cancelReason，并在 M1 补 cancelReason（作废原因）属性、需求文档 OBJ-08
+#       同步补该属性（文档 v1.3）；本模型 UI-17 的「作废原因」元素已绑定
+#       Prescription.cancelReason，缺口关闭；
+#    f) M1 处方聚合无「已退还 / 退药」相关属性与行为，UI-17 行操作「作废」在处方状态为
+#       「已发药」时由 R-04 阻断（退药走线下），与本模型一致。

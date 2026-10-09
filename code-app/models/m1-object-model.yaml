@@ -1,0 +1,1770 @@
+# M1 对象模型元文件 - m1-object-model.yaml
+# 依据《中医问诊系统-需求规格说明书-V9.md》第三部分 + 附录 C.1
+# 对象映射：OBJ-01～OBJ-12（其中 OBJ-03/OBJ-09/OBJ-10 及方剂模板组成明细为聚合内子实体）
+# 平台边界：用户（医师/药师/操作人）与科室不进 M1 领域对象模型——用户由 FUNC-17 系统管理与 M5 主体模型承载，
+#           相关属性以 String（存储平台用户 ID）或 DictionaryRef（科室字典）表达，见文件末「建模边界说明」。
+model_type: OBJECT
+version: "2.1"
+domain: "中医问诊"
+
+aggregates:
+  # ══════════════════════════════════════════════════════════
+  # OBJ-01 患者（主数据）
+  # ══════════════════════════════════════════════════════════
+  - id: AGG-PATIENT-001
+    name: 患者
+    alias: Patient
+    aggregateType: AGGREGATE_ROOT
+    description: 在本门诊建立档案的就诊人，身份与联系信息跨多次就诊长期有效
+    lifecycle: [在用, 停用]
+    tags: [主数据]
+    attributes:
+      - name: patientNo
+        label: 患者编号
+        type: String
+        required: true
+        unique: true
+        description: 系统生成，两位前缀 + 六位流水号；只读
+      - name: patientName
+        label: 患者姓名
+        type: String
+        required: true
+        refRules:
+          - name: 患者姓名长度限制
+            description: 姓名长度 2～20 字
+            expression: "LENGTH(value) >= 2 AND LENGTH(value) <= 20"
+            violationMessage: 患者姓名长度应在 2 到 20 字之间
+            enforcedAt: ALWAYS
+      - name: gender
+        label: 性别
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-PATIENT
+          typeCode: GENDER
+        required: true
+      - name: birthDate
+        label: 出生日期
+        type: Date
+        required: false
+        refRules:
+          - name: REF-01 出生日期不得晚于当前日期
+            description: 出生日期必须早于或等于今天
+            expression: "value <= TODAY()"
+            violationMessage: 出生日期不得晚于当前日期
+            enforcedAt: ALWAYS
+      - name: age
+        label: 年龄
+        type: Integer
+        required: false
+        description: 单位「岁」；有出生日期时自动计算，否则人工填写
+        refRules:
+          - name: REF-02 年龄取值范围
+            description: 年龄在 0 到 150 之间
+            expression: "value >= 0 AND value <= 150"
+            violationMessage: 年龄应在 0 到 150 岁之间
+            enforcedAt: ALWAYS
+      - name: idType
+        label: 证件类型
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-PATIENT
+          typeCode: ID_TYPE
+        required: false
+      - name: idNo
+        label: 证件号码
+        type: String
+        required: false
+        description: 与证件类型联合唯一（INV-01）；类型为居民身份证时须 18 位且校验位正确（REF-03）
+      - name: phone
+        label: 联系电话
+        type: String
+        required: true
+        refRules:
+          - name: REF-04 联系电话格式
+            description: 11 位手机号或含区号的固话
+            expression: "MATCHES(value, '^1[3-9]\\\\d{9}$') OR MATCHES(value, '^0\\\\d{2,3}-?\\\\d{7,8}$')"
+            violationMessage: 联系电话须为 11 位手机号或含区号的固话格式
+            enforcedAt: ALWAYS
+      - name: address
+        label: 联系地址
+        type: String
+        required: false
+        refRules:
+          - name: 联系地址长度限制
+            description: 联系地址长度不超过 100 字
+            expression: "LENGTH(value) <= 100"
+            violationMessage: 联系地址不能超过 100 字
+            enforcedAt: ALWAYS
+      - name: occupation
+        label: 职业
+        type: String
+        required: false
+        description: 自由文本，中医问诊常需参考职业与劳损因素
+      - name: allergyHistory
+        label: 过敏史
+        type: String
+        required: false
+        description: 药物/食物过敏记录；跨就诊长期有效，置于患者主数据（D-09）
+      - name: patientStatus
+        label: 患者状态
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-PATIENT
+          typeCode: PATIENT_STATUS
+        required: true
+        defaultValue: ACTIVE
+      - name: remark
+        label: 备注
+        type: String
+        required: false
+        refRules:
+          - name: 备注长度限制
+            description: 备注长度不超过 200 字
+            expression: "LENGTH(value) <= 200"
+            violationMessage: 备注不能超过 200 字
+            enforcedAt: ALWAYS
+
+    invariants:
+      - name: INV-01 证件联合唯一
+        expression: "IF idNo IS NOT NULL THEN COUNT(patients WHERE idType == idType AND idNo == idNo) <= 1"
+        violationMessage: 同一「证件类型 + 证件号码」不得重复建档
+        enforcedAt: ALWAYS
+      - name: REF-03 身份证号码格式校验
+        expression: "IF idType == 'ID_CARD' THEN MATCHES(idNo, '^\\\\d{17}[0-9Xx]$') AND CHECK_ID_CHECKSUM(idNo)"
+        violationMessage: 证件类型为居民身份证时，证件号码须为 18 位且校验位正确
+        enforcedAt: ALWAYS
+      - name: 出生日期与年龄至少填写一项
+        expression: "birthDate IS NOT NULL OR age IS NOT NULL"
+        violationMessage: 出生日期与年龄至少填写一项
+        enforcedAt: ALWAYS
+
+  # ══════════════════════════════════════════════════════════
+  # OBJ-02 就诊记录（核心聚合根，含 OBJ-03 四诊信息子实体）
+  # ══════════════════════════════════════════════════════════
+  - id: AGG-VISIT-001
+    name: 就诊记录
+    alias: Visit
+    aggregateType: AGGREGATE_ROOT
+    description: 患者一次到院就诊的业务主记录，承载主诉、现病史与就诊状态；一次就诊一份四诊信息
+    lifecycle: [已挂号, 接诊中, 已完成, 已取消]
+    tags: [核心域]
+
+    attributes:
+      - name: visitNo
+        label: 就诊号
+        type: String
+        required: true
+        unique: true
+        description: 系统生成；只读
+      - name: patientId
+        label: 患者
+        type: AggregateRootRef
+        targetAggregate: AGG-PATIENT-001
+        required: true
+      - name: visitType
+        label: 就诊类型
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-VISIT
+          typeCode: VISIT_TYPE
+        required: true
+      - name: previousVisitId
+        label: 上次就诊
+        type: AggregateRootRef
+        targetAggregate: AGG-VISIT-001
+        required: false
+        description: 就诊类型为复诊时必填；随访日期先后由 M3 规则 R-05 校验
+      - name: registerTime
+        label: 挂号时间
+        type: DateTime
+        required: true
+        description: 挂号环节写入
+      - name: receiveTime
+        label: 接诊时间
+        type: DateTime
+        required: false
+        description: 进入接诊时写入
+      - name: doctorId
+        label: 接诊医师
+        type: String
+        required: true
+        description: 中医师角色用户 ID，引用平台用户（FUNC-17 系统管理维护）
+      - name: deptCode
+        label: 科室
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-VISIT
+          typeCode: DEPT
+        required: true
+        description: 默认取当前门诊科室（单机构字典）
+      - name: chiefComplaint
+        label: 主诉
+        type: String
+        required: false
+        description: 挂号时可为空；由接诊开单环节录入并在该环节必填（依 MU：UI-02 挂号屏无主诉元素，UI-03 接诊屏为 txaChiefComplaint）
+        refRules:
+          - name: 主诉长度限制
+            description: 主诉长度不超过 200 字
+            expression: "LENGTH(value) <= 200"
+            violationMessage: 主诉不能超过 200 字
+            enforcedAt: ALWAYS
+      - name: presentIllness
+        label: 现病史
+        type: String
+        required: false
+        description: 起病、演变与诊疗经过
+      - name: pastHistory
+        label: 既往史
+        type: String
+        required: false
+        description: 本次就诊视角下的既往情况，归就诊记录（D-09）
+      - name: vitalSigns
+        label: 生命体征
+        type: String
+        required: false
+        description: 体温 / 血压 / 心率等，自由记录
+      - name: visitStatus
+        label: 就诊状态
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-VISIT
+          typeCode: VISIT_STATUS
+        required: true
+        defaultValue: REGISTERED
+      - name: remark
+        label: 备注
+        type: String
+        required: false
+        description: 就诊作废原因等记入本字段
+
+    entities:
+      - name: 四诊信息
+        alias: FourDiagnosis
+        description: 归属于某次就诊的望闻问切结构化记录，一次就诊一份（OBJ-03）
+        localId: fourDiagnosisId
+        cardinality: ZERO_OR_ONE
+        cascadeDelete: true
+        attributes:
+          - name: fourDiagnosisId
+            label: 四诊信息标识
+            type: String
+            required: true
+            description: 聚合内唯一标识
+          - name: inquiryColdHeat
+            label: 问诊-寒热
+            type: String
+            required: false
+            description: 恶寒发热、寒热往来等
+          - name: inquirySweat
+            label: 问诊-汗出
+            type: String
+            required: false
+            description: 有汗无汗、自汗盗汗
+          - name: inquiryHeadBody
+            label: 问诊-头身
+            type: String
+            required: false
+            description: 头痛、眩晕、身重
+          - name: inquiryDiet
+            label: 问诊-饮食口味
+            type: String
+            required: false
+            description: 食欲、口渴、口味异常
+          - name: inquirySleep
+            label: 问诊-睡眠
+            type: String
+            required: false
+            description: 失眠、多梦、嗜睡
+          - name: inquiryExcretion
+            label: 问诊-二便
+            type: String
+            required: false
+            description: 大便、小便情况
+          - name: inquiryEmotion
+            label: 问诊-情志与妇科
+            type: String
+            required: false
+            description: 情志变化、月经带下等
+          - name: inspectionFace
+            label: 望诊-面色
+            type: String
+            required: false
+            description: 面色、色泽
+          - name: inspectionShape
+            label: 望诊-形态
+            type: String
+            required: false
+            description: 形体、姿态
+          - name: tongueBody
+            label: 舌质
+            type: DictionaryRef
+            dictionaryRef:
+              dictionaryId: DICT-TCM-SIGN
+              typeCode: TONGUE_BODY
+            required: false
+          - name: tongueCoating
+            label: 舌苔
+            type: DictionaryRef
+            dictionaryRef:
+              dictionaryId: DICT-TCM-SIGN
+              typeCode: TONGUE_COATING
+            required: false
+          - name: auscultationVoice
+            label: 闻诊-声音气息
+            type: String
+            required: false
+            description: 语声、气息、咳嗽
+          - name: auscultationSmell
+            label: 闻诊-气味
+            type: String
+            required: false
+            description: 口气、体味
+          - name: pulseCode
+            label: 脉象
+            type: DictionaryRef
+            dictionaryRef:
+              dictionaryId: DICT-TCM-SIGN
+              typeCode: PULSE
+            required: true
+            description: 字典选脉，辅以文本补充
+          - name: pulseDetail
+            label: 脉象补充说明
+            type: String
+            required: false
+            description: 左右寸关尺六部脉分部记录
+          - name: fourDiagnosisSummary
+            label: 四诊摘要
+            type: String
+            required: false
+            description: 医师归纳的关键四诊要点，供辨证引用
+
+    invariants:
+      - name: REF-05 接诊时间不得早于挂号时间
+        expression: "receiveTime IS NULL OR receiveTime >= registerTime"
+        violationMessage: 接诊时间不得早于挂号时间
+        enforcedAt: ALWAYS
+
+  # ══════════════════════════════════════════════════════════
+  # OBJ-04 辨证结论（核心聚合根）
+  # ══════════════════════════════════════════════════════════
+  - id: AGG-DIAGNOSIS-001
+    name: 辨证结论
+    alias: SyndromeDiagnosis
+    aggregateType: AGGREGATE_ROOT
+    description: 医师基于四诊得出的证型判定与治法，可含主证与兼证
+    lifecycle: [草稿, 已确认]
+    tags: [核心域]
+
+    attributes:
+      - name: diagnosisNo
+        label: 辨证号
+        type: String
+        required: true
+        unique: true
+        description: 系统生成
+      - name: visitId
+        label: 就诊记录
+        type: AggregateRootRef
+        targetAggregate: AGG-VISIT-001
+        required: true
+        description: 一次就诊可多条（主证 + 兼证）
+      - name: diagnosisMethod
+        label: 辨证方法
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-SYNDROME
+          typeCode: DIAG_METHOD
+        required: true
+      - name: syndromeId
+        label: 证型
+        type: AggregateRootRef
+        targetAggregate: AGG-SYNDROME-001
+        required: true
+      - name: syndromeNature
+        label: 证型性质
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-SYNDROME
+          typeCode: SYNDROME_NATURE
+        required: true
+      - name: diagnosisBasis
+        label: 辨证依据
+        type: String
+        required: true
+        refRules:
+          - name: 辨证依据长度限制
+            description: 支撑该证型的四诊依据，长度不少于 10 字
+            expression: "LENGTH(value) >= 10"
+            violationMessage: 辨证依据不少于 10 字，避免空泛结论
+            enforcedAt: ALWAYS
+      - name: treatmentPrinciple
+        label: 治法
+        type: String
+        required: true
+        description: 如「疏肝理气、健脾和胃」
+      - name: conclusionStatus
+        label: 结论状态
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-SYNDROME
+          typeCode: CONCLUSION_STATUS
+        required: true
+        defaultValue: DRAFT
+
+    invariants:
+      - name: INV-02 主证唯一
+        expression: "IF syndromeNature == 'PRIMARY' THEN COUNT(diagnoses WHERE visitId == visitId AND syndromeNature == 'PRIMARY') <= 1"
+        violationMessage: 同一就诊记录下「主证」性质的辨证结论只能有一条
+        enforcedAt: ALWAYS
+        description: 保存时按就诊记录查询已存在的同性质结论后判定
+
+  # ══════════════════════════════════════════════════════════
+  # OBJ-05 证型字典（主数据）
+  # ══════════════════════════════════════════════════════════
+  - id: AGG-SYNDROME-001
+    name: 证型字典
+    alias: SyndromeType
+    aggregateType: AGGREGATE_ROOT
+    description: 证型的标准化定义，供辨证结论引用
+    lifecycle: [启用, 停用]
+    tags: [主数据]
+
+    attributes:
+      - name: syndromeCode
+        label: 证型编码
+        type: String
+        required: true
+        unique: true
+        description: 规则：Z + 三位流水号
+        refRules:
+          - name: 证型编码格式
+            description: 证型编码为 Z 加三位流水号
+            expression: "MATCHES(value, '^Z\\\\d{3}$')"
+            violationMessage: 证型编码须为 Z 加三位流水号（如 Z001）
+            enforcedAt: ALWAYS
+      - name: syndromeName
+        label: 证型名称
+        type: String
+        required: true
+        unique: true
+        description: 如「肝气郁结证」
+      - name: diagnosisMethod
+        label: 所属辨证体系
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-SYNDROME
+          typeCode: DIAG_METHOD
+        required: true
+        description: 与 OBJ-04 辨证方法共用同一字典
+      - name: syndromeDescription
+        label: 证候描述
+        type: String
+        required: false
+        description: 典型证候表现
+      - name: commonSymptoms
+        label: 常见症状
+        type: String
+        required: false
+        description: 供医师辨证参考
+      - name: correspondingTreatment
+        label: 对应治法
+        type: String
+        required: false
+        description: 该证型常用治法
+      - name: syndromeStatus
+        label: 状态
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-COMMON
+          typeCode: USE_STATUS
+        required: true
+        defaultValue: ENABLED
+
+  # ══════════════════════════════════════════════════════════
+  # OBJ-06 方剂模板（主数据，含组成明细子实体）
+  # ══════════════════════════════════════════════════════════
+  - id: AGG-FORMULA-001
+    name: 方剂模板
+    alias: FormulaTemplate
+    aggregateType: AGGREGATE_ROOT
+    description: 可复用的经方/时方/经验方，含组成药味与常用剂量
+    lifecycle: [启用, 停用]
+    tags: [主数据]
+
+    attributes:
+      - name: formulaCode
+        label: 方剂编码
+        type: String
+        required: true
+        unique: true
+        description: 规则：F + 三位流水号
+        refRules:
+          - name: 方剂编码格式
+            description: 方剂编码为 F 加三位流水号
+            expression: "MATCHES(value, '^F\\\\d{3}$')"
+            violationMessage: 方剂编码须为 F 加三位流水号（如 F001）
+            enforcedAt: ALWAYS
+      - name: formulaName
+        label: 方剂名称
+        type: String
+        required: true
+        unique: true
+        description: 如「逍遥散」
+      - name: formulaType
+        label: 方剂类型
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-FORMULA
+          typeCode: FORMULA_TYPE
+        required: true
+      - name: source
+        label: 出处
+        type: String
+        required: false
+        description: 典籍或经验来源
+      - name: function
+        label: 功用
+        type: String
+        required: false
+        description: 如「疏肝解郁、健脾养血」
+      - name: indication
+        label: 主治
+        type: String
+        required: false
+        description: 适用证型与症状
+      - name: defaultDoses
+        label: 常用剂数
+        type: Integer
+        required: false
+        description: 开方时默认带入处方剂数
+      - name: formulaStatus
+        label: 状态
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-COMMON
+          typeCode: USE_STATUS
+        required: true
+        defaultValue: ENABLED
+
+    entities:
+      - name: 方剂组成明细
+        alias: FormulaItem
+        description: 方剂的药味组成、常用剂量与特殊煎法（OBJ-06 内嵌子实体，未单独编号）
+        localId: itemId
+        cardinality: ONE_OR_MORE
+        cascadeDelete: true
+        attributes:
+          - name: itemId
+            label: 组成明细标识
+            type: String
+            required: true
+            description: 聚合内唯一标识
+          - name: seqNo
+            label: 序号
+            type: Integer
+            required: true
+            description: 模板内排序，从 1 开始
+          - name: herbId
+            label: 药味
+            type: AggregateRootRef
+            targetAggregate: AGG-HERB-001
+            required: true
+          - name: commonDose
+            label: 常用剂量
+            type: Decimal
+            required: true
+            description: 单位 g
+            refRules:
+              - name: 常用剂量必须为正数
+                description: 常用剂量必须大于 0
+                expression: "value > 0"
+                violationMessage: 常用剂量必须大于 0
+                enforcedAt: ALWAYS
+          - name: decoctionMethod
+            label: 特殊煎法
+            type: DictionaryRef
+            dictionaryRef:
+              dictionaryId: DICT-PRESCRIPTION
+              typeCode: DECOCTION_METHOD
+            required: false
+
+    invariants:
+      - name: 组成明细药味不重复
+        expression: "COUNT(items.herbId) == COUNT_DISTINCT(items.herbId)"
+        violationMessage: 同一方剂模板内药味不得重复
+        enforcedAt: ALWAYS
+
+  # ══════════════════════════════════════════════════════════
+  # OBJ-07 中药饮片（主数据含库存，含 OBJ-10 出入库流水子实体）
+  # ══════════════════════════════════════════════════════════
+  - id: AGG-HERB-001
+    name: 中药饮片
+    alias: Herb
+    aggregateType: AGGREGATE_ROOT
+    description: 院内使用的中药饮片品目及其库存数量；库存变动以出入库流水（同聚合子实体）为凭据
+    lifecycle: [启用, 停用]
+    tags: [主数据, 库存]
+
+    attributes:
+      - name: herbCode
+        label: 饮片编码
+        type: String
+        required: true
+        unique: true
+        description: 规则：Y + 四位流水号
+        refRules:
+          - name: 饮片编码格式
+            description: 饮片编码为 Y 加四位流水号
+            expression: "MATCHES(value, '^Y\\\\d{4}$')"
+            violationMessage: 饮片编码须为 Y 加四位流水号（如 Y0001）
+            enforcedAt: ALWAYS
+      - name: herbName
+        label: 饮片名称
+        type: String
+        required: true
+        unique: true
+        description: 如「当归」
+      - name: aliasName
+        label: 别名
+        type: String
+        required: false
+        description: 便于检索
+      - name: herbCategory
+        label: 药材类别
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-HERB
+          typeCode: HERB_CATEGORY
+        required: false
+      - name: natureMeridian
+        label: 性味归经
+        type: String
+        required: false
+        description: 展示与参考用
+      - name: efficacy
+        label: 功效
+        type: String
+        required: false
+      - name: minCommonDose
+        label: 常用最小量
+        type: Decimal
+        required: true
+        description: 单位 g
+        refRules:
+          - name: REF-06 常用最小量必须为正数
+            description: 常用最小量必须大于 0
+            expression: "value > 0"
+            violationMessage: 常用最小量必须大于 0
+            enforcedAt: ALWAYS
+      - name: maxCommonDose
+        label: 常用最大量
+        type: Decimal
+        required: true
+        description: 单位 g；供 M3 规则 R-01 判定超量使用
+      - name: toxicityLevel
+        label: 毒性分级
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-HERB
+          typeCode: TOXICITY_LEVEL
+        required: true
+        defaultValue: NONE
+        description: 供 M3 规则 R-03 判定毒性上限
+      - name: toxicDoseLimit
+        label: 毒性单张处方总量上限
+        type: Decimal
+        required: false
+        description: 单位 g；毒性分级非「无毒」时由库房管理员维护，供 M3 规则 R-03 判定；为空表示不单独设限（需求文档 OBJ-07 v1.1 已定义，M1 于 2026-09-30 批次 2 实施时补全）
+      - name: specialManaged
+        label: 是否特殊管理
+        type: Boolean
+        required: true
+        defaultValue: false
+      - name: stockQuantity
+        label: 库存数量
+        type: Decimal
+        required: true
+        defaultValue: 0
+        description: 单位 g；由出入库流水（B-01 扣减 / B-02 回冲）驱动
+        refRules:
+          - name: REF-08 库存数量非负
+            description: 库存数量不小于 0
+            expression: "value >= 0"
+            violationMessage: 库存数量不得为负数
+            enforcedAt: ALWAYS
+      - name: lowStockThreshold
+        label: 低库存预警值
+        type: Decimal
+        required: false
+        description: 单位 g
+        refRules:
+          - name: REF-09 低库存预警值非负
+            description: 低库存预警值不小于 0
+            expression: "value >= 0"
+            violationMessage: 低库存预警值不得为负数
+            enforcedAt: ALWAYS
+      - name: origin
+        label: 产地
+        type: String
+        required: false
+      - name: spec
+        label: 规格
+        type: String
+        required: false
+        description: 如「统货 / 选货」
+      - name: herbStatus
+        label: 状态
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-COMMON
+          typeCode: USE_STATUS
+        required: true
+        defaultValue: ENABLED
+
+    entities:
+      - name: 饮片出入库记录
+        alias: HerbStockFlow
+        description: 饮片库存每一次变动的凭据，只追加不修改（OBJ-10，属饮片聚合）
+        localId: flowNo
+        cardinality: ZERO_OR_MORE
+        cascadeDelete: false
+        attributes:
+          - name: flowNo
+            label: 流水号
+            type: String
+            required: true
+            description: 系统生成
+          - name: bizType
+            label: 业务类型
+            type: DictionaryRef
+            dictionaryRef:
+              dictionaryId: DICT-STOCK-FLOW
+              typeCode: FLOW_BIZ_TYPE
+            required: true
+          - name: quantity
+            label: 数量
+            type: Decimal
+            required: true
+            description: 单位 g；入库为正、出库为负
+            refRules:
+              - name: REF-13 数量不得为 0
+                description: 出入库数量不得为 0
+                expression: "value != 0"
+                violationMessage: 出入库数量不得为 0
+                enforcedAt: ALWAYS
+          - name: bizDate
+            label: 业务日期
+            type: DateTime
+            required: true
+          - name: operatorId
+            label: 操作人
+            type: String
+            required: true
+            description: 引用平台用户 ID
+          - name: prescriptionId
+            label: 关联处方
+            type: AggregateRootRef
+            targetAggregate: AGG-PRESCRIPTION-001
+            required: false
+            description: 业务类型为调剂出库 / 作废回冲时必填
+          - name: inboundNo
+            label: 关联入库单号
+            type: String
+            required: false
+            description: 业务类型为入库时填写
+          - name: remark
+            label: 备注
+            type: String
+            required: false
+            description: 报损 / 盘点调整原因
+
+    invariants:
+      - name: REF-07 常用最大量不小于常用最小量
+        expression: "maxCommonDose >= minCommonDose"
+        violationMessage: 常用最大量不得小于常用最小量
+        enforcedAt: ALWAYS
+      - name: INV-03 库存与流水净和一致
+        expression: "stockQuantity == SUM(stockFlows.quantity)"
+        violationMessage: 库存数量必须等于该饮片全部出入库记录的数量净和
+        enforcedAt: ALWAYS
+
+  # ══════════════════════════════════════════════════════════
+  # OBJ-08 处方（核心聚合根，含 OBJ-09 处方明细子实体）
+  # ══════════════════════════════════════════════════════════
+  - id: AGG-PRESCRIPTION-001
+    name: 处方
+    alias: Prescription
+    aggregateType: AGGREGATE_ROOT
+    description: 医师为某次就诊开具的中药处方，含剂数、用法与审核状态
+    lifecycle: [草稿, 待审核, 审核通过, 已驳回, 已调剂, 已发药, 已作废]
+    tags: [核心域]
+
+    attributes:
+      - name: prescriptionNo
+        label: 处方号
+        type: String
+        required: true
+        unique: true
+        description: 系统生成
+      - name: visitId
+        label: 就诊记录
+        type: AggregateRootRef
+        targetAggregate: AGG-VISIT-001
+        required: true
+        description: 一次就诊可开多张处方（如内服 + 外洗）
+      - name: patientId
+        label: 患者
+        type: AggregateRootRef
+        targetAggregate: AGG-PATIENT-001
+        required: true
+        description: 由就诊记录带入，便于查询
+      - name: doctorId
+        label: 开方医师
+        type: String
+        required: true
+        description: 默认取接诊医师；引用平台用户 ID
+      - name: prescriptionType
+        label: 处方类型
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-PRESCRIPTION
+          typeCode: PRESCRIPTION_TYPE
+        required: true
+      - name: formulaTemplateId
+        label: 引用方剂模板
+        type: AggregateRootRef
+        targetAggregate: AGG-FORMULA-001
+        required: false
+        description: 选方后带出组成，医师可加减
+      - name: doses
+        label: 剂数
+        type: Integer
+        required: true
+        refRules:
+          - name: REF-10 剂数取值范围
+            description: 剂数在 1 到 30 之间
+            expression: "value >= 1 AND value <= 30"
+            violationMessage: 剂数应在 1 到 30 之间
+            enforcedAt: ALWAYS
+      - name: usageMethod
+        label: 用法
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-PRESCRIPTION
+          typeCode: USAGE_METHOD
+        required: true
+      - name: decoctionInstruction
+        label: 煎服说明
+        type: String
+        required: false
+        description: 代煎、特殊煎法汇总说明
+      - name: medicalAdvice
+        label: 医嘱嘱托
+        type: String
+        required: false
+        description: 饮食起居禁忌等
+      - name: prescribeTime
+        label: 开方时间
+        type: DateTime
+        required: true
+      - name: submitTime
+        label: 提交时间
+        type: DateTime
+        required: false
+        description: FUNC-07 提交送审时写入；REF-11 与审核时间比较（建模补全字段）
+      - name: prescriptionStatus
+        label: 处方状态
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-PRESCRIPTION
+          typeCode: PRESCRIPTION_STATUS
+        required: true
+        defaultValue: DRAFT
+      - name: reviewerId
+        label: 审核人
+        type: String
+        required: false
+        description: 中药师；审核通过或驳回时写入；引用平台用户 ID
+      - name: reviewTime
+        label: 审核时间
+        type: DateTime
+        required: false
+        description: REF-11：不得早于提交时间
+      - name: rejectReason
+        label: 驳回原因
+        type: String
+        required: false
+        description: 处方状态为「已驳回」时必填
+      - name: cancelReason
+        label: 作废原因
+        type: String
+        required: false
+        description: 处方状态为「已作废」时必填；FUNC-09 作废时填写，处方不物理删除
+
+    entities:
+      - name: 处方明细
+        alias: PrescriptionItem
+        description: 处方内每一味饮片及其剂量、特殊煎法（OBJ-09）
+        localId: itemId
+        cardinality: ONE_OR_MORE
+        cascadeDelete: true
+        attributes:
+          - name: itemId
+            label: 处方明细标识
+            type: String
+            required: true
+            description: 聚合内唯一标识
+          - name: seqNo
+            label: 序号
+            type: Integer
+            required: true
+            description: 处方内排序，从 1 开始
+          - name: herbId
+            label: 饮片
+            type: AggregateRootRef
+            targetAggregate: AGG-HERB-001
+            required: true
+            description: 同一处方内同一饮片不得重复（联合唯一）
+          - name: singleDose
+            label: 单剂剂量
+            type: Decimal
+            required: true
+            description: 单位 g；超出饮片常用量上限时按 M3 规则 R-01 处理
+            refRules:
+              - name: REF-12 单剂剂量必须为正数
+                description: 单剂剂量必须大于 0
+                expression: "value > 0"
+                violationMessage: 单剂剂量必须大于 0
+                enforcedAt: ALWAYS
+          - name: decoctionMethod
+            label: 特殊煎法
+            type: DictionaryRef
+            dictionaryRef:
+              dictionaryId: DICT-PRESCRIPTION
+              typeCode: DECOCTION_METHOD
+            required: false
+            description: 由模板带出，可调整
+          - name: remark
+            label: 备注
+            type: String
+            required: false
+          - name: overDoseReason
+            label: 超量理由
+            type: String
+            required: false
+            description: 单剂剂量超出饮片常用量上限时填写（M3 规则 R-01）
+
+    invariants:
+      - name: 处方明细饮片不重复
+        expression: "COUNT(items.herbId) == COUNT_DISTINCT(items.herbId)"
+        violationMessage: 同一处方内同一饮片不得重复
+        enforcedAt: ALWAYS
+      - name: INV-04 提交审核时处方明细非空
+        expression: "IF prescriptionStatus IN ['待审核', '审核通过', '已调剂', '已发药'] THEN COUNT(items) >= 1"
+        violationMessage: 处方提交审核时处方明细不得为空，至少一味饮片
+        enforcedAt: ALWAYS
+      - name: REF-11 审核时间不得早于提交时间
+        expression: "reviewTime IS NULL OR submitTime IS NULL OR reviewTime >= submitTime"
+        violationMessage: 审核时间不得早于提交时间
+        enforcedAt: ALWAYS
+
+  # ══════════════════════════════════════════════════════════
+  # OBJ-11 调剂发药记录（核心聚合根）
+  # ══════════════════════════════════════════════════════════
+  - id: AGG-DISPENSE-001
+    name: 调剂发药记录
+    alias: DispenseRecord
+    aggregateType: AGGREGATE_ROOT
+    description: 中药师针对一张处方的调剂与发药执行记录，一张处方对应一条记录
+    lifecycle: [待调剂, 已调剂, 已发药, 已取消]
+    tags: [核心域]
+
+    attributes:
+      - name: dispenseNo
+        label: 发药单号
+        type: String
+        required: true
+        unique: true
+        description: 系统生成
+      - name: prescriptionId
+        label: 处方
+        type: AggregateRootRef
+        targetAggregate: AGG-PRESCRIPTION-001
+        required: true
+        description: 一张处方对应一条调剂发药记录（一对一）
+      - name: dispenserId
+        label: 调剂人
+        type: String
+        required: true
+        description: 中药师；引用平台用户 ID
+      - name: checkerId
+        label: 复核人
+        type: String
+        required: false
+        description: 选填，不强制（单节点审核，D-24）；引用平台用户 ID
+      - name: dispenseTime
+        label: 调剂时间
+        type: DateTime
+        required: true
+      - name: issueTime
+        label: 发药时间
+        type: DateTime
+        required: false
+        description: REF-14：不得早于调剂时间
+      - name: recordStatus
+        label: 记录状态
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-DISPENSE
+          typeCode: DISPENSE_STATUS
+        required: true
+        defaultValue: PENDING
+      - name: remark
+        label: 备注
+        type: String
+        required: false
+
+    invariants:
+      - name: REF-14 发药时间不得早于调剂时间
+        expression: "issueTime IS NULL OR issueTime >= dispenseTime"
+        violationMessage: 发药时间不得早于调剂时间
+        enforcedAt: ALWAYS
+
+  # ══════════════════════════════════════════════════════════
+  # OBJ-12 复诊随访记录（核心聚合根）
+  # ══════════════════════════════════════════════════════════
+  - id: AGG-FOLLOWUP-001
+    name: 复诊随访记录
+    alias: FollowUp
+    aggregateType: AGGREGATE_ROOT
+    description: 复诊计划、疗效评价与失访登记
+    lifecycle: [待随访, 已完成, 已失访]
+    tags: [核心域]
+
+    attributes:
+      - name: followUpNo
+        label: 随访号
+        type: String
+        required: true
+        unique: true
+        description: 系统生成
+      - name: patientId
+        label: 患者
+        type: AggregateRootRef
+        targetAggregate: AGG-PATIENT-001
+        required: true
+      - name: sourceVisitId
+        label: 上次就诊
+        type: AggregateRootRef
+        targetAggregate: AGG-VISIT-001
+        required: true
+        description: 随访来源就诊
+      - name: actualVisitId
+        label: 本次就诊
+        type: AggregateRootRef
+        targetAggregate: AGG-VISIT-001
+        required: false
+        description: 患者实际复诊时回填
+      - name: plannedFollowUpDate
+        label: 计划随访日期
+        type: Date
+        required: true
+        description: 默认取上次就诊日期 + 处方剂数对应天数（D-17）
+      - name: actualFollowUpDate
+        label: 实际随访日期
+        type: Date
+        required: false
+        description: 不得早于上次就诊时间，由 M3 规则 R-05 校验
+      - name: efficacyLevel
+        label: 疗效评价
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-FOLLOWUP
+          typeCode: EFFICACY_LEVEL
+        required: false
+      - name: symptomChange
+        label: 症状变化
+        type: String
+        required: false
+      - name: continueMedication
+        label: 是否继续用药
+        type: Boolean
+        required: false
+      - name: recordStatus
+        label: 记录状态
+        type: DictionaryRef
+        dictionaryRef:
+          dictionaryId: DICT-FOLLOWUP
+          typeCode: FOLLOWUP_STATUS
+        required: true
+        defaultValue: PENDING
+      - name: remark
+        label: 备注
+        type: String
+        required: false
+        description: 失访原因等
+
+# ══════════════════════════════════════════════════════════
+# 数据字典
+# ══════════════════════════════════════════════════════════
+data_dictionaries:
+  - id: DICT-COMMON
+    name: 通用状态字典
+    types:
+      - typeCode: USE_STATUS
+        typeName: 启用停用状态
+        description: 主数据对象的可用性状态，被证型字典、方剂模板、中药饮片共用
+        items:
+          - code: ENABLED
+            label: 启用
+            enabled: true
+            sortOrder: 10
+          - code: DISABLED
+            label: 停用
+            enabled: true
+            sortOrder: 20
+
+  - id: DICT-PATIENT
+    name: 患者基础数据字典
+    types:
+      - typeCode: GENDER
+        typeName: 性别
+        items:
+          - code: MALE
+            label: 男
+            enabled: true
+            sortOrder: 10
+          - code: FEMALE
+            label: 女
+            enabled: true
+            sortOrder: 20
+          - code: UNKNOWN
+            label: 未知
+            enabled: true
+            sortOrder: 30
+      - typeCode: ID_TYPE
+        typeName: 证件类型
+        items:
+          - code: ID_CARD
+            label: 居民身份证
+            enabled: true
+            sortOrder: 10
+          - code: PASSPORT
+            label: 护照
+            enabled: true
+            sortOrder: 20
+          - code: HK_MO_TW
+            label: 港澳台通行证
+            enabled: true
+            sortOrder: 30
+          - code: OTHER
+            label: 其他
+            enabled: true
+            sortOrder: 40
+      - typeCode: PATIENT_STATUS
+        typeName: 患者状态
+        items:
+          - code: ACTIVE
+            label: 在用
+            enabled: true
+            sortOrder: 10
+          - code: INACTIVE
+            label: 停用
+            enabled: true
+            sortOrder: 20
+
+  - id: DICT-VISIT
+    name: 就诊基础数据字典
+    types:
+      - typeCode: VISIT_TYPE
+        typeName: 就诊类型
+        items:
+          - code: FIRST
+            label: 初诊
+            enabled: true
+            sortOrder: 10
+          - code: FOLLOW_UP
+            label: 复诊
+            enabled: true
+            sortOrder: 20
+      - typeCode: VISIT_STATUS
+        typeName: 就诊状态
+        items:
+          - code: REGISTERED
+            label: 已挂号
+            enabled: true
+            sortOrder: 10
+          - code: IN_PROGRESS
+            label: 接诊中
+            enabled: true
+            sortOrder: 20
+          - code: COMPLETED
+            label: 已完成
+            enabled: true
+            sortOrder: 30
+          - code: CANCELLED
+            label: 已取消
+            enabled: true
+            sortOrder: 40
+      - typeCode: DEPT
+        typeName: 科室
+        description: 单机构门诊科室，由系统管理维护
+        items:
+          - code: TCM_INTERNAL
+            label: 中医内科
+            enabled: true
+            sortOrder: 10
+          - code: TCM_GYN
+            label: 中医妇科
+            enabled: true
+            sortOrder: 20
+          - code: TCM_PEDIATRIC
+            label: 中医儿科
+            enabled: true
+            sortOrder: 30
+          - code: ACUPUNCTURE
+            label: 针灸科
+            enabled: true
+            sortOrder: 40
+          - code: TUINA
+            label: 推拿科
+            enabled: true
+            sortOrder: 50
+
+  - id: DICT-TCM-SIGN
+    name: 四诊体征字典
+    types:
+      - typeCode: TONGUE_BODY
+        typeName: 舌质
+        items:
+          - code: PALE_RED
+            label: 淡红
+            enabled: true
+            sortOrder: 10
+          - code: PALE_WHITE
+            label: 淡白
+            enabled: true
+            sortOrder: 20
+          - code: RED
+            label: 红
+            enabled: true
+            sortOrder: 30
+          - code: CRIMSON
+            label: 绛
+            enabled: true
+            sortOrder: 40
+          - code: PURPLE_DARK
+            label: 紫暗
+            enabled: true
+            sortOrder: 50
+          - code: ECCHYMOSIS
+            label: 瘀点
+            enabled: true
+            sortOrder: 60
+      - typeCode: TONGUE_COATING
+        typeName: 舌苔
+        items:
+          - code: THIN_WHITE
+            label: 薄白
+            enabled: true
+            sortOrder: 10
+          - code: WHITE_GREASY
+            label: 白腻
+            enabled: true
+            sortOrder: 20
+          - code: YELLOW_GREASY
+            label: 黄腻
+            enabled: true
+            sortOrder: 30
+          - code: SCANTY
+            label: 少苔
+            enabled: true
+            sortOrder: 40
+          - code: NO_COATING
+            label: 无苔
+            enabled: true
+            sortOrder: 50
+      - typeCode: PULSE
+        typeName: 脉象
+        items:
+          - code: FLOAT
+            label: 浮
+            enabled: true
+            sortOrder: 10
+          - code: DEEP
+            label: 沉
+            enabled: true
+            sortOrder: 20
+          - code: SLOW
+            label: 迟
+            enabled: true
+            sortOrder: 30
+          - code: RAPID
+            label: 数
+            enabled: true
+            sortOrder: 40
+          - code: VACUOUS
+            label: 虚
+            enabled: true
+            sortOrder: 50
+          - code: EXCESS
+            label: 实
+            enabled: true
+            sortOrder: 60
+          - code: SLIPPERY
+            label: 滑
+            enabled: true
+            sortOrder: 70
+          - code: ROUGH
+            label: 涩
+            enabled: true
+            sortOrder: 80
+          - code: WIRY
+            label: 弦
+            enabled: true
+            sortOrder: 90
+          - code: TIGHT
+            label: 紧
+            enabled: true
+            sortOrder: 100
+
+  - id: DICT-SYNDROME
+    name: 辨证基础数据字典
+    types:
+      - typeCode: DIAG_METHOD
+        typeName: 辨证方法
+        description: 证型字典的「所属辨证体系」与辨证结论的「辨证方法」共用本类型
+        items:
+          - code: EIGHT_PRINCIPLES
+            label: 八纲辨证
+            enabled: true
+            sortOrder: 10
+          - code: ZANGFU
+            label: 脏腑辨证
+            enabled: true
+            sortOrder: 20
+          - code: QI_BLOOD_FLUID
+            label: 气血津液辨证
+            enabled: true
+            sortOrder: 30
+          - code: SIX_MERIDIANS
+            label: 六经辨证
+            enabled: true
+            sortOrder: 40
+          - code: WEIQI_YINGXUE
+            label: 卫气营血辨证
+            enabled: true
+            sortOrder: 50
+          - code: TRIPLE_BURNER
+            label: 三焦辨证
+            enabled: true
+            sortOrder: 60
+      - typeCode: SYNDROME_NATURE
+        typeName: 证型性质
+        items:
+          - code: PRIMARY
+            label: 主证
+            enabled: true
+            sortOrder: 10
+          - code: SECONDARY
+            label: 兼证
+            enabled: true
+            sortOrder: 20
+      - typeCode: CONCLUSION_STATUS
+        typeName: 结论状态
+        items:
+          - code: DRAFT
+            label: 草稿
+            enabled: true
+            sortOrder: 10
+          - code: CONFIRMED
+            label: 已确认
+            enabled: true
+            sortOrder: 20
+
+  - id: DICT-FORMULA
+    name: 方剂基础数据字典
+    types:
+      - typeCode: FORMULA_TYPE
+        typeName: 方剂类型
+        items:
+          - code: CLASSIC
+            label: 经方
+            enabled: true
+            sortOrder: 10
+          - code: MODERN
+            label: 时方
+            enabled: true
+            sortOrder: 20
+          - code: EXPERIENCE
+            label: 经验方
+            enabled: true
+            sortOrder: 30
+          - code: INSTITUTIONAL
+            label: 院内协定方
+            enabled: true
+            sortOrder: 40
+
+  - id: DICT-HERB
+    name: 中药饮片基础数据字典
+    types:
+      - typeCode: HERB_CATEGORY
+        typeName: 药材类别
+        items:
+          - code: RELIEVING_EXTERIOR
+            label: 解表药
+            enabled: true
+            sortOrder: 10
+          - code: CLEARING_HEAT
+            label: 清热药
+            enabled: true
+            sortOrder: 20
+          - code: TONIFYING
+            label: 补益药
+            enabled: true
+            sortOrder: 30
+          - code: REGULATING_QI
+            label: 理气药
+            enabled: true
+            sortOrder: 40
+          - code: ACTIVATING_BLOOD
+            label: 活血化瘀药
+            enabled: true
+            sortOrder: 50
+          - code: STOPPING_COUGH
+            label: 化痰止咳药
+            enabled: true
+            sortOrder: 60
+          - code: DIURETIC
+            label: 利水渗湿药
+            enabled: true
+            sortOrder: 70
+          - code: WARMING_INTERIOR
+            label: 温里药
+            enabled: true
+            sortOrder: 80
+          - code: OTHER
+            label: 其他
+            enabled: true
+            sortOrder: 90
+      - typeCode: TOXICITY_LEVEL
+        typeName: 毒性分级
+        description: 依据毒性药品管理要求分级，驱动 M3 规则 R-03 上限阻断
+        items:
+          - code: NONE
+            label: 无毒
+            enabled: true
+            sortOrder: 10
+          - code: SLIGHT
+            label: 小毒
+            enabled: true
+            sortOrder: 20
+          - code: TOXIC
+            label: 有毒
+            enabled: true
+            sortOrder: 30
+          - code: HIGHLY_TOXIC
+            label: 大毒
+            enabled: true
+            sortOrder: 40
+
+  - id: DICT-PRESCRIPTION
+    name: 处方基础数据字典
+    types:
+      - typeCode: PRESCRIPTION_TYPE
+        typeName: 处方类型
+        items:
+          - code: HERBAL_DECOCTION
+            label: 中药饮片处方
+            enabled: true
+            sortOrder: 10
+          - code: GRANULE
+            label: 中药颗粒剂处方
+            enabled: true
+            sortOrder: 20
+          - code: BOILED_BY_HOSPITAL
+            label: 代煎
+            enabled: true
+            sortOrder: 30
+      - typeCode: USAGE_METHOD
+        typeName: 用法
+        items:
+          - code: DAILY_1_2
+            label: 每日 1 剂分 2 次温服
+            enabled: true
+            sortOrder: 10
+          - code: DAILY_1_3
+            label: 每日 1 剂分 3 次温服
+            enabled: true
+            sortOrder: 20
+          - code: EXTERNAL_WASH
+            label: 外用熏洗
+            enabled: true
+            sortOrder: 30
+      - typeCode: PRESCRIPTION_STATUS
+        typeName: 处方状态
+        items:
+          - code: DRAFT
+            label: 草稿
+            enabled: true
+            sortOrder: 10
+          - code: PENDING_REVIEW
+            label: 待审核
+            enabled: true
+            sortOrder: 20
+          - code: APPROVED
+            label: 审核通过
+            enabled: true
+            sortOrder: 30
+          - code: REJECTED
+            label: 已驳回
+            enabled: true
+            sortOrder: 40
+          - code: DISPENSING
+            label: 已调剂
+            enabled: true
+            sortOrder: 50
+          - code: ISSUED
+            label: 已发药
+            enabled: true
+            sortOrder: 60
+          - code: VOIDED
+            label: 已作废
+            enabled: true
+            sortOrder: 70
+      - typeCode: DECOCTION_METHOD
+        typeName: 特殊煎法
+        items:
+          - code: NONE
+            label: 无
+            enabled: true
+            sortOrder: 10
+          - code: PRE_DECOCT
+            label: 先煎
+            enabled: true
+            sortOrder: 20
+          - code: LATE_ADD
+            label: 后下
+            enabled: true
+            sortOrder: 30
+          - code: WRAP_DECOCT
+            label: 包煎
+            enabled: true
+            sortOrder: 40
+          - code: SEPARATE_DECOCT
+            label: 另煎
+            enabled: true
+            sortOrder: 50
+          - code: TAKE_UNCOOKED
+            label: 冲服
+            enabled: true
+            sortOrder: 60
+          - code: MELT
+            label: 烊化
+            enabled: true
+            sortOrder: 70
+
+  - id: DICT-STOCK-FLOW
+    name: 饮片流水分录字典
+    types:
+      - typeCode: FLOW_BIZ_TYPE
+        typeName: 出入库业务类型
+        items:
+          - code: INBOUND
+            label: 入库
+            enabled: true
+            sortOrder: 10
+          - code: DISPENSE_OUT
+            label: 调剂出库
+            enabled: true
+            sortOrder: 20
+          - code: VOID_ROLLBACK
+            label: 作废回冲
+            enabled: true
+            sortOrder: 30
+          - code: STOCKTAKE_ADJUST
+            label: 盘点调整
+            enabled: true
+            sortOrder: 40
+          - code: LOSS_REPORT
+            label: 报损
+            enabled: true
+            sortOrder: 50
+
+  - id: DICT-DISPENSE
+    name: 调剂发药状态字典
+    types:
+      - typeCode: DISPENSE_STATUS
+        typeName: 调剂发药记录状态
+        items:
+          - code: PENDING
+            label: 待调剂
+            enabled: true
+            sortOrder: 10
+          - code: DISPENSED
+            label: 已调剂
+            enabled: true
+            sortOrder: 20
+          - code: ISSUED
+            label: 已发药
+            enabled: true
+            sortOrder: 30
+          - code: CANCELLED
+            label: 已取消
+            enabled: true
+            sortOrder: 40
+
+  - id: DICT-FOLLOWUP
+    name: 随访基础数据字典
+    types:
+      - typeCode: EFFICACY_LEVEL
+        typeName: 疗效评价
+        items:
+          - code: CURED
+            label: 痊愈
+            enabled: true
+            sortOrder: 10
+          - code: MARKED_EFFECT
+            label: 显效
+            enabled: true
+            sortOrder: 20
+          - code: EFFECTIVE
+            label: 有效
+            enabled: true
+            sortOrder: 30
+          - code: INEFFECTIVE
+            label: 无效
+            enabled: true
+            sortOrder: 40
+          - code: AGGRAVATED
+            label: 加重
+            enabled: true
+            sortOrder: 50
+      - typeCode: FOLLOWUP_STATUS
+        typeName: 随访记录状态
+        items:
+          - code: PENDING
+            label: 待随访
+            enabled: true
+            sortOrder: 10
+          - code: COMPLETED
+            label: 已完成
+            enabled: true
+            sortOrder: 20
+          - code: LOST
+            label: 已失访
+            enabled: true
+            sortOrder: 30
+
+# ══════════════════════════════════════════════════════════
+# 聚合间关联（通过 ID 引用）
+# ══════════════════════════════════════════════════════════
+aggregate_associations:
+  - id: ASSOC-PATIENT-VISIT
+    sourceAggregate: AGG-VISIT-001
+    targetAggregate: AGG-PATIENT-001
+    associationType: REFERENCE
+    sourceRole: 就诊患者
+    targetRole: 患者就诊记录
+    cardinality: MANY_TO_ONE
+    referenceField: patientId
+
+  - id: ASSOC-VISIT-VISIT
+    sourceAggregate: AGG-VISIT-001
+    targetAggregate: AGG-VISIT-001
+    associationType: REFERENCE
+    sourceRole: 复诊就诊
+    targetRole: 上次就诊的后续就诊
+    cardinality: MANY_TO_ONE
+    referenceField: previousVisitId
+
+  - id: ASSOC-VISIT-DIAGNOSIS
+    sourceAggregate: AGG-VISIT-001
+    targetAggregate: AGG-DIAGNOSIS-001
+    associationType: REFERENCE
+    sourceRole: 就诊辨证
+    targetRole: 所属就诊
+    cardinality: ONE_TO_MANY
+    referenceField: visitId
+
+  - id: ASSOC-SYNDROME-DIAGNOSIS
+    sourceAggregate: AGG-DIAGNOSIS-001
+    targetAggregate: AGG-SYNDROME-001
+    associationType: REFERENCE
+    sourceRole: 辨证结论证型
+    targetRole: 被引用的辨证结论
+    cardinality: MANY_TO_ONE
+    referenceField: syndromeId
+
+  - id: ASSOC-VISIT-PRESCRIPTION
+    sourceAggregate: AGG-VISIT-001
+    targetAggregate: AGG-PRESCRIPTION-001
+    associationType: REFERENCE
+    sourceRole: 就诊处方
+    targetRole: 所属就诊
+    cardinality: ONE_TO_MANY
+    referenceField: visitId
+
+  - id: ASSOC-PATIENT-PRESCRIPTION
+    sourceAggregate: AGG-PRESCRIPTION-001
+    targetAggregate: AGG-PATIENT-001
+    associationType: REFERENCE
+    sourceRole: 处方患者
+    targetRole: 患者处方
+    cardinality: MANY_TO_ONE
+    referenceField: patientId
+
+  - id: ASSOC-FORMULA-PRESCRIPTION
+    sourceAggregate: AGG-PRESCRIPTION-001
+    targetAggregate: AGG-FORMULA-001
+    associationType: REFERENCE
+    sourceRole: 引用方剂模板
+    targetRole: 引用该模板的处方
+    cardinality: MANY_TO_ONE
+    referenceField: formulaTemplateId
+
+  - id: ASSOC-PRESCRIPTION-DISPENSE
+    sourceAggregate: AGG-PRESCRIPTION-001
+    targetAggregate: AGG-DISPENSE-001
+    associationType: REFERENCE
+    sourceRole: 处方调剂记录
+    targetRole: 所属处方
+    cardinality: ONE_TO_ONE
+    referenceField: prescriptionId
+
+  - id: ASSOC-PRESCRIPTION-HERBFLOW
+    sourceAggregate: AGG-PRESCRIPTION-001
+    targetAggregate: AGG-HERB-001
+    associationType: REFERENCE
+    sourceRole: 处方调剂出库流水
+    targetRole: 饮片出入库流水
+    cardinality: ONE_TO_MANY
+    referenceField: prescriptionId
+
+  - id: ASSOC-PATIENT-FOLLOWUP
+    sourceAggregate: AGG-FOLLOWUP-001
+    targetAggregate: AGG-PATIENT-001
+    associationType: REFERENCE
+    sourceRole: 随访患者
+    targetRole: 患者随访记录
+    cardinality: MANY_TO_ONE
+    referenceField: patientId
+
+  - id: ASSOC-VISIT-FOLLOWUP
+    sourceAggregate: AGG-FOLLOWUP-001
+    targetAggregate: AGG-VISIT-001
+    associationType: REFERENCE
+    sourceRole: 随访来源/实际就诊
+    targetRole: 就诊的随访记录
+    cardinality: MANY_TO_ONE
+    referenceField: sourceVisitId
+
+# ══════════════════════════════════════════════════════════
+# 建模边界说明
+# ══════════════════════════════════════════════════════════
+# 1. 用户（接诊医师、开方医师、审核人、调剂人、复核人、操作人）：平台内置对象，由系统管理功能（FUNC-17）
+#    与 M5 主体模型承载，M1 中以 String 存储平台用户 ID，不进领域对象清单（保持 OBJ-01～OBJ-12 完整）。
+# 2. 科室：单机构固定范围，建模为 DICT-VISIT.DEPT 数据字典，不单列聚合。
+# 3. 子实体不单独设为聚合：OBJ-03 四诊信息隶属就诊记录聚合；OBJ-09 处方明细隶属处方聚合；
+#    OBJ-10 饮片出入库记录隶属中药饮片聚合（cascadeDelete=false，只追加）；
+#    方剂模板组成明细隶属方剂模板聚合（D-12：内嵌明细，不单独编号）。

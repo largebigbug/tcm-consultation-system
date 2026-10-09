@@ -1,0 +1,49 @@
+# ===== 密钥与配置（绝不入库）=====
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+**/config.local.*
+**/.env
+**/.env.*
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# ===== Node =====
+node_modules/
+frontend/dist/
+dist/
+*.tsbuildinfo
+*.selftest*
+
+# ===== 运行期数据与日志（可重建）=====
+*.log
+**/data/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# ===== 本地备份快照 =====
+*.bak-*/
+*.bak-*
+*.orig
+*.rej
+
+# ===== 编辑器/系统 =====
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
