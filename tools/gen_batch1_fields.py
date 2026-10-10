@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """生成批次 1 实现契约的「模型字段表」段落（直接从 M1 抽取，保证与本体逐字一致）。
 
-用法：D:/hermes/tools/docx-venv/Scripts/python.exe tools/gen_batch1_fields.py
+用法：D:/hermes/workspace/docx-venv/Scripts/python.exe tools/gen_batch1_fields.py
 输出：D:/hermes/.hermes/cache/scratch/batch1_fields.md
 """
 import io

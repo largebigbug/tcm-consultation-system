@@ -3,7 +3,7 @@
 set -u
 cd /d/hermes/workspace/中医问诊系统
 PY="D:/hermes/workspace/中医问诊系统/code-app/backend/.venv/Scripts/python.exe"
-DXV="D:/hermes/tools/docx-venv/Scripts/python.exe"
+DXV="D:/hermes/workspace/docx-venv/Scripts/python.exe"
 DB="D:/hermes/workspace/中医问诊系统/code-app/backend/data/app.db"
 NPM="D:/hermes/.hermes/cache/scratch/npm-fresh/package/bin/npm-cli.js"
 

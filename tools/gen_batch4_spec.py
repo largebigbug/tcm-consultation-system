@@ -5,7 +5,7 @@
 产物（禁手改，改模型后重跑本脚本）：
   code-app/docs/批次4-报表规格（M7抽取）.md
   code-app/docs/批次4-屏幕规格（MU抽取）.md
-用法：D:/hermes/tools/docx-venv/Scripts/python.exe tools/gen_batch4_spec.py
+用法：D:/hermes/workspace/docx-venv/Scripts/python.exe tools/gen_batch4_spec.py
 """
 import io
 import os

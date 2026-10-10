@@ -6,7 +6,7 @@
   code-app/docs/批次3-屏幕规格（MU抽取）.md
   code-app/docs/批次3-权限与菜单（M5+MU抽取）.md
 
-用法：D:/hermes/tools/docx-venv/Scripts/python.exe tools/gen_batch3_spec.py
+用法：D:/hermes/workspace/docx-venv/Scripts/python.exe tools/gen_batch3_spec.py
 """
 import io
 import os

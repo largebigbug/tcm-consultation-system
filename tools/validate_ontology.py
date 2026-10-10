@@ -3,7 +3,7 @@
 """中医问诊系统 本体模型跨文件一致性校验器（阶段二）
 
 用法：
-    D:/hermes/tools/docx-venv/Scripts/python.exe validate_ontology.py [yaml目录]
+    D:/hermes/workspace/docx-venv/Scripts/python.exe validate_ontology.py [yaml目录]
 
 字段名以 ontology_modeling_framework_v9.md 与 reference-example/ 为准：
   M1 aggregates[].id / data_dictionaries / aggregate_associations

@@ -6,7 +6,7 @@
   ② M7 查询报表 → 是否有对应接口/前端页面
   ③ M5 权限 → 权限码在代库里是否有落地证据（接口装饰器/菜单）
   ④ M2 行为 → 在 services/api 代码里是否有同名落地痕迹
-用法：D:/hermes/tools/docx-venv/Scripts/python.exe tools/recon_batch4.py
+用法：D:/hermes/workspace/docx-venv/Scripts/python.exe tools/recon_batch4.py
 """
 import io
 import json
