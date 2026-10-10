@@ -1,0 +1,4881 @@
+# -*- coding: utf-8 -*-
+# 统计：类 44 | 对象属性 48 | 数据属性 69 | 个体 306 | 注记三元组 ≈583
+
+# 中医问诊系统 · OWL 本体（由 tools/yaml2owl.py 从本体模型 YAML 机械生成，请勿手改）
+# 生成时间：2026-10-10 15:09
+#   源文件 m1-object-model.yaml  md5[:16]=0f79584de131bae1
+#   源文件 m2-behavior-model.yaml  md5[:16]=a3fcee792f5dbd84
+#   源文件 m3-rule-model.yaml  md5[:16]=d317b136e6aeeed0
+#   源文件 m5-actor-model.yaml  md5[:16]=366f889f93f6a252
+#   源文件 m6-flow-model.yaml  md5[:16]=7031441e5a989763
+#   源文件 m7-report-model.yaml  md5[:16]=3ca8b5298674574b
+#   源文件 mu-ui-model.yaml  md5[:16]=115d368fe28702be
+
+@prefix tcm:  <http://hermes.local/tcm-ontology#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+tcm:ontology
+    a owl:Ontology ;
+    rdfs:label "中医问诊系统本体"@zh ;
+    rdfs:comment "由 7 个本体模型（M1/M2/M3/M5/M6/M7/MU）机械生成；领域：中医问诊"@zh ;
+    dcterms:source "中医问诊系统-需求规格说明书-V9" ;
+    owl:versionInfo "2.1" .
+
+tcm:Aggregate
+    a owl:Class ;
+    rdfs:label "聚合根"@zh ;
+    rdfs:comment "可独立存在的业务对象（M1 聚合根）"@zh .
+
+tcm:Enumeration
+    a owl:Class ;
+    rdfs:label "枚举字典"@zh ;
+    rdfs:comment "M1 数据字典中的取值类型"@zh .
+
+tcm:Role
+    a owl:Class ;
+    rdfs:label "角色"@zh ;
+    rdfs:comment "M5 角色（权限集合）"@zh .
+
+tcm:Actor
+    a owl:Class ;
+    rdfs:label "人员/主体"@zh ;
+    rdfs:comment "M5 参与者（人）"@zh .
+
+tcm:Behavior
+    a owl:Class ;
+    rdfs:label "行为"@zh ;
+    rdfs:comment "M2 行为（命令/查询等）"@zh .
+
+tcm:Permission
+    a owl:Class ;
+    rdfs:label "权限"@zh ;
+    rdfs:comment "M5 权限项（行为级 + 数据范围）"@zh .
+
+tcm:Rule
+    a owl:Class ;
+    rdfs:label "业务规则"@zh ;
+    rdfs:comment "M3 规则（校验/计算/分派）"@zh .
+
+tcm:Flow
+    a owl:Class ;
+    rdfs:label "流程"@zh ;
+    rdfs:comment "M6 流程定义"@zh .
+
+tcm:FlowActivity
+    a owl:Class ;
+    rdfs:label "流程活动"@zh ;
+    rdfs:comment "M6 流程内的活动节点"@zh .
+
+tcm:Report
+    a owl:Class ;
+    rdfs:label "报表"@zh ;
+    rdfs:comment "M7 查询与报表"@zh .
+
+tcm:Screen
+    a owl:Class ;
+    rdfs:label "界面"@zh ;
+    rdfs:comment "MU 屏幕"@zh .
+
+
+# ---------- 自定义对象属性（个体/类之间的连接）----------
+tcm:grantsPermission
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Role ;
+    rdfs:range tcm:Permission ;
+    rdfs:label "角色授予权限"@zh .
+
+tcm:hasRole
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Actor ;
+    rdfs:range tcm:Role ;
+    rdfs:label "人员具有角色"@zh .
+
+tcm:appliesRule
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Behavior ;
+    rdfs:range tcm:Rule ;
+    rdfs:label "行为适用规则"@zh .
+
+tcm:hasActivity
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Flow ;
+    rdfs:range tcm:FlowActivity ;
+    rdfs:label "流程包含活动"@zh .
+
+
+# ---------- 自定义注记属性 ----------
+tcm:lifecycle
+    a owl:AnnotationProperty ;
+    rdfs:label "生命周期"@zh .
+
+tcm:required
+    a owl:AnnotationProperty ;
+    rdfs:label "是否必填"@zh .
+
+tcm:unique
+    a owl:AnnotationProperty ;
+    rdfs:label "是否唯一"@zh .
+
+tcm:defaultValue
+    a owl:AnnotationProperty ;
+    rdfs:label "默认值"@zh .
+
+tcm:dictionaryId
+    a owl:AnnotationProperty ;
+    rdfs:label "所属字典"@zh .
+
+tcm:sortOrder
+    a owl:AnnotationProperty ;
+    rdfs:label "排序"@zh .
+
+tcm:inverseLabel
+    a owl:AnnotationProperty ;
+    rdfs:label "反向角色名"@zh .
+
+tcm:cardinality
+    a owl:AnnotationProperty ;
+    rdfs:label "基数"@zh .
+
+tcm:referenceField
+    a owl:AnnotationProperty ;
+    rdfs:label "引用字段"@zh .
+
+tcm:targetType
+    a owl:AnnotationProperty ;
+    rdfs:label "目标类型"@zh .
+
+tcm:dataScope
+    a owl:AnnotationProperty ;
+    rdfs:label "数据范围"@zh .
+
+tcm:actorType
+    a owl:AnnotationProperty ;
+    rdfs:label "主体类型"@zh .
+
+tcm:behaviorType
+    a owl:AnnotationProperty ;
+    rdfs:label "行为类型"@zh .
+
+tcm:triggerType
+    a owl:AnnotationProperty ;
+    rdfs:label "触发方式"@zh .
+
+tcm:ownerEntity
+    a owl:AnnotationProperty ;
+    rdfs:label "所属实体ID"@zh .
+
+tcm:ownerEntityName
+    a owl:AnnotationProperty ;
+    rdfs:label "所属实体"@zh .
+
+tcm:precondition
+    a owl:AnnotationProperty ;
+    rdfs:label "前置条件"@zh .
+
+tcm:postcondition
+    a owl:AnnotationProperty ;
+    rdfs:label "后置条件"@zh .
+
+tcm:appliedRule
+    a owl:AnnotationProperty ;
+    rdfs:label "适用规则ID"@zh .
+
+tcm:ruleType
+    a owl:AnnotationProperty ;
+    rdfs:label "规则类型"@zh .
+
+tcm:outputType
+    a owl:AnnotationProperty ;
+    rdfs:label "输出类型"@zh .
+
+tcm:expression
+    a owl:AnnotationProperty ;
+    rdfs:label "规则表达式"@zh .
+
+tcm:inputParam
+    a owl:AnnotationProperty ;
+    rdfs:label "输入参数"@zh .
+
+tcm:reusedByBehavior
+    a owl:AnnotationProperty ;
+    rdfs:label "被行为引用"@zh .
+
+tcm:flowType
+    a owl:AnnotationProperty ;
+    rdfs:label "流程类型"@zh .
+
+tcm:businessObject
+    a owl:AnnotationProperty ;
+    rdfs:label "涉及业务对象"@zh .
+
+tcm:involvedRole
+    a owl:AnnotationProperty ;
+    rdfs:label "涉及角色"@zh .
+
+tcm:startActivity
+    a owl:AnnotationProperty ;
+    rdfs:label "起始活动"@zh .
+
+tcm:endActivity
+    a owl:AnnotationProperty ;
+    rdfs:label "结束活动"@zh .
+
+tcm:performer
+    a owl:AnnotationProperty ;
+    rdfs:label "执行角色"@zh .
+
+tcm:activityType
+    a owl:AnnotationProperty ;
+    rdfs:label "活动类型"@zh .
+
+tcm:behaviorRef
+    a owl:AnnotationProperty ;
+    rdfs:label "对应行为"@zh .
+
+tcm:sourceObject
+    a owl:AnnotationProperty ;
+    rdfs:label "来源对象"@zh .
+
+tcm:resultColumn
+    a owl:AnnotationProperty ;
+    rdfs:label "结果列"@zh .
+
+tcm:parameter
+    a owl:AnnotationProperty ;
+    rdfs:label "参数"@zh .
+
+tcm:groupBy
+    a owl:AnnotationProperty ;
+    rdfs:label "分组字段"@zh .
+
+tcm:screenType
+    a owl:AnnotationProperty ;
+    rdfs:label "屏幕类型"@zh .
+
+tcm:elementCount
+    a owl:AnnotationProperty ;
+    rdfs:label "元素数"@zh .
+
+tcm:actionCount
+    a owl:AnnotationProperty ;
+    rdfs:label "动作数"@zh .
+
+
+# ---------- AGG-PATIENT-001 患者 ----------
+tcm:Patient
+    a owl:Class ;
+    rdfs:subClassOf tcm:Aggregate ;
+    rdfs:label "患者"@zh ;
+    rdfs:label "Patient"@en ;
+    skos:notation "AGG-PATIENT-001" ;
+    rdfs:comment "在本门诊建立档案的就诊人，身份与联系信息跨多次就诊长期有效"@zh ;
+    tcm:lifecycle "在用 → 停用"@zh .
+
+tcm:Patient_patientNo
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Patient ;
+    rdfs:range xsd:string ;
+    rdfs:label "患者编号"@zh ;
+    skos:notation "patientNo" ;
+    rdfs:comment "系统生成，两位前缀 + 六位流水号；只读"@zh ;
+    tcm:required "true" ;
+    tcm:unique "true" .
+
+tcm:Patient_patientName
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Patient ;
+    rdfs:range xsd:string ;
+    rdfs:label "患者姓名"@zh ;
+    skos:notation "patientName" ;
+    tcm:required "true" .
+
+tcm:Patient_gender
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Patient ;
+    rdfs:range tcm:Enum_GENDER ;
+    rdfs:label "性别"@zh ;
+    skos:notation "gender" ;
+    tcm:required "true" .
+
+tcm:Patient_birthDate
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Patient ;
+    rdfs:range xsd:date ;
+    rdfs:label "出生日期"@zh ;
+    skos:notation "birthDate" ;
+    tcm:required "false" .
+
+tcm:Patient_age
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Patient ;
+    rdfs:range xsd:int ;
+    rdfs:label "年龄"@zh ;
+    skos:notation "age" ;
+    rdfs:comment "单位「岁」；有出生日期时自动计算，否则人工填写"@zh ;
+    tcm:required "false" .
+
+tcm:Patient_idType
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Patient ;
+    rdfs:range tcm:Enum_ID_TYPE ;
+    rdfs:label "证件类型"@zh ;
+    skos:notation "idType" ;
+    tcm:required "false" .
+
+tcm:Patient_idNo
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Patient ;
+    rdfs:range xsd:string ;
+    rdfs:label "证件号码"@zh ;
+    skos:notation "idNo" ;
+    rdfs:comment "与证件类型联合唯一（INV-01）；类型为居民身份证时须 18 位且校验位正确（REF-03）"@zh ;
+    tcm:required "false" .
+
+tcm:Patient_phone
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Patient ;
+    rdfs:range xsd:string ;
+    rdfs:label "联系电话"@zh ;
+    skos:notation "phone" ;
+    tcm:required "true" .
+
+tcm:Patient_address
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Patient ;
+    rdfs:range xsd:string ;
+    rdfs:label "联系地址"@zh ;
+    skos:notation "address" ;
+    tcm:required "false" .
+
+tcm:Patient_occupation
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Patient ;
+    rdfs:range xsd:string ;
+    rdfs:label "职业"@zh ;
+    skos:notation "occupation" ;
+    rdfs:comment "自由文本，中医问诊常需参考职业与劳损因素"@zh ;
+    tcm:required "false" .
+
+tcm:Patient_allergyHistory
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Patient ;
+    rdfs:range xsd:string ;
+    rdfs:label "过敏史"@zh ;
+    skos:notation "allergyHistory" ;
+    rdfs:comment "药物/食物过敏记录；跨就诊长期有效，置于患者主数据（D-09）"@zh ;
+    tcm:required "false" .
+
+tcm:Patient_patientStatus
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Patient ;
+    rdfs:range tcm:Enum_PATIENT_STATUS ;
+    rdfs:label "患者状态"@zh ;
+    skos:notation "patientStatus" ;
+    tcm:required "true" ;
+    tcm:defaultValue "ACTIVE" .
+
+tcm:Patient_remark
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Patient ;
+    rdfs:range xsd:string ;
+    rdfs:label "备注"@zh ;
+    skos:notation "remark" ;
+    tcm:required "false" .
+
+# ---------- AGG-VISIT-001 就诊记录 ----------
+tcm:Visit
+    a owl:Class ;
+    rdfs:subClassOf tcm:Aggregate ;
+    rdfs:label "就诊记录"@zh ;
+    rdfs:label "Visit"@en ;
+    skos:notation "AGG-VISIT-001" ;
+    rdfs:comment "患者一次到院就诊的业务主记录，承载主诉、现病史与就诊状态；一次就诊一份四诊信息"@zh ;
+    tcm:lifecycle "已挂号 → 接诊中 → 已完成 → 已取消"@zh .
+
+tcm:Visit_visitNo
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range xsd:string ;
+    rdfs:label "就诊号"@zh ;
+    skos:notation "visitNo" ;
+    rdfs:comment "系统生成；只读"@zh ;
+    tcm:required "true" ;
+    tcm:unique "true" .
+
+tcm:Visit_patientId
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range tcm:Patient ;
+    rdfs:label "患者"@zh ;
+    skos:notation "patientId" ;
+    tcm:required "true" .
+
+tcm:Visit_visitType
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range tcm:Enum_VISIT_TYPE ;
+    rdfs:label "就诊类型"@zh ;
+    skos:notation "visitType" ;
+    tcm:required "true" .
+
+tcm:Visit_previousVisitId
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range tcm:Visit ;
+    rdfs:label "上次就诊"@zh ;
+    skos:notation "previousVisitId" ;
+    rdfs:comment "就诊类型为复诊时必填；随访日期先后由 M3 规则 R-05 校验"@zh ;
+    tcm:required "false" .
+
+tcm:Visit_registerTime
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "挂号时间"@zh ;
+    skos:notation "registerTime" ;
+    rdfs:comment "挂号环节写入"@zh ;
+    tcm:required "true" .
+
+tcm:Visit_receiveTime
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "接诊时间"@zh ;
+    skos:notation "receiveTime" ;
+    rdfs:comment "进入接诊时写入"@zh ;
+    tcm:required "false" .
+
+tcm:Visit_doctorId
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range xsd:string ;
+    rdfs:label "接诊医师"@zh ;
+    skos:notation "doctorId" ;
+    rdfs:comment "中医师角色用户 ID，引用平台用户（FUNC-17 系统管理维护）"@zh ;
+    tcm:required "true" .
+
+tcm:Visit_deptCode
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range tcm:Enum_DEPT ;
+    rdfs:label "科室"@zh ;
+    skos:notation "deptCode" ;
+    rdfs:comment "默认取当前门诊科室（单机构字典）"@zh ;
+    tcm:required "true" .
+
+tcm:Visit_chiefComplaint
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range xsd:string ;
+    rdfs:label "主诉"@zh ;
+    skos:notation "chiefComplaint" ;
+    rdfs:comment "挂号时可为空；由接诊开单环节录入并在该环节必填（依 MU：UI-02 挂号屏无主诉元素，UI-03 接诊屏为 txaChiefComplaint）"@zh ;
+    tcm:required "false" .
+
+tcm:Visit_presentIllness
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range xsd:string ;
+    rdfs:label "现病史"@zh ;
+    skos:notation "presentIllness" ;
+    rdfs:comment "起病、演变与诊疗经过"@zh ;
+    tcm:required "false" .
+
+tcm:Visit_pastHistory
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range xsd:string ;
+    rdfs:label "既往史"@zh ;
+    skos:notation "pastHistory" ;
+    rdfs:comment "本次就诊视角下的既往情况，归就诊记录（D-09）"@zh ;
+    tcm:required "false" .
+
+tcm:Visit_vitalSigns
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range xsd:string ;
+    rdfs:label "生命体征"@zh ;
+    skos:notation "vitalSigns" ;
+    rdfs:comment "体温 / 血压 / 心率等，自由记录"@zh ;
+    tcm:required "false" .
+
+tcm:Visit_visitStatus
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range tcm:Enum_VISIT_STATUS ;
+    rdfs:label "就诊状态"@zh ;
+    skos:notation "visitStatus" ;
+    tcm:required "true" ;
+    tcm:defaultValue "REGISTERED" .
+
+tcm:Visit_remark
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range xsd:string ;
+    rdfs:label "备注"@zh ;
+    skos:notation "remark" ;
+    rdfs:comment "就诊作废原因等记入本字段"@zh ;
+    tcm:required "false" .
+
+# ---------- AGG-DIAGNOSIS-001 辨证结论 ----------
+tcm:SyndromeDiagnosis
+    a owl:Class ;
+    rdfs:subClassOf tcm:Aggregate ;
+    rdfs:label "辨证结论"@zh ;
+    rdfs:label "SyndromeDiagnosis"@en ;
+    skos:notation "AGG-DIAGNOSIS-001" ;
+    rdfs:comment "医师基于四诊得出的证型判定与治法，可含主证与兼证"@zh ;
+    tcm:lifecycle "草稿 → 已确认"@zh .
+
+tcm:SyndromeDiagnosis_diagnosisNo
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:SyndromeDiagnosis ;
+    rdfs:range xsd:string ;
+    rdfs:label "辨证号"@zh ;
+    skos:notation "diagnosisNo" ;
+    rdfs:comment "系统生成"@zh ;
+    tcm:required "true" ;
+    tcm:unique "true" .
+
+tcm:SyndromeDiagnosis_visitId
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:SyndromeDiagnosis ;
+    rdfs:range tcm:Visit ;
+    rdfs:label "就诊记录"@zh ;
+    skos:notation "visitId" ;
+    rdfs:comment "一次就诊可多条（主证 + 兼证）"@zh ;
+    tcm:required "true" .
+
+tcm:SyndromeDiagnosis_diagnosisMethod
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:SyndromeDiagnosis ;
+    rdfs:range tcm:Enum_DIAG_METHOD ;
+    rdfs:label "辨证方法"@zh ;
+    skos:notation "diagnosisMethod" ;
+    tcm:required "true" .
+
+tcm:SyndromeDiagnosis_syndromeId
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:SyndromeDiagnosis ;
+    rdfs:range tcm:SyndromeType ;
+    rdfs:label "证型"@zh ;
+    skos:notation "syndromeId" ;
+    tcm:required "true" .
+
+tcm:SyndromeDiagnosis_syndromeNature
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:SyndromeDiagnosis ;
+    rdfs:range tcm:Enum_SYNDROME_NATURE ;
+    rdfs:label "证型性质"@zh ;
+    skos:notation "syndromeNature" ;
+    tcm:required "true" .
+
+tcm:SyndromeDiagnosis_diagnosisBasis
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:SyndromeDiagnosis ;
+    rdfs:range xsd:string ;
+    rdfs:label "辨证依据"@zh ;
+    skos:notation "diagnosisBasis" ;
+    tcm:required "true" .
+
+tcm:SyndromeDiagnosis_treatmentPrinciple
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:SyndromeDiagnosis ;
+    rdfs:range xsd:string ;
+    rdfs:label "治法"@zh ;
+    skos:notation "treatmentPrinciple" ;
+    rdfs:comment "如「疏肝理气、健脾和胃」"@zh ;
+    tcm:required "true" .
+
+tcm:SyndromeDiagnosis_conclusionStatus
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:SyndromeDiagnosis ;
+    rdfs:range tcm:Enum_CONCLUSION_STATUS ;
+    rdfs:label "结论状态"@zh ;
+    skos:notation "conclusionStatus" ;
+    tcm:required "true" ;
+    tcm:defaultValue "DRAFT" .
+
+# ---------- AGG-SYNDROME-001 证型字典 ----------
+tcm:SyndromeType
+    a owl:Class ;
+    rdfs:subClassOf tcm:Aggregate ;
+    rdfs:label "证型字典"@zh ;
+    rdfs:label "SyndromeType"@en ;
+    skos:notation "AGG-SYNDROME-001" ;
+    rdfs:comment "证型的标准化定义，供辨证结论引用"@zh ;
+    tcm:lifecycle "启用 → 停用"@zh .
+
+tcm:SyndromeType_syndromeCode
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:SyndromeType ;
+    rdfs:range xsd:string ;
+    rdfs:label "证型编码"@zh ;
+    skos:notation "syndromeCode" ;
+    rdfs:comment "规则：Z + 三位流水号"@zh ;
+    tcm:required "true" ;
+    tcm:unique "true" .
+
+tcm:SyndromeType_syndromeName
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:SyndromeType ;
+    rdfs:range xsd:string ;
+    rdfs:label "证型名称"@zh ;
+    skos:notation "syndromeName" ;
+    rdfs:comment "如「肝气郁结证」"@zh ;
+    tcm:required "true" ;
+    tcm:unique "true" .
+
+tcm:SyndromeType_diagnosisMethod
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:SyndromeType ;
+    rdfs:range tcm:Enum_DIAG_METHOD ;
+    rdfs:label "所属辨证体系"@zh ;
+    skos:notation "diagnosisMethod" ;
+    rdfs:comment "与 OBJ-04 辨证方法共用同一字典"@zh ;
+    tcm:required "true" .
+
+tcm:SyndromeType_syndromeDescription
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:SyndromeType ;
+    rdfs:range xsd:string ;
+    rdfs:label "证候描述"@zh ;
+    skos:notation "syndromeDescription" ;
+    rdfs:comment "典型证候表现"@zh ;
+    tcm:required "false" .
+
+tcm:SyndromeType_commonSymptoms
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:SyndromeType ;
+    rdfs:range xsd:string ;
+    rdfs:label "常见症状"@zh ;
+    skos:notation "commonSymptoms" ;
+    rdfs:comment "供医师辨证参考"@zh ;
+    tcm:required "false" .
+
+tcm:SyndromeType_correspondingTreatment
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:SyndromeType ;
+    rdfs:range xsd:string ;
+    rdfs:label "对应治法"@zh ;
+    skos:notation "correspondingTreatment" ;
+    rdfs:comment "该证型常用治法"@zh ;
+    tcm:required "false" .
+
+tcm:SyndromeType_syndromeStatus
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:SyndromeType ;
+    rdfs:range tcm:Enum_USE_STATUS ;
+    rdfs:label "状态"@zh ;
+    skos:notation "syndromeStatus" ;
+    tcm:required "true" ;
+    tcm:defaultValue "ENABLED" .
+
+# ---------- AGG-FORMULA-001 方剂模板 ----------
+tcm:FormulaTemplate
+    a owl:Class ;
+    rdfs:subClassOf tcm:Aggregate ;
+    rdfs:label "方剂模板"@zh ;
+    rdfs:label "FormulaTemplate"@en ;
+    skos:notation "AGG-FORMULA-001" ;
+    rdfs:comment "可复用的经方/时方/经验方，含组成药味与常用剂量"@zh ;
+    tcm:lifecycle "启用 → 停用"@zh .
+
+tcm:FormulaTemplate_formulaCode
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:FormulaTemplate ;
+    rdfs:range xsd:string ;
+    rdfs:label "方剂编码"@zh ;
+    skos:notation "formulaCode" ;
+    rdfs:comment "规则：F + 三位流水号"@zh ;
+    tcm:required "true" ;
+    tcm:unique "true" .
+
+tcm:FormulaTemplate_formulaName
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:FormulaTemplate ;
+    rdfs:range xsd:string ;
+    rdfs:label "方剂名称"@zh ;
+    skos:notation "formulaName" ;
+    rdfs:comment "如「逍遥散」"@zh ;
+    tcm:required "true" ;
+    tcm:unique "true" .
+
+tcm:FormulaTemplate_formulaType
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:FormulaTemplate ;
+    rdfs:range tcm:Enum_FORMULA_TYPE ;
+    rdfs:label "方剂类型"@zh ;
+    skos:notation "formulaType" ;
+    tcm:required "true" .
+
+tcm:FormulaTemplate_source
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:FormulaTemplate ;
+    rdfs:range xsd:string ;
+    rdfs:label "出处"@zh ;
+    skos:notation "source" ;
+    rdfs:comment "典籍或经验来源"@zh ;
+    tcm:required "false" .
+
+tcm:FormulaTemplate_function
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:FormulaTemplate ;
+    rdfs:range xsd:string ;
+    rdfs:label "功用"@zh ;
+    skos:notation "function" ;
+    rdfs:comment "如「疏肝解郁、健脾养血」"@zh ;
+    tcm:required "false" .
+
+tcm:FormulaTemplate_indication
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:FormulaTemplate ;
+    rdfs:range xsd:string ;
+    rdfs:label "主治"@zh ;
+    skos:notation "indication" ;
+    rdfs:comment "适用证型与症状"@zh ;
+    tcm:required "false" .
+
+tcm:FormulaTemplate_defaultDoses
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:FormulaTemplate ;
+    rdfs:range xsd:int ;
+    rdfs:label "常用剂数"@zh ;
+    skos:notation "defaultDoses" ;
+    rdfs:comment "开方时默认带入处方剂数"@zh ;
+    tcm:required "false" .
+
+tcm:FormulaTemplate_formulaStatus
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:FormulaTemplate ;
+    rdfs:range tcm:Enum_USE_STATUS ;
+    rdfs:label "状态"@zh ;
+    skos:notation "formulaStatus" ;
+    tcm:required "true" ;
+    tcm:defaultValue "ENABLED" .
+
+# ---------- AGG-HERB-001 中药饮片 ----------
+tcm:Herb
+    a owl:Class ;
+    rdfs:subClassOf tcm:Aggregate ;
+    rdfs:label "中药饮片"@zh ;
+    rdfs:label "Herb"@en ;
+    skos:notation "AGG-HERB-001" ;
+    rdfs:comment "院内使用的中药饮片品目及其库存数量；库存变动以出入库流水（同聚合子实体）为凭据"@zh ;
+    tcm:lifecycle "启用 → 停用"@zh .
+
+tcm:Herb_herbCode
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Herb ;
+    rdfs:range xsd:string ;
+    rdfs:label "饮片编码"@zh ;
+    skos:notation "herbCode" ;
+    rdfs:comment "规则：Y + 四位流水号"@zh ;
+    tcm:required "true" ;
+    tcm:unique "true" .
+
+tcm:Herb_herbName
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Herb ;
+    rdfs:range xsd:string ;
+    rdfs:label "饮片名称"@zh ;
+    skos:notation "herbName" ;
+    rdfs:comment "如「当归」"@zh ;
+    tcm:required "true" ;
+    tcm:unique "true" .
+
+tcm:Herb_aliasName
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Herb ;
+    rdfs:range xsd:string ;
+    rdfs:label "别名"@zh ;
+    skos:notation "aliasName" ;
+    rdfs:comment "便于检索"@zh ;
+    tcm:required "false" .
+
+tcm:Herb_herbCategory
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Herb ;
+    rdfs:range tcm:Enum_HERB_CATEGORY ;
+    rdfs:label "药材类别"@zh ;
+    skos:notation "herbCategory" ;
+    tcm:required "false" .
+
+tcm:Herb_natureMeridian
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Herb ;
+    rdfs:range xsd:string ;
+    rdfs:label "性味归经"@zh ;
+    skos:notation "natureMeridian" ;
+    rdfs:comment "展示与参考用"@zh ;
+    tcm:required "false" .
+
+tcm:Herb_efficacy
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Herb ;
+    rdfs:range xsd:string ;
+    rdfs:label "功效"@zh ;
+    skos:notation "efficacy" ;
+    tcm:required "false" .
+
+tcm:Herb_minCommonDose
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Herb ;
+    rdfs:range xsd:decimal ;
+    rdfs:label "常用最小量"@zh ;
+    skos:notation "minCommonDose" ;
+    rdfs:comment "单位 g"@zh ;
+    tcm:required "true" .
+
+tcm:Herb_maxCommonDose
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Herb ;
+    rdfs:range xsd:decimal ;
+    rdfs:label "常用最大量"@zh ;
+    skos:notation "maxCommonDose" ;
+    rdfs:comment "单位 g；供 M3 规则 R-01 判定超量使用"@zh ;
+    tcm:required "true" .
+
+tcm:Herb_toxicityLevel
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Herb ;
+    rdfs:range tcm:Enum_TOXICITY_LEVEL ;
+    rdfs:label "毒性分级"@zh ;
+    skos:notation "toxicityLevel" ;
+    rdfs:comment "供 M3 规则 R-03 判定毒性上限"@zh ;
+    tcm:required "true" ;
+    tcm:defaultValue "NONE" .
+
+tcm:Herb_toxicDoseLimit
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Herb ;
+    rdfs:range xsd:decimal ;
+    rdfs:label "毒性单张处方总量上限"@zh ;
+    skos:notation "toxicDoseLimit" ;
+    rdfs:comment "单位 g；毒性分级非「无毒」时由库房管理员维护，供 M3 规则 R-03 判定；为空表示不单独设限（需求文档 OBJ-07 v1.1 已定义，M1 于 2026-09-30 批次 2 实施时补全）"@zh ;
+    tcm:required "false" .
+
+tcm:Herb_specialManaged
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Herb ;
+    rdfs:range xsd:boolean ;
+    rdfs:label "是否特殊管理"@zh ;
+    skos:notation "specialManaged" ;
+    tcm:required "true" ;
+    tcm:defaultValue "False" .
+
+tcm:Herb_stockQuantity
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Herb ;
+    rdfs:range xsd:decimal ;
+    rdfs:label "库存数量"@zh ;
+    skos:notation "stockQuantity" ;
+    rdfs:comment "单位 g；由出入库流水（B-01 扣减 / B-02 回冲）驱动"@zh ;
+    tcm:required "true" ;
+    tcm:defaultValue "0" .
+
+tcm:Herb_lowStockThreshold
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Herb ;
+    rdfs:range xsd:decimal ;
+    rdfs:label "低库存预警值"@zh ;
+    skos:notation "lowStockThreshold" ;
+    rdfs:comment "单位 g"@zh ;
+    tcm:required "false" .
+
+tcm:Herb_origin
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Herb ;
+    rdfs:range xsd:string ;
+    rdfs:label "产地"@zh ;
+    skos:notation "origin" ;
+    tcm:required "false" .
+
+tcm:Herb_spec
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Herb ;
+    rdfs:range xsd:string ;
+    rdfs:label "规格"@zh ;
+    skos:notation "spec" ;
+    rdfs:comment "如「统货 / 选货」"@zh ;
+    tcm:required "false" .
+
+tcm:Herb_herbStatus
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Herb ;
+    rdfs:range tcm:Enum_USE_STATUS ;
+    rdfs:label "状态"@zh ;
+    skos:notation "herbStatus" ;
+    tcm:required "true" ;
+    tcm:defaultValue "ENABLED" .
+
+# ---------- AGG-PRESCRIPTION-001 处方 ----------
+tcm:Prescription
+    a owl:Class ;
+    rdfs:subClassOf tcm:Aggregate ;
+    rdfs:label "处方"@zh ;
+    rdfs:label "Prescription"@en ;
+    skos:notation "AGG-PRESCRIPTION-001" ;
+    rdfs:comment "医师为某次就诊开具的中药处方，含剂数、用法与审核状态"@zh ;
+    tcm:lifecycle "草稿 → 待审核 → 审核通过 → 已驳回 → 已调剂 → 已发药 → 已作废"@zh .
+
+tcm:Prescription_prescriptionNo
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range xsd:string ;
+    rdfs:label "处方号"@zh ;
+    skos:notation "prescriptionNo" ;
+    rdfs:comment "系统生成"@zh ;
+    tcm:required "true" ;
+    tcm:unique "true" .
+
+tcm:Prescription_visitId
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range tcm:Visit ;
+    rdfs:label "就诊记录"@zh ;
+    skos:notation "visitId" ;
+    rdfs:comment "一次就诊可开多张处方（如内服 + 外洗）"@zh ;
+    tcm:required "true" .
+
+tcm:Prescription_patientId
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range tcm:Patient ;
+    rdfs:label "患者"@zh ;
+    skos:notation "patientId" ;
+    rdfs:comment "由就诊记录带入，便于查询"@zh ;
+    tcm:required "true" .
+
+tcm:Prescription_doctorId
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range xsd:string ;
+    rdfs:label "开方医师"@zh ;
+    skos:notation "doctorId" ;
+    rdfs:comment "默认取接诊医师；引用平台用户 ID"@zh ;
+    tcm:required "true" .
+
+tcm:Prescription_prescriptionType
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range tcm:Enum_PRESCRIPTION_TYPE ;
+    rdfs:label "处方类型"@zh ;
+    skos:notation "prescriptionType" ;
+    tcm:required "true" .
+
+tcm:Prescription_formulaTemplateId
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range tcm:FormulaTemplate ;
+    rdfs:label "引用方剂模板"@zh ;
+    skos:notation "formulaTemplateId" ;
+    rdfs:comment "选方后带出组成，医师可加减"@zh ;
+    tcm:required "false" .
+
+tcm:Prescription_doses
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range xsd:int ;
+    rdfs:label "剂数"@zh ;
+    skos:notation "doses" ;
+    tcm:required "true" .
+
+tcm:Prescription_usageMethod
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range tcm:Enum_USAGE_METHOD ;
+    rdfs:label "用法"@zh ;
+    skos:notation "usageMethod" ;
+    tcm:required "true" .
+
+tcm:Prescription_decoctionInstruction
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range xsd:string ;
+    rdfs:label "煎服说明"@zh ;
+    skos:notation "decoctionInstruction" ;
+    rdfs:comment "代煎、特殊煎法汇总说明"@zh ;
+    tcm:required "false" .
+
+tcm:Prescription_medicalAdvice
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range xsd:string ;
+    rdfs:label "医嘱嘱托"@zh ;
+    skos:notation "medicalAdvice" ;
+    rdfs:comment "饮食起居禁忌等"@zh ;
+    tcm:required "false" .
+
+tcm:Prescription_prescribeTime
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "开方时间"@zh ;
+    skos:notation "prescribeTime" ;
+    tcm:required "true" .
+
+tcm:Prescription_submitTime
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "提交时间"@zh ;
+    skos:notation "submitTime" ;
+    rdfs:comment "FUNC-07 提交送审时写入；REF-11 与审核时间比较（建模补全字段）"@zh ;
+    tcm:required "false" .
+
+tcm:Prescription_prescriptionStatus
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range tcm:Enum_PRESCRIPTION_STATUS ;
+    rdfs:label "处方状态"@zh ;
+    skos:notation "prescriptionStatus" ;
+    tcm:required "true" ;
+    tcm:defaultValue "DRAFT" .
+
+tcm:Prescription_reviewerId
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range xsd:string ;
+    rdfs:label "审核人"@zh ;
+    skos:notation "reviewerId" ;
+    rdfs:comment "中药师；审核通过或驳回时写入；引用平台用户 ID"@zh ;
+    tcm:required "false" .
+
+tcm:Prescription_reviewTime
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "审核时间"@zh ;
+    skos:notation "reviewTime" ;
+    rdfs:comment "REF-11：不得早于提交时间"@zh ;
+    tcm:required "false" .
+
+tcm:Prescription_rejectReason
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range xsd:string ;
+    rdfs:label "驳回原因"@zh ;
+    skos:notation "rejectReason" ;
+    rdfs:comment "处方状态为「已驳回」时必填"@zh ;
+    tcm:required "false" .
+
+tcm:Prescription_cancelReason
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range xsd:string ;
+    rdfs:label "作废原因"@zh ;
+    skos:notation "cancelReason" ;
+    rdfs:comment "处方状态为「已作废」时必填；FUNC-09 作废时填写，处方不物理删除"@zh ;
+    tcm:required "false" .
+
+# ---------- AGG-DISPENSE-001 调剂发药记录 ----------
+tcm:DispenseRecord
+    a owl:Class ;
+    rdfs:subClassOf tcm:Aggregate ;
+    rdfs:label "调剂发药记录"@zh ;
+    rdfs:label "DispenseRecord"@en ;
+    skos:notation "AGG-DISPENSE-001" ;
+    rdfs:comment "中药师针对一张处方的调剂与发药执行记录，一张处方对应一条记录"@zh ;
+    tcm:lifecycle "待调剂 → 已调剂 → 已发药 → 已取消"@zh .
+
+tcm:DispenseRecord_dispenseNo
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:DispenseRecord ;
+    rdfs:range xsd:string ;
+    rdfs:label "发药单号"@zh ;
+    skos:notation "dispenseNo" ;
+    rdfs:comment "系统生成"@zh ;
+    tcm:required "true" ;
+    tcm:unique "true" .
+
+tcm:DispenseRecord_prescriptionId
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:DispenseRecord ;
+    rdfs:range tcm:Prescription ;
+    rdfs:label "处方"@zh ;
+    skos:notation "prescriptionId" ;
+    rdfs:comment "一张处方对应一条调剂发药记录（一对一）"@zh ;
+    tcm:required "true" .
+
+tcm:DispenseRecord_dispenserId
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:DispenseRecord ;
+    rdfs:range xsd:string ;
+    rdfs:label "调剂人"@zh ;
+    skos:notation "dispenserId" ;
+    rdfs:comment "中药师；引用平台用户 ID"@zh ;
+    tcm:required "true" .
+
+tcm:DispenseRecord_checkerId
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:DispenseRecord ;
+    rdfs:range xsd:string ;
+    rdfs:label "复核人"@zh ;
+    skos:notation "checkerId" ;
+    rdfs:comment "选填，不强制（单节点审核，D-24）；引用平台用户 ID"@zh ;
+    tcm:required "false" .
+
+tcm:DispenseRecord_dispenseTime
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:DispenseRecord ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "调剂时间"@zh ;
+    skos:notation "dispenseTime" ;
+    tcm:required "true" .
+
+tcm:DispenseRecord_issueTime
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:DispenseRecord ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "发药时间"@zh ;
+    skos:notation "issueTime" ;
+    rdfs:comment "REF-14：不得早于调剂时间"@zh ;
+    tcm:required "false" .
+
+tcm:DispenseRecord_recordStatus
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:DispenseRecord ;
+    rdfs:range tcm:Enum_DISPENSE_STATUS ;
+    rdfs:label "记录状态"@zh ;
+    skos:notation "recordStatus" ;
+    tcm:required "true" ;
+    tcm:defaultValue "PENDING" .
+
+tcm:DispenseRecord_remark
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:DispenseRecord ;
+    rdfs:range xsd:string ;
+    rdfs:label "备注"@zh ;
+    skos:notation "remark" ;
+    tcm:required "false" .
+
+# ---------- AGG-FOLLOWUP-001 复诊随访记录 ----------
+tcm:FollowUp
+    a owl:Class ;
+    rdfs:subClassOf tcm:Aggregate ;
+    rdfs:label "复诊随访记录"@zh ;
+    rdfs:label "FollowUp"@en ;
+    skos:notation "AGG-FOLLOWUP-001" ;
+    rdfs:comment "复诊计划、疗效评价与失访登记"@zh ;
+    tcm:lifecycle "待随访 → 已完成 → 已失访"@zh .
+
+tcm:FollowUp_followUpNo
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:FollowUp ;
+    rdfs:range xsd:string ;
+    rdfs:label "随访号"@zh ;
+    skos:notation "followUpNo" ;
+    rdfs:comment "系统生成"@zh ;
+    tcm:required "true" ;
+    tcm:unique "true" .
+
+tcm:FollowUp_patientId
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:FollowUp ;
+    rdfs:range tcm:Patient ;
+    rdfs:label "患者"@zh ;
+    skos:notation "patientId" ;
+    tcm:required "true" .
+
+tcm:FollowUp_sourceVisitId
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:FollowUp ;
+    rdfs:range tcm:Visit ;
+    rdfs:label "上次就诊"@zh ;
+    skos:notation "sourceVisitId" ;
+    rdfs:comment "随访来源就诊"@zh ;
+    tcm:required "true" .
+
+tcm:FollowUp_actualVisitId
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:FollowUp ;
+    rdfs:range tcm:Visit ;
+    rdfs:label "本次就诊"@zh ;
+    skos:notation "actualVisitId" ;
+    rdfs:comment "患者实际复诊时回填"@zh ;
+    tcm:required "false" .
+
+tcm:FollowUp_plannedFollowUpDate
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:FollowUp ;
+    rdfs:range xsd:date ;
+    rdfs:label "计划随访日期"@zh ;
+    skos:notation "plannedFollowUpDate" ;
+    rdfs:comment "默认取上次就诊日期 + 处方剂数对应天数（D-17）"@zh ;
+    tcm:required "true" .
+
+tcm:FollowUp_actualFollowUpDate
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:FollowUp ;
+    rdfs:range xsd:date ;
+    rdfs:label "实际随访日期"@zh ;
+    skos:notation "actualFollowUpDate" ;
+    rdfs:comment "不得早于上次就诊时间，由 M3 规则 R-05 校验"@zh ;
+    tcm:required "false" .
+
+tcm:FollowUp_efficacyLevel
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:FollowUp ;
+    rdfs:range tcm:Enum_EFFICACY_LEVEL ;
+    rdfs:label "疗效评价"@zh ;
+    skos:notation "efficacyLevel" ;
+    tcm:required "false" .
+
+tcm:FollowUp_symptomChange
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:FollowUp ;
+    rdfs:range xsd:string ;
+    rdfs:label "症状变化"@zh ;
+    skos:notation "symptomChange" ;
+    tcm:required "false" .
+
+tcm:FollowUp_continueMedication
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:FollowUp ;
+    rdfs:range xsd:boolean ;
+    rdfs:label "是否继续用药"@zh ;
+    skos:notation "continueMedication" ;
+    tcm:required "false" .
+
+tcm:FollowUp_recordStatus
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:FollowUp ;
+    rdfs:range tcm:Enum_FOLLOWUP_STATUS ;
+    rdfs:label "记录状态"@zh ;
+    skos:notation "recordStatus" ;
+    tcm:required "true" ;
+    tcm:defaultValue "PENDING" .
+
+tcm:FollowUp_remark
+    a owl:DatatypeProperty ;
+    rdfs:domain tcm:FollowUp ;
+    rdfs:range xsd:string ;
+    rdfs:label "备注"@zh ;
+    skos:notation "remark" ;
+    rdfs:comment "失访原因等"@zh ;
+    tcm:required "false" .
+
+
+# ---------- M1 数据字典（枚举）----------
+tcm:Enum_USE_STATUS
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "启用停用状态"@zh ;
+    skos:notation "USE_STATUS" ;
+    rdfs:comment "主数据对象的可用性状态，被证型字典、方剂模板、中药饮片共用"@zh ;
+    tcm:dictionaryId "DICT-COMMON" .
+
+tcm:USE_STATUS_ENABLED
+    a owl:NamedIndividual ;
+    a tcm:Enum_USE_STATUS ;
+    rdfs:label "启用"@zh ;
+    skos:notation "ENABLED" ;
+    tcm:sortOrder "10" .
+
+tcm:USE_STATUS_DISABLED
+    a owl:NamedIndividual ;
+    a tcm:Enum_USE_STATUS ;
+    rdfs:label "停用"@zh ;
+    skos:notation "DISABLED" ;
+    tcm:sortOrder "20" .
+
+tcm:Enum_GENDER
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "性别"@zh ;
+    skos:notation "GENDER" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-PATIENT" .
+
+tcm:GENDER_MALE
+    a owl:NamedIndividual ;
+    a tcm:Enum_GENDER ;
+    rdfs:label "男"@zh ;
+    skos:notation "MALE" ;
+    tcm:sortOrder "10" .
+
+tcm:GENDER_FEMALE
+    a owl:NamedIndividual ;
+    a tcm:Enum_GENDER ;
+    rdfs:label "女"@zh ;
+    skos:notation "FEMALE" ;
+    tcm:sortOrder "20" .
+
+tcm:GENDER_UNKNOWN
+    a owl:NamedIndividual ;
+    a tcm:Enum_GENDER ;
+    rdfs:label "未知"@zh ;
+    skos:notation "UNKNOWN" ;
+    tcm:sortOrder "30" .
+
+tcm:Enum_ID_TYPE
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "证件类型"@zh ;
+    skos:notation "ID_TYPE" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-PATIENT" .
+
+tcm:ID_TYPE_ID_CARD
+    a owl:NamedIndividual ;
+    a tcm:Enum_ID_TYPE ;
+    rdfs:label "居民身份证"@zh ;
+    skos:notation "ID_CARD" ;
+    tcm:sortOrder "10" .
+
+tcm:ID_TYPE_PASSPORT
+    a owl:NamedIndividual ;
+    a tcm:Enum_ID_TYPE ;
+    rdfs:label "护照"@zh ;
+    skos:notation "PASSPORT" ;
+    tcm:sortOrder "20" .
+
+tcm:ID_TYPE_HK_MO_TW
+    a owl:NamedIndividual ;
+    a tcm:Enum_ID_TYPE ;
+    rdfs:label "港澳台通行证"@zh ;
+    skos:notation "HK_MO_TW" ;
+    tcm:sortOrder "30" .
+
+tcm:ID_TYPE_OTHER
+    a owl:NamedIndividual ;
+    a tcm:Enum_ID_TYPE ;
+    rdfs:label "其他"@zh ;
+    skos:notation "OTHER" ;
+    tcm:sortOrder "40" .
+
+tcm:Enum_PATIENT_STATUS
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "患者状态"@zh ;
+    skos:notation "PATIENT_STATUS" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-PATIENT" .
+
+tcm:PATIENT_STATUS_ACTIVE
+    a owl:NamedIndividual ;
+    a tcm:Enum_PATIENT_STATUS ;
+    rdfs:label "在用"@zh ;
+    skos:notation "ACTIVE" ;
+    tcm:sortOrder "10" .
+
+tcm:PATIENT_STATUS_INACTIVE
+    a owl:NamedIndividual ;
+    a tcm:Enum_PATIENT_STATUS ;
+    rdfs:label "停用"@zh ;
+    skos:notation "INACTIVE" ;
+    tcm:sortOrder "20" .
+
+tcm:Enum_VISIT_TYPE
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "就诊类型"@zh ;
+    skos:notation "VISIT_TYPE" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-VISIT" .
+
+tcm:VISIT_TYPE_FIRST
+    a owl:NamedIndividual ;
+    a tcm:Enum_VISIT_TYPE ;
+    rdfs:label "初诊"@zh ;
+    skos:notation "FIRST" ;
+    tcm:sortOrder "10" .
+
+tcm:VISIT_TYPE_FOLLOW_UP
+    a owl:NamedIndividual ;
+    a tcm:Enum_VISIT_TYPE ;
+    rdfs:label "复诊"@zh ;
+    skos:notation "FOLLOW_UP" ;
+    tcm:sortOrder "20" .
+
+tcm:Enum_VISIT_STATUS
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "就诊状态"@zh ;
+    skos:notation "VISIT_STATUS" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-VISIT" .
+
+tcm:VISIT_STATUS_REGISTERED
+    a owl:NamedIndividual ;
+    a tcm:Enum_VISIT_STATUS ;
+    rdfs:label "已挂号"@zh ;
+    skos:notation "REGISTERED" ;
+    tcm:sortOrder "10" .
+
+tcm:VISIT_STATUS_IN_PROGRESS
+    a owl:NamedIndividual ;
+    a tcm:Enum_VISIT_STATUS ;
+    rdfs:label "接诊中"@zh ;
+    skos:notation "IN_PROGRESS" ;
+    tcm:sortOrder "20" .
+
+tcm:VISIT_STATUS_COMPLETED
+    a owl:NamedIndividual ;
+    a tcm:Enum_VISIT_STATUS ;
+    rdfs:label "已完成"@zh ;
+    skos:notation "COMPLETED" ;
+    tcm:sortOrder "30" .
+
+tcm:VISIT_STATUS_CANCELLED
+    a owl:NamedIndividual ;
+    a tcm:Enum_VISIT_STATUS ;
+    rdfs:label "已取消"@zh ;
+    skos:notation "CANCELLED" ;
+    tcm:sortOrder "40" .
+
+tcm:Enum_DEPT
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "科室"@zh ;
+    skos:notation "DEPT" ;
+    rdfs:comment "单机构门诊科室，由系统管理维护"@zh ;
+    tcm:dictionaryId "DICT-VISIT" .
+
+tcm:DEPT_TCM_INTERNAL
+    a owl:NamedIndividual ;
+    a tcm:Enum_DEPT ;
+    rdfs:label "中医内科"@zh ;
+    skos:notation "TCM_INTERNAL" ;
+    tcm:sortOrder "10" .
+
+tcm:DEPT_TCM_GYN
+    a owl:NamedIndividual ;
+    a tcm:Enum_DEPT ;
+    rdfs:label "中医妇科"@zh ;
+    skos:notation "TCM_GYN" ;
+    tcm:sortOrder "20" .
+
+tcm:DEPT_TCM_PEDIATRIC
+    a owl:NamedIndividual ;
+    a tcm:Enum_DEPT ;
+    rdfs:label "中医儿科"@zh ;
+    skos:notation "TCM_PEDIATRIC" ;
+    tcm:sortOrder "30" .
+
+tcm:DEPT_ACUPUNCTURE
+    a owl:NamedIndividual ;
+    a tcm:Enum_DEPT ;
+    rdfs:label "针灸科"@zh ;
+    skos:notation "ACUPUNCTURE" ;
+    tcm:sortOrder "40" .
+
+tcm:DEPT_TUINA
+    a owl:NamedIndividual ;
+    a tcm:Enum_DEPT ;
+    rdfs:label "推拿科"@zh ;
+    skos:notation "TUINA" ;
+    tcm:sortOrder "50" .
+
+tcm:Enum_TONGUE_BODY
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "舌质"@zh ;
+    skos:notation "TONGUE_BODY" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-TCM-SIGN" .
+
+tcm:TONGUE_BODY_PALE_RED
+    a owl:NamedIndividual ;
+    a tcm:Enum_TONGUE_BODY ;
+    rdfs:label "淡红"@zh ;
+    skos:notation "PALE_RED" ;
+    tcm:sortOrder "10" .
+
+tcm:TONGUE_BODY_PALE_WHITE
+    a owl:NamedIndividual ;
+    a tcm:Enum_TONGUE_BODY ;
+    rdfs:label "淡白"@zh ;
+    skos:notation "PALE_WHITE" ;
+    tcm:sortOrder "20" .
+
+tcm:TONGUE_BODY_RED
+    a owl:NamedIndividual ;
+    a tcm:Enum_TONGUE_BODY ;
+    rdfs:label "红"@zh ;
+    skos:notation "RED" ;
+    tcm:sortOrder "30" .
+
+tcm:TONGUE_BODY_CRIMSON
+    a owl:NamedIndividual ;
+    a tcm:Enum_TONGUE_BODY ;
+    rdfs:label "绛"@zh ;
+    skos:notation "CRIMSON" ;
+    tcm:sortOrder "40" .
+
+tcm:TONGUE_BODY_PURPLE_DARK
+    a owl:NamedIndividual ;
+    a tcm:Enum_TONGUE_BODY ;
+    rdfs:label "紫暗"@zh ;
+    skos:notation "PURPLE_DARK" ;
+    tcm:sortOrder "50" .
+
+tcm:TONGUE_BODY_ECCHYMOSIS
+    a owl:NamedIndividual ;
+    a tcm:Enum_TONGUE_BODY ;
+    rdfs:label "瘀点"@zh ;
+    skos:notation "ECCHYMOSIS" ;
+    tcm:sortOrder "60" .
+
+tcm:Enum_TONGUE_COATING
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "舌苔"@zh ;
+    skos:notation "TONGUE_COATING" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-TCM-SIGN" .
+
+tcm:TONGUE_COATING_THIN_WHITE
+    a owl:NamedIndividual ;
+    a tcm:Enum_TONGUE_COATING ;
+    rdfs:label "薄白"@zh ;
+    skos:notation "THIN_WHITE" ;
+    tcm:sortOrder "10" .
+
+tcm:TONGUE_COATING_WHITE_GREASY
+    a owl:NamedIndividual ;
+    a tcm:Enum_TONGUE_COATING ;
+    rdfs:label "白腻"@zh ;
+    skos:notation "WHITE_GREASY" ;
+    tcm:sortOrder "20" .
+
+tcm:TONGUE_COATING_YELLOW_GREASY
+    a owl:NamedIndividual ;
+    a tcm:Enum_TONGUE_COATING ;
+    rdfs:label "黄腻"@zh ;
+    skos:notation "YELLOW_GREASY" ;
+    tcm:sortOrder "30" .
+
+tcm:TONGUE_COATING_SCANTY
+    a owl:NamedIndividual ;
+    a tcm:Enum_TONGUE_COATING ;
+    rdfs:label "少苔"@zh ;
+    skos:notation "SCANTY" ;
+    tcm:sortOrder "40" .
+
+tcm:TONGUE_COATING_NO_COATING
+    a owl:NamedIndividual ;
+    a tcm:Enum_TONGUE_COATING ;
+    rdfs:label "无苔"@zh ;
+    skos:notation "NO_COATING" ;
+    tcm:sortOrder "50" .
+
+tcm:Enum_PULSE
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "脉象"@zh ;
+    skos:notation "PULSE" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-TCM-SIGN" .
+
+tcm:PULSE_FLOAT
+    a owl:NamedIndividual ;
+    a tcm:Enum_PULSE ;
+    rdfs:label "浮"@zh ;
+    skos:notation "FLOAT" ;
+    tcm:sortOrder "10" .
+
+tcm:PULSE_DEEP
+    a owl:NamedIndividual ;
+    a tcm:Enum_PULSE ;
+    rdfs:label "沉"@zh ;
+    skos:notation "DEEP" ;
+    tcm:sortOrder "20" .
+
+tcm:PULSE_SLOW
+    a owl:NamedIndividual ;
+    a tcm:Enum_PULSE ;
+    rdfs:label "迟"@zh ;
+    skos:notation "SLOW" ;
+    tcm:sortOrder "30" .
+
+tcm:PULSE_RAPID
+    a owl:NamedIndividual ;
+    a tcm:Enum_PULSE ;
+    rdfs:label "数"@zh ;
+    skos:notation "RAPID" ;
+    tcm:sortOrder "40" .
+
+tcm:PULSE_VACUOUS
+    a owl:NamedIndividual ;
+    a tcm:Enum_PULSE ;
+    rdfs:label "虚"@zh ;
+    skos:notation "VACUOUS" ;
+    tcm:sortOrder "50" .
+
+tcm:PULSE_EXCESS
+    a owl:NamedIndividual ;
+    a tcm:Enum_PULSE ;
+    rdfs:label "实"@zh ;
+    skos:notation "EXCESS" ;
+    tcm:sortOrder "60" .
+
+tcm:PULSE_SLIPPERY
+    a owl:NamedIndividual ;
+    a tcm:Enum_PULSE ;
+    rdfs:label "滑"@zh ;
+    skos:notation "SLIPPERY" ;
+    tcm:sortOrder "70" .
+
+tcm:PULSE_ROUGH
+    a owl:NamedIndividual ;
+    a tcm:Enum_PULSE ;
+    rdfs:label "涩"@zh ;
+    skos:notation "ROUGH" ;
+    tcm:sortOrder "80" .
+
+tcm:PULSE_WIRY
+    a owl:NamedIndividual ;
+    a tcm:Enum_PULSE ;
+    rdfs:label "弦"@zh ;
+    skos:notation "WIRY" ;
+    tcm:sortOrder "90" .
+
+tcm:PULSE_TIGHT
+    a owl:NamedIndividual ;
+    a tcm:Enum_PULSE ;
+    rdfs:label "紧"@zh ;
+    skos:notation "TIGHT" ;
+    tcm:sortOrder "100" .
+
+tcm:Enum_DIAG_METHOD
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "辨证方法"@zh ;
+    skos:notation "DIAG_METHOD" ;
+    rdfs:comment "证型字典的「所属辨证体系」与辨证结论的「辨证方法」共用本类型"@zh ;
+    tcm:dictionaryId "DICT-SYNDROME" .
+
+tcm:DIAG_METHOD_EIGHT_PRINCIPLES
+    a owl:NamedIndividual ;
+    a tcm:Enum_DIAG_METHOD ;
+    rdfs:label "八纲辨证"@zh ;
+    skos:notation "EIGHT_PRINCIPLES" ;
+    tcm:sortOrder "10" .
+
+tcm:DIAG_METHOD_ZANGFU
+    a owl:NamedIndividual ;
+    a tcm:Enum_DIAG_METHOD ;
+    rdfs:label "脏腑辨证"@zh ;
+    skos:notation "ZANGFU" ;
+    tcm:sortOrder "20" .
+
+tcm:DIAG_METHOD_QI_BLOOD_FLUID
+    a owl:NamedIndividual ;
+    a tcm:Enum_DIAG_METHOD ;
+    rdfs:label "气血津液辨证"@zh ;
+    skos:notation "QI_BLOOD_FLUID" ;
+    tcm:sortOrder "30" .
+
+tcm:DIAG_METHOD_SIX_MERIDIANS
+    a owl:NamedIndividual ;
+    a tcm:Enum_DIAG_METHOD ;
+    rdfs:label "六经辨证"@zh ;
+    skos:notation "SIX_MERIDIANS" ;
+    tcm:sortOrder "40" .
+
+tcm:DIAG_METHOD_WEIQI_YINGXUE
+    a owl:NamedIndividual ;
+    a tcm:Enum_DIAG_METHOD ;
+    rdfs:label "卫气营血辨证"@zh ;
+    skos:notation "WEIQI_YINGXUE" ;
+    tcm:sortOrder "50" .
+
+tcm:DIAG_METHOD_TRIPLE_BURNER
+    a owl:NamedIndividual ;
+    a tcm:Enum_DIAG_METHOD ;
+    rdfs:label "三焦辨证"@zh ;
+    skos:notation "TRIPLE_BURNER" ;
+    tcm:sortOrder "60" .
+
+tcm:Enum_SYNDROME_NATURE
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "证型性质"@zh ;
+    skos:notation "SYNDROME_NATURE" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-SYNDROME" .
+
+tcm:SYNDROME_NATURE_PRIMARY
+    a owl:NamedIndividual ;
+    a tcm:Enum_SYNDROME_NATURE ;
+    rdfs:label "主证"@zh ;
+    skos:notation "PRIMARY" ;
+    tcm:sortOrder "10" .
+
+tcm:SYNDROME_NATURE_SECONDARY
+    a owl:NamedIndividual ;
+    a tcm:Enum_SYNDROME_NATURE ;
+    rdfs:label "兼证"@zh ;
+    skos:notation "SECONDARY" ;
+    tcm:sortOrder "20" .
+
+tcm:Enum_CONCLUSION_STATUS
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "结论状态"@zh ;
+    skos:notation "CONCLUSION_STATUS" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-SYNDROME" .
+
+tcm:CONCLUSION_STATUS_DRAFT
+    a owl:NamedIndividual ;
+    a tcm:Enum_CONCLUSION_STATUS ;
+    rdfs:label "草稿"@zh ;
+    skos:notation "DRAFT" ;
+    tcm:sortOrder "10" .
+
+tcm:CONCLUSION_STATUS_CONFIRMED
+    a owl:NamedIndividual ;
+    a tcm:Enum_CONCLUSION_STATUS ;
+    rdfs:label "已确认"@zh ;
+    skos:notation "CONFIRMED" ;
+    tcm:sortOrder "20" .
+
+tcm:Enum_FORMULA_TYPE
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "方剂类型"@zh ;
+    skos:notation "FORMULA_TYPE" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-FORMULA" .
+
+tcm:FORMULA_TYPE_CLASSIC
+    a owl:NamedIndividual ;
+    a tcm:Enum_FORMULA_TYPE ;
+    rdfs:label "经方"@zh ;
+    skos:notation "CLASSIC" ;
+    tcm:sortOrder "10" .
+
+tcm:FORMULA_TYPE_MODERN
+    a owl:NamedIndividual ;
+    a tcm:Enum_FORMULA_TYPE ;
+    rdfs:label "时方"@zh ;
+    skos:notation "MODERN" ;
+    tcm:sortOrder "20" .
+
+tcm:FORMULA_TYPE_EXPERIENCE
+    a owl:NamedIndividual ;
+    a tcm:Enum_FORMULA_TYPE ;
+    rdfs:label "经验方"@zh ;
+    skos:notation "EXPERIENCE" ;
+    tcm:sortOrder "30" .
+
+tcm:FORMULA_TYPE_INSTITUTIONAL
+    a owl:NamedIndividual ;
+    a tcm:Enum_FORMULA_TYPE ;
+    rdfs:label "院内协定方"@zh ;
+    skos:notation "INSTITUTIONAL" ;
+    tcm:sortOrder "40" .
+
+tcm:Enum_HERB_CATEGORY
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "药材类别"@zh ;
+    skos:notation "HERB_CATEGORY" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-HERB" .
+
+tcm:HERB_CATEGORY_RELIEVING_EXTERIOR
+    a owl:NamedIndividual ;
+    a tcm:Enum_HERB_CATEGORY ;
+    rdfs:label "解表药"@zh ;
+    skos:notation "RELIEVING_EXTERIOR" ;
+    tcm:sortOrder "10" .
+
+tcm:HERB_CATEGORY_CLEARING_HEAT
+    a owl:NamedIndividual ;
+    a tcm:Enum_HERB_CATEGORY ;
+    rdfs:label "清热药"@zh ;
+    skos:notation "CLEARING_HEAT" ;
+    tcm:sortOrder "20" .
+
+tcm:HERB_CATEGORY_TONIFYING
+    a owl:NamedIndividual ;
+    a tcm:Enum_HERB_CATEGORY ;
+    rdfs:label "补益药"@zh ;
+    skos:notation "TONIFYING" ;
+    tcm:sortOrder "30" .
+
+tcm:HERB_CATEGORY_REGULATING_QI
+    a owl:NamedIndividual ;
+    a tcm:Enum_HERB_CATEGORY ;
+    rdfs:label "理气药"@zh ;
+    skos:notation "REGULATING_QI" ;
+    tcm:sortOrder "40" .
+
+tcm:HERB_CATEGORY_ACTIVATING_BLOOD
+    a owl:NamedIndividual ;
+    a tcm:Enum_HERB_CATEGORY ;
+    rdfs:label "活血化瘀药"@zh ;
+    skos:notation "ACTIVATING_BLOOD" ;
+    tcm:sortOrder "50" .
+
+tcm:HERB_CATEGORY_STOPPING_COUGH
+    a owl:NamedIndividual ;
+    a tcm:Enum_HERB_CATEGORY ;
+    rdfs:label "化痰止咳药"@zh ;
+    skos:notation "STOPPING_COUGH" ;
+    tcm:sortOrder "60" .
+
+tcm:HERB_CATEGORY_DIURETIC
+    a owl:NamedIndividual ;
+    a tcm:Enum_HERB_CATEGORY ;
+    rdfs:label "利水渗湿药"@zh ;
+    skos:notation "DIURETIC" ;
+    tcm:sortOrder "70" .
+
+tcm:HERB_CATEGORY_WARMING_INTERIOR
+    a owl:NamedIndividual ;
+    a tcm:Enum_HERB_CATEGORY ;
+    rdfs:label "温里药"@zh ;
+    skos:notation "WARMING_INTERIOR" ;
+    tcm:sortOrder "80" .
+
+tcm:HERB_CATEGORY_OTHER
+    a owl:NamedIndividual ;
+    a tcm:Enum_HERB_CATEGORY ;
+    rdfs:label "其他"@zh ;
+    skos:notation "OTHER" ;
+    tcm:sortOrder "90" .
+
+tcm:Enum_TOXICITY_LEVEL
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "毒性分级"@zh ;
+    skos:notation "TOXICITY_LEVEL" ;
+    rdfs:comment "依据毒性药品管理要求分级，驱动 M3 规则 R-03 上限阻断"@zh ;
+    tcm:dictionaryId "DICT-HERB" .
+
+tcm:TOXICITY_LEVEL_NONE
+    a owl:NamedIndividual ;
+    a tcm:Enum_TOXICITY_LEVEL ;
+    rdfs:label "无毒"@zh ;
+    skos:notation "NONE" ;
+    tcm:sortOrder "10" .
+
+tcm:TOXICITY_LEVEL_SLIGHT
+    a owl:NamedIndividual ;
+    a tcm:Enum_TOXICITY_LEVEL ;
+    rdfs:label "小毒"@zh ;
+    skos:notation "SLIGHT" ;
+    tcm:sortOrder "20" .
+
+tcm:TOXICITY_LEVEL_TOXIC
+    a owl:NamedIndividual ;
+    a tcm:Enum_TOXICITY_LEVEL ;
+    rdfs:label "有毒"@zh ;
+    skos:notation "TOXIC" ;
+    tcm:sortOrder "30" .
+
+tcm:TOXICITY_LEVEL_HIGHLY_TOXIC
+    a owl:NamedIndividual ;
+    a tcm:Enum_TOXICITY_LEVEL ;
+    rdfs:label "大毒"@zh ;
+    skos:notation "HIGHLY_TOXIC" ;
+    tcm:sortOrder "40" .
+
+tcm:Enum_PRESCRIPTION_TYPE
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "处方类型"@zh ;
+    skos:notation "PRESCRIPTION_TYPE" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-PRESCRIPTION" .
+
+tcm:PRESCRIPTION_TYPE_HERBAL_DECOCTION
+    a owl:NamedIndividual ;
+    a tcm:Enum_PRESCRIPTION_TYPE ;
+    rdfs:label "中药饮片处方"@zh ;
+    skos:notation "HERBAL_DECOCTION" ;
+    tcm:sortOrder "10" .
+
+tcm:PRESCRIPTION_TYPE_GRANULE
+    a owl:NamedIndividual ;
+    a tcm:Enum_PRESCRIPTION_TYPE ;
+    rdfs:label "中药颗粒剂处方"@zh ;
+    skos:notation "GRANULE" ;
+    tcm:sortOrder "20" .
+
+tcm:PRESCRIPTION_TYPE_BOILED_BY_HOSPITAL
+    a owl:NamedIndividual ;
+    a tcm:Enum_PRESCRIPTION_TYPE ;
+    rdfs:label "代煎"@zh ;
+    skos:notation "BOILED_BY_HOSPITAL" ;
+    tcm:sortOrder "30" .
+
+tcm:Enum_USAGE_METHOD
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "用法"@zh ;
+    skos:notation "USAGE_METHOD" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-PRESCRIPTION" .
+
+tcm:USAGE_METHOD_DAILY_1_2
+    a owl:NamedIndividual ;
+    a tcm:Enum_USAGE_METHOD ;
+    rdfs:label "每日 1 剂分 2 次温服"@zh ;
+    skos:notation "DAILY_1_2" ;
+    tcm:sortOrder "10" .
+
+tcm:USAGE_METHOD_DAILY_1_3
+    a owl:NamedIndividual ;
+    a tcm:Enum_USAGE_METHOD ;
+    rdfs:label "每日 1 剂分 3 次温服"@zh ;
+    skos:notation "DAILY_1_3" ;
+    tcm:sortOrder "20" .
+
+tcm:USAGE_METHOD_EXTERNAL_WASH
+    a owl:NamedIndividual ;
+    a tcm:Enum_USAGE_METHOD ;
+    rdfs:label "外用熏洗"@zh ;
+    skos:notation "EXTERNAL_WASH" ;
+    tcm:sortOrder "30" .
+
+tcm:Enum_PRESCRIPTION_STATUS
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "处方状态"@zh ;
+    skos:notation "PRESCRIPTION_STATUS" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-PRESCRIPTION" .
+
+tcm:PRESCRIPTION_STATUS_DRAFT
+    a owl:NamedIndividual ;
+    a tcm:Enum_PRESCRIPTION_STATUS ;
+    rdfs:label "草稿"@zh ;
+    skos:notation "DRAFT" ;
+    tcm:sortOrder "10" .
+
+tcm:PRESCRIPTION_STATUS_PENDING_REVIEW
+    a owl:NamedIndividual ;
+    a tcm:Enum_PRESCRIPTION_STATUS ;
+    rdfs:label "待审核"@zh ;
+    skos:notation "PENDING_REVIEW" ;
+    tcm:sortOrder "20" .
+
+tcm:PRESCRIPTION_STATUS_APPROVED
+    a owl:NamedIndividual ;
+    a tcm:Enum_PRESCRIPTION_STATUS ;
+    rdfs:label "审核通过"@zh ;
+    skos:notation "APPROVED" ;
+    tcm:sortOrder "30" .
+
+tcm:PRESCRIPTION_STATUS_REJECTED
+    a owl:NamedIndividual ;
+    a tcm:Enum_PRESCRIPTION_STATUS ;
+    rdfs:label "已驳回"@zh ;
+    skos:notation "REJECTED" ;
+    tcm:sortOrder "40" .
+
+tcm:PRESCRIPTION_STATUS_DISPENSING
+    a owl:NamedIndividual ;
+    a tcm:Enum_PRESCRIPTION_STATUS ;
+    rdfs:label "已调剂"@zh ;
+    skos:notation "DISPENSING" ;
+    tcm:sortOrder "50" .
+
+tcm:PRESCRIPTION_STATUS_ISSUED
+    a owl:NamedIndividual ;
+    a tcm:Enum_PRESCRIPTION_STATUS ;
+    rdfs:label "已发药"@zh ;
+    skos:notation "ISSUED" ;
+    tcm:sortOrder "60" .
+
+tcm:PRESCRIPTION_STATUS_VOIDED
+    a owl:NamedIndividual ;
+    a tcm:Enum_PRESCRIPTION_STATUS ;
+    rdfs:label "已作废"@zh ;
+    skos:notation "VOIDED" ;
+    tcm:sortOrder "70" .
+
+tcm:Enum_DECOCTION_METHOD
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "特殊煎法"@zh ;
+    skos:notation "DECOCTION_METHOD" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-PRESCRIPTION" .
+
+tcm:DECOCTION_METHOD_NONE
+    a owl:NamedIndividual ;
+    a tcm:Enum_DECOCTION_METHOD ;
+    rdfs:label "无"@zh ;
+    skos:notation "NONE" ;
+    tcm:sortOrder "10" .
+
+tcm:DECOCTION_METHOD_PRE_DECOCT
+    a owl:NamedIndividual ;
+    a tcm:Enum_DECOCTION_METHOD ;
+    rdfs:label "先煎"@zh ;
+    skos:notation "PRE_DECOCT" ;
+    tcm:sortOrder "20" .
+
+tcm:DECOCTION_METHOD_LATE_ADD
+    a owl:NamedIndividual ;
+    a tcm:Enum_DECOCTION_METHOD ;
+    rdfs:label "后下"@zh ;
+    skos:notation "LATE_ADD" ;
+    tcm:sortOrder "30" .
+
+tcm:DECOCTION_METHOD_WRAP_DECOCT
+    a owl:NamedIndividual ;
+    a tcm:Enum_DECOCTION_METHOD ;
+    rdfs:label "包煎"@zh ;
+    skos:notation "WRAP_DECOCT" ;
+    tcm:sortOrder "40" .
+
+tcm:DECOCTION_METHOD_SEPARATE_DECOCT
+    a owl:NamedIndividual ;
+    a tcm:Enum_DECOCTION_METHOD ;
+    rdfs:label "另煎"@zh ;
+    skos:notation "SEPARATE_DECOCT" ;
+    tcm:sortOrder "50" .
+
+tcm:DECOCTION_METHOD_TAKE_UNCOOKED
+    a owl:NamedIndividual ;
+    a tcm:Enum_DECOCTION_METHOD ;
+    rdfs:label "冲服"@zh ;
+    skos:notation "TAKE_UNCOOKED" ;
+    tcm:sortOrder "60" .
+
+tcm:DECOCTION_METHOD_MELT
+    a owl:NamedIndividual ;
+    a tcm:Enum_DECOCTION_METHOD ;
+    rdfs:label "烊化"@zh ;
+    skos:notation "MELT" ;
+    tcm:sortOrder "70" .
+
+tcm:Enum_FLOW_BIZ_TYPE
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "出入库业务类型"@zh ;
+    skos:notation "FLOW_BIZ_TYPE" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-STOCK-FLOW" .
+
+tcm:FLOW_BIZ_TYPE_INBOUND
+    a owl:NamedIndividual ;
+    a tcm:Enum_FLOW_BIZ_TYPE ;
+    rdfs:label "入库"@zh ;
+    skos:notation "INBOUND" ;
+    tcm:sortOrder "10" .
+
+tcm:FLOW_BIZ_TYPE_DISPENSE_OUT
+    a owl:NamedIndividual ;
+    a tcm:Enum_FLOW_BIZ_TYPE ;
+    rdfs:label "调剂出库"@zh ;
+    skos:notation "DISPENSE_OUT" ;
+    tcm:sortOrder "20" .
+
+tcm:FLOW_BIZ_TYPE_VOID_ROLLBACK
+    a owl:NamedIndividual ;
+    a tcm:Enum_FLOW_BIZ_TYPE ;
+    rdfs:label "作废回冲"@zh ;
+    skos:notation "VOID_ROLLBACK" ;
+    tcm:sortOrder "30" .
+
+tcm:FLOW_BIZ_TYPE_STOCKTAKE_ADJUST
+    a owl:NamedIndividual ;
+    a tcm:Enum_FLOW_BIZ_TYPE ;
+    rdfs:label "盘点调整"@zh ;
+    skos:notation "STOCKTAKE_ADJUST" ;
+    tcm:sortOrder "40" .
+
+tcm:FLOW_BIZ_TYPE_LOSS_REPORT
+    a owl:NamedIndividual ;
+    a tcm:Enum_FLOW_BIZ_TYPE ;
+    rdfs:label "报损"@zh ;
+    skos:notation "LOSS_REPORT" ;
+    tcm:sortOrder "50" .
+
+tcm:Enum_DISPENSE_STATUS
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "调剂发药记录状态"@zh ;
+    skos:notation "DISPENSE_STATUS" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-DISPENSE" .
+
+tcm:DISPENSE_STATUS_PENDING
+    a owl:NamedIndividual ;
+    a tcm:Enum_DISPENSE_STATUS ;
+    rdfs:label "待调剂"@zh ;
+    skos:notation "PENDING" ;
+    tcm:sortOrder "10" .
+
+tcm:DISPENSE_STATUS_DISPENSED
+    a owl:NamedIndividual ;
+    a tcm:Enum_DISPENSE_STATUS ;
+    rdfs:label "已调剂"@zh ;
+    skos:notation "DISPENSED" ;
+    tcm:sortOrder "20" .
+
+tcm:DISPENSE_STATUS_ISSUED
+    a owl:NamedIndividual ;
+    a tcm:Enum_DISPENSE_STATUS ;
+    rdfs:label "已发药"@zh ;
+    skos:notation "ISSUED" ;
+    tcm:sortOrder "30" .
+
+tcm:DISPENSE_STATUS_CANCELLED
+    a owl:NamedIndividual ;
+    a tcm:Enum_DISPENSE_STATUS ;
+    rdfs:label "已取消"@zh ;
+    skos:notation "CANCELLED" ;
+    tcm:sortOrder "40" .
+
+tcm:Enum_EFFICACY_LEVEL
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "疗效评价"@zh ;
+    skos:notation "EFFICACY_LEVEL" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-FOLLOWUP" .
+
+tcm:EFFICACY_LEVEL_CURED
+    a owl:NamedIndividual ;
+    a tcm:Enum_EFFICACY_LEVEL ;
+    rdfs:label "痊愈"@zh ;
+    skos:notation "CURED" ;
+    tcm:sortOrder "10" .
+
+tcm:EFFICACY_LEVEL_MARKED_EFFECT
+    a owl:NamedIndividual ;
+    a tcm:Enum_EFFICACY_LEVEL ;
+    rdfs:label "显效"@zh ;
+    skos:notation "MARKED_EFFECT" ;
+    tcm:sortOrder "20" .
+
+tcm:EFFICACY_LEVEL_EFFECTIVE
+    a owl:NamedIndividual ;
+    a tcm:Enum_EFFICACY_LEVEL ;
+    rdfs:label "有效"@zh ;
+    skos:notation "EFFECTIVE" ;
+    tcm:sortOrder "30" .
+
+tcm:EFFICACY_LEVEL_INEFFECTIVE
+    a owl:NamedIndividual ;
+    a tcm:Enum_EFFICACY_LEVEL ;
+    rdfs:label "无效"@zh ;
+    skos:notation "INEFFECTIVE" ;
+    tcm:sortOrder "40" .
+
+tcm:EFFICACY_LEVEL_AGGRAVATED
+    a owl:NamedIndividual ;
+    a tcm:Enum_EFFICACY_LEVEL ;
+    rdfs:label "加重"@zh ;
+    skos:notation "AGGRAVATED" ;
+    tcm:sortOrder "50" .
+
+tcm:Enum_FOLLOWUP_STATUS
+    a owl:Class ;
+    rdfs:subClassOf tcm:Enumeration ;
+    rdfs:label "随访记录状态"@zh ;
+    skos:notation "FOLLOWUP_STATUS" ;
+    rdfs:comment ""@zh ;
+    tcm:dictionaryId "DICT-FOLLOWUP" .
+
+tcm:FOLLOWUP_STATUS_PENDING
+    a owl:NamedIndividual ;
+    a tcm:Enum_FOLLOWUP_STATUS ;
+    rdfs:label "待随访"@zh ;
+    skos:notation "PENDING" ;
+    tcm:sortOrder "10" .
+
+tcm:FOLLOWUP_STATUS_COMPLETED
+    a owl:NamedIndividual ;
+    a tcm:Enum_FOLLOWUP_STATUS ;
+    rdfs:label "已完成"@zh ;
+    skos:notation "COMPLETED" ;
+    tcm:sortOrder "20" .
+
+tcm:FOLLOWUP_STATUS_LOST
+    a owl:NamedIndividual ;
+    a tcm:Enum_FOLLOWUP_STATUS ;
+    rdfs:label "已失访"@zh ;
+    skos:notation "LOST" ;
+    tcm:sortOrder "30" .
+
+
+# ---------- M1 聚合关联 ----------
+tcm:assoc_ASSOC_PATIENT_VISIT
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range tcm:Patient ;
+    rdfs:label "就诊患者"@zh ;
+    skos:notation "ASSOC-PATIENT-VISIT" ;
+    tcm:inverseLabel "患者就诊记录"@zh ;
+    tcm:cardinality "MANY_TO_ONE" ;
+    tcm:referenceField "patientId" .
+
+tcm:assoc_ASSOC_VISIT_VISIT
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range tcm:Visit ;
+    rdfs:label "复诊就诊"@zh ;
+    skos:notation "ASSOC-VISIT-VISIT" ;
+    tcm:inverseLabel "上次就诊的后续就诊"@zh ;
+    tcm:cardinality "MANY_TO_ONE" ;
+    tcm:referenceField "previousVisitId" .
+
+tcm:assoc_ASSOC_VISIT_DIAGNOSIS
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range tcm:SyndromeDiagnosis ;
+    rdfs:label "就诊辨证"@zh ;
+    skos:notation "ASSOC-VISIT-DIAGNOSIS" ;
+    tcm:inverseLabel "所属就诊"@zh ;
+    tcm:cardinality "ONE_TO_MANY" ;
+    tcm:referenceField "visitId" .
+
+tcm:assoc_ASSOC_SYNDROME_DIAGNOSIS
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:SyndromeDiagnosis ;
+    rdfs:range tcm:SyndromeType ;
+    rdfs:label "辨证结论证型"@zh ;
+    skos:notation "ASSOC-SYNDROME-DIAGNOSIS" ;
+    tcm:inverseLabel "被引用的辨证结论"@zh ;
+    tcm:cardinality "MANY_TO_ONE" ;
+    tcm:referenceField "syndromeId" .
+
+tcm:assoc_ASSOC_VISIT_PRESCRIPTION
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Visit ;
+    rdfs:range tcm:Prescription ;
+    rdfs:label "就诊处方"@zh ;
+    skos:notation "ASSOC-VISIT-PRESCRIPTION" ;
+    tcm:inverseLabel "所属就诊"@zh ;
+    tcm:cardinality "ONE_TO_MANY" ;
+    tcm:referenceField "visitId" .
+
+tcm:assoc_ASSOC_PATIENT_PRESCRIPTION
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range tcm:Patient ;
+    rdfs:label "处方患者"@zh ;
+    skos:notation "ASSOC-PATIENT-PRESCRIPTION" ;
+    tcm:inverseLabel "患者处方"@zh ;
+    tcm:cardinality "MANY_TO_ONE" ;
+    tcm:referenceField "patientId" .
+
+tcm:assoc_ASSOC_FORMULA_PRESCRIPTION
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range tcm:FormulaTemplate ;
+    rdfs:label "引用方剂模板"@zh ;
+    skos:notation "ASSOC-FORMULA-PRESCRIPTION" ;
+    tcm:inverseLabel "引用该模板的处方"@zh ;
+    tcm:cardinality "MANY_TO_ONE" ;
+    tcm:referenceField "formulaTemplateId" .
+
+tcm:assoc_ASSOC_PRESCRIPTION_DISPENSE
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range tcm:DispenseRecord ;
+    rdfs:label "处方调剂记录"@zh ;
+    skos:notation "ASSOC-PRESCRIPTION-DISPENSE" ;
+    tcm:inverseLabel "所属处方"@zh ;
+    tcm:cardinality "ONE_TO_ONE" ;
+    tcm:referenceField "prescriptionId" .
+
+tcm:assoc_ASSOC_PRESCRIPTION_HERBFLOW
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Prescription ;
+    rdfs:range tcm:Herb ;
+    rdfs:label "处方调剂出库流水"@zh ;
+    skos:notation "ASSOC-PRESCRIPTION-HERBFLOW" ;
+    tcm:inverseLabel "饮片出入库流水"@zh ;
+    tcm:cardinality "ONE_TO_MANY" ;
+    tcm:referenceField "prescriptionId" .
+
+tcm:assoc_ASSOC_PATIENT_FOLLOWUP
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:FollowUp ;
+    rdfs:range tcm:Patient ;
+    rdfs:label "随访患者"@zh ;
+    skos:notation "ASSOC-PATIENT-FOLLOWUP" ;
+    tcm:inverseLabel "患者随访记录"@zh ;
+    tcm:cardinality "MANY_TO_ONE" ;
+    tcm:referenceField "patientId" .
+
+tcm:assoc_ASSOC_VISIT_FOLLOWUP
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:FollowUp ;
+    rdfs:range tcm:Visit ;
+    rdfs:label "随访来源/实际就诊"@zh ;
+    skos:notation "ASSOC-VISIT-FOLLOWUP" ;
+    tcm:inverseLabel "就诊的随访记录"@zh ;
+    tcm:cardinality "MANY_TO_ONE" ;
+    tcm:referenceField "sourceVisitId" .
+
+
+# ---------- M5 角色与权限 ----------
+tcm:Permission_PERM_PATIENT_SAVE
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "患者建档与修改"@zh ;
+    skos:notation "PERM-PATIENT-SAVE" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-01"@zh .
+
+tcm:Permission_PERM_PATIENT_STATUS
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "患者停用与启用"@zh ;
+    skos:notation "PERM-PATIENT-STATUS" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-01（停用并入建档功能，D-23）"@zh .
+
+tcm:Permission_PERM_VISIT_REGISTER
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "门诊挂号"@zh ;
+    skos:notation "PERM-VISIT-REGISTER" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-02"@zh .
+
+tcm:Permission_PERM_VISIT_RECEIVE
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "接诊开单"@zh ;
+    skos:notation "PERM-VISIT-RECEIVE" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-03"@zh .
+
+tcm:Permission_PERM_VISIT_FOURDIAGNOSIS
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "录入四诊信息"@zh ;
+    skos:notation "PERM-VISIT-FOURDIAGNOSIS" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-04"@zh .
+
+tcm:Permission_PERM_VISIT_CANCEL
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "撤销就诊"@zh ;
+    skos:notation "PERM-VISIT-CANCEL" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-16"@zh .
+
+tcm:Permission_PERM_DIAGNOSIS_SAVE
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "辨证结论保存"@zh ;
+    skos:notation "PERM-DIAGNOSIS-SAVE" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-05"@zh .
+
+tcm:Permission_PERM_DIAGNOSIS_CONFIRM
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "辨证结论确认"@zh ;
+    skos:notation "PERM-DIAGNOSIS-CONFIRM" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-05（结论定稿）"@zh .
+
+tcm:Permission_PERM_SYNDROME_SAVE
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "证型字典新增与修改"@zh ;
+    skos:notation "PERM-SYNDROME-SAVE" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-15"@zh .
+
+tcm:Permission_PERM_SYNDROME_STATUS
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "证型字典停用与启用"@zh ;
+    skos:notation "PERM-SYNDROME-STATUS" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-15"@zh .
+
+tcm:Permission_PERM_FORMULA_SAVE
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "方剂模板新增与修改"@zh ;
+    skos:notation "PERM-FORMULA-SAVE" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-14"@zh .
+
+tcm:Permission_PERM_FORMULA_STATUS
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "方剂模板停用与启用"@zh ;
+    skos:notation "PERM-FORMULA-STATUS" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-14"@zh .
+
+tcm:Permission_PERM_HERB_SAVE
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "饮片建档与修改"@zh ;
+    skos:notation "PERM-HERB-SAVE" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-11"@zh .
+
+tcm:Permission_PERM_HERB_INBOUND
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "饮片入库登记"@zh ;
+    skos:notation "PERM-HERB-INBOUND" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-11"@zh .
+
+tcm:Permission_PERM_HERB_STATUS
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "饮片停用与启用"@zh ;
+    skos:notation "PERM-HERB-STATUS" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-11（停用并入建档入库功能，D-31）"@zh .
+
+tcm:Permission_PERM_HERB_STOCKTAKE
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "饮片库存盘点调整"@zh ;
+    skos:notation "PERM-HERB-STOCKTAKE" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-12"@zh .
+
+tcm:Permission_PERM_PRESCRIPTION_SAVE
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "开具处方与保存草稿"@zh ;
+    skos:notation "PERM-PRESCRIPTION-SAVE" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-06"@zh .
+
+tcm:Permission_PERM_PRESCRIPTION_SUBMIT
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "提交处方送审"@zh ;
+    skos:notation "PERM-PRESCRIPTION-SUBMIT" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-07"@zh .
+
+tcm:Permission_PERM_PRESCRIPTION_CANCEL
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "处方退回与作废"@zh ;
+    skos:notation "PERM-PRESCRIPTION-CANCEL" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-09"@zh .
+
+tcm:Permission_PERM_PRESCRIPTION_REVIEW
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "处方审核"@zh ;
+    skos:notation "PERM-PRESCRIPTION-REVIEW" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应审批行为 B-APP-01"@zh .
+
+tcm:Permission_PERM_DISPENSE_CONFIRM
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "确认调剂"@zh ;
+    skos:notation "PERM-DISPENSE-CONFIRM" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-10"@zh .
+
+tcm:Permission_PERM_DISPENSE_ISSUE
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "发药确认"@zh ;
+    skos:notation "PERM-DISPENSE-ISSUE" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-10"@zh .
+
+tcm:Permission_PERM_FOLLOWUP_COMPLETE
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "复诊登记与疗效评价"@zh ;
+    skos:notation "PERM-FOLLOWUP-COMPLETE" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-13"@zh .
+
+tcm:Permission_PERM_FOLLOWUP_LOST
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "标记失访"@zh ;
+    skos:notation "PERM-FOLLOWUP-LOST" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 FUNC-13"@zh .
+
+tcm:Permission_PERM_QUERY_VISIT_STATS
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "门诊量统计查询"@zh ;
+    skos:notation "PERM-QUERY-VISIT-STATS" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 Q-01 / RPT-VISIT-STATS-001"@zh .
+
+tcm:Permission_PERM_QUERY_SYNDROME_DIST
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "证型分布统计查询"@zh ;
+    skos:notation "PERM-QUERY-SYNDROME-DIST" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 Q-02 / RPT-SYNDROME-DIST-001"@zh .
+
+tcm:Permission_PERM_QUERY_HERB_USAGE
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "方剂与饮片使用统计查询"@zh ;
+    skos:notation "PERM-QUERY-HERB-USAGE" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 Q-03 / RPT-HERB-USAGE-001"@zh .
+
+tcm:Permission_PERM_QUERY_VISIT_PRESCRIPTION
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "就诊与处方记录查询"@zh ;
+    skos:notation "PERM-QUERY-VISIT-PRESCRIPTION" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 Q-04 / QR-VISIT-PRESCRIPTION-001"@zh .
+
+tcm:Permission_PERM_QUERY_HERB_STOCK
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "饮片库存与预警查询"@zh ;
+    skos:notation "PERM-QUERY-HERB-STOCK" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 Q-05 / QR-HERB-STOCK-001"@zh .
+
+tcm:Permission_PERM_QUERY_OVERDOSE_REVIEW
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "超量毒性处方审核台账查询"@zh ;
+    skos:notation "PERM-QUERY-OVERDOSE-REVIEW" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 Q-06 / QR-PRESCRIPTION-OVERDOSE-001"@zh .
+
+tcm:Permission_PERM_QUERY_FOLLOWUP
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "随访完成与失访分析查询"@zh ;
+    skos:notation "PERM-QUERY-FOLLOWUP" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 Q-07 / RPT-FOLLOWUP-COMPLETION-001"@zh .
+
+tcm:Permission_PERM_AUTO_VISIT_COMPLETE
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "就诊状态收尾"@zh ;
+    skos:notation "PERM-AUTO-VISIT-COMPLETE" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 B-04，由 Prescription_Submit 的 syncTriggers 触发"@zh .
+
+tcm:Permission_PERM_AUTO_FOLLOWUP_PLAN
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "复诊提醒生成"@zh ;
+    skos:notation "PERM-AUTO-FOLLOWUP-PLAN" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 B-03，由 Visit_Complete 的 syncTriggers 触发"@zh .
+
+tcm:Permission_PERM_AUTO_STOCK_DEDUCT
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "饮片库存扣减"@zh ;
+    skos:notation "PERM-AUTO-STOCK-DEDUCT" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 B-01，由 Dispense_Confirm 经 R-02 的 syncTriggers 触发"@zh .
+
+tcm:Permission_PERM_AUTO_STOCK_RETURN
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "饮片库存回冲"@zh ;
+    skos:notation "PERM-AUTO-STOCK-RETURN" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" .
+
+tcm:Permission_PERM_AUTO_DISPENSE_CREATE
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "创建待调剂记录"@zh ;
+    skos:notation "PERM-AUTO-DISPENSE-CREATE" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 B-05（建模补全），由处方审核流「通过」分支调用"@zh .
+
+tcm:Permission_PERM_AUTO_DISPENSE_CANCEL
+    a owl:NamedIndividual ;
+    a tcm:Permission ;
+    rdfs:label "取消待调剂记录"@zh ;
+    skos:notation "PERM-AUTO-DISPENSE-CANCEL" ;
+    tcm:targetType "BEHAVIOR" ;
+    tcm:dataScope "ALL" ;
+    rdfs:comment "对应 B-06（建模补全），由 Prescription_Cancel 经 R-04 的 syncTriggers 触发"@zh .
+
+tcm:Role_ROLE_01
+    a owl:NamedIndividual ;
+    a tcm:Role ;
+    rdfs:label "导诊员"@zh ;
+    skos:notation "ROLE-01" ;
+    rdfs:comment "门诊前台，负责患者建档、挂号与随访登记"@zh .
+
+tcm:Role_ROLE_01
+    tcm:grantsPermission tcm:Permission_PERM_PATIENT_SAVE .
+
+tcm:Role_ROLE_01
+    tcm:grantsPermission tcm:Permission_PERM_PATIENT_STATUS .
+
+tcm:Role_ROLE_01
+    tcm:grantsPermission tcm:Permission_PERM_VISIT_REGISTER .
+
+tcm:Role_ROLE_01
+    tcm:grantsPermission tcm:Permission_PERM_VISIT_CANCEL .
+
+tcm:Role_ROLE_01
+    tcm:grantsPermission tcm:Permission_PERM_FOLLOWUP_COMPLETE .
+
+tcm:Role_ROLE_01
+    tcm:grantsPermission tcm:Permission_PERM_FOLLOWUP_LOST .
+
+tcm:Role_ROLE_01
+    tcm:grantsPermission tcm:Permission_PERM_QUERY_VISIT_PRESCRIPTION .
+
+tcm:Role_ROLE_01
+    tcm:grantsPermission tcm:Permission_PERM_QUERY_FOLLOWUP .
+
+tcm:Role_ROLE_02
+    a owl:NamedIndividual ;
+    a tcm:Role ;
+    rdfs:label "中医师"@zh ;
+    skos:notation "ROLE-02" ;
+    rdfs:comment "门诊医师，负责接诊、四诊录入、辨证、开具处方与随访"@zh .
+
+tcm:Role_ROLE_02
+    tcm:grantsPermission tcm:Permission_PERM_VISIT_RECEIVE .
+
+tcm:Role_ROLE_02
+    tcm:grantsPermission tcm:Permission_PERM_VISIT_FOURDIAGNOSIS .
+
+tcm:Role_ROLE_02
+    tcm:grantsPermission tcm:Permission_PERM_VISIT_CANCEL .
+
+tcm:Role_ROLE_02
+    tcm:grantsPermission tcm:Permission_PERM_DIAGNOSIS_SAVE .
+
+tcm:Role_ROLE_02
+    tcm:grantsPermission tcm:Permission_PERM_DIAGNOSIS_CONFIRM .
+
+tcm:Role_ROLE_02
+    tcm:grantsPermission tcm:Permission_PERM_PRESCRIPTION_SAVE .
+
+tcm:Role_ROLE_02
+    tcm:grantsPermission tcm:Permission_PERM_PRESCRIPTION_SUBMIT .
+
+tcm:Role_ROLE_02
+    tcm:grantsPermission tcm:Permission_PERM_PRESCRIPTION_CANCEL .
+
+tcm:Role_ROLE_02
+    tcm:grantsPermission tcm:Permission_PERM_FOLLOWUP_COMPLETE .
+
+tcm:Role_ROLE_02
+    tcm:grantsPermission tcm:Permission_PERM_FOLLOWUP_LOST .
+
+tcm:Role_ROLE_02
+    tcm:grantsPermission tcm:Permission_PERM_QUERY_VISIT_STATS .
+
+tcm:Role_ROLE_02
+    tcm:grantsPermission tcm:Permission_PERM_QUERY_SYNDROME_DIST .
+
+tcm:Role_ROLE_02
+    tcm:grantsPermission tcm:Permission_PERM_QUERY_VISIT_PRESCRIPTION .
+
+tcm:Role_ROLE_02
+    tcm:grantsPermission tcm:Permission_PERM_QUERY_FOLLOWUP .
+
+tcm:Role_ROLE_03
+    a owl:NamedIndividual ;
+    a tcm:Role ;
+    rdfs:label "中药师"@zh ;
+    skos:notation "ROLE-03" ;
+    rdfs:comment "药房药师，负责处方审核、调剂与发药"@zh .
+
+tcm:Role_ROLE_03
+    tcm:grantsPermission tcm:Permission_PERM_PRESCRIPTION_REVIEW .
+
+tcm:Role_ROLE_03
+    tcm:grantsPermission tcm:Permission_PERM_DISPENSE_CONFIRM .
+
+tcm:Role_ROLE_03
+    tcm:grantsPermission tcm:Permission_PERM_DISPENSE_ISSUE .
+
+tcm:Role_ROLE_03
+    tcm:grantsPermission tcm:Permission_PERM_QUERY_VISIT_PRESCRIPTION .
+
+tcm:Role_ROLE_03
+    tcm:grantsPermission tcm:Permission_PERM_QUERY_HERB_STOCK .
+
+tcm:Role_ROLE_03
+    tcm:grantsPermission tcm:Permission_PERM_QUERY_OVERDOSE_REVIEW .
+
+tcm:Role_ROLE_04
+    a owl:NamedIndividual ;
+    a tcm:Role ;
+    rdfs:label "库房管理员"@zh ;
+    skos:notation "ROLE-04" ;
+    rdfs:comment "中药库房，负责饮片建档、入库、盘点与库存预警跟进"@zh .
+
+tcm:Role_ROLE_04
+    tcm:grantsPermission tcm:Permission_PERM_HERB_SAVE .
+
+tcm:Role_ROLE_04
+    tcm:grantsPermission tcm:Permission_PERM_HERB_INBOUND .
+
+tcm:Role_ROLE_04
+    tcm:grantsPermission tcm:Permission_PERM_HERB_STATUS .
+
+tcm:Role_ROLE_04
+    tcm:grantsPermission tcm:Permission_PERM_HERB_STOCKTAKE .
+
+tcm:Role_ROLE_04
+    tcm:grantsPermission tcm:Permission_PERM_QUERY_HERB_STOCK .
+
+tcm:Role_ROLE_05
+    a owl:NamedIndividual ;
+    a tcm:Role ;
+    rdfs:label "科室管理员"@zh ;
+    skos:notation "ROLE-05" ;
+    rdfs:comment "科室负责人，负责基础数据维护、处方作废审批与全量查询统计"@zh .
+
+tcm:Role_ROLE_05
+    tcm:grantsPermission tcm:Permission_PERM_PRESCRIPTION_CANCEL .
+
+tcm:Role_ROLE_05
+    tcm:grantsPermission tcm:Permission_PERM_FORMULA_SAVE .
+
+tcm:Role_ROLE_05
+    tcm:grantsPermission tcm:Permission_PERM_FORMULA_STATUS .
+
+tcm:Role_ROLE_05
+    tcm:grantsPermission tcm:Permission_PERM_SYNDROME_SAVE .
+
+tcm:Role_ROLE_05
+    tcm:grantsPermission tcm:Permission_PERM_SYNDROME_STATUS .
+
+tcm:Role_ROLE_05
+    tcm:grantsPermission tcm:Permission_PERM_QUERY_VISIT_STATS .
+
+tcm:Role_ROLE_05
+    tcm:grantsPermission tcm:Permission_PERM_QUERY_SYNDROME_DIST .
+
+tcm:Role_ROLE_05
+    tcm:grantsPermission tcm:Permission_PERM_QUERY_HERB_USAGE .
+
+tcm:Role_ROLE_05
+    tcm:grantsPermission tcm:Permission_PERM_QUERY_VISIT_PRESCRIPTION .
+
+tcm:Role_ROLE_05
+    tcm:grantsPermission tcm:Permission_PERM_QUERY_HERB_STOCK .
+
+tcm:Role_ROLE_05
+    tcm:grantsPermission tcm:Permission_PERM_QUERY_OVERDOSE_REVIEW .
+
+tcm:Role_ROLE_05
+    tcm:grantsPermission tcm:Permission_PERM_QUERY_FOLLOWUP .
+
+tcm:Role_ROLE_06
+    a owl:NamedIndividual ;
+    a tcm:Role ;
+    rdfs:label "系统管理员"@zh ;
+    skos:notation "ROLE-06" ;
+    rdfs:comment "平台管理角色，维护用户、角色、权限与菜单；不参与任何业务操作与业务查询"@zh .
+
+tcm:Role_ROLE_07
+    a owl:NamedIndividual ;
+    a tcm:Role ;
+    rdfs:label "系统自动执行主体"@zh ;
+    skos:notation "ROLE-07" ;
+    rdfs:comment "由 syncTriggers 同步调用执行的系统行为主体，无人工登录账号"@zh .
+
+tcm:Role_ROLE_07
+    tcm:grantsPermission tcm:Permission_PERM_AUTO_VISIT_COMPLETE .
+
+tcm:Role_ROLE_07
+    tcm:grantsPermission tcm:Permission_PERM_AUTO_FOLLOWUP_PLAN .
+
+tcm:Role_ROLE_07
+    tcm:grantsPermission tcm:Permission_PERM_AUTO_STOCK_DEDUCT .
+
+tcm:Role_ROLE_07
+    tcm:grantsPermission tcm:Permission_PERM_AUTO_STOCK_RETURN .
+
+tcm:Role_ROLE_07
+    tcm:grantsPermission tcm:Permission_PERM_AUTO_DISPENSE_CREATE .
+
+tcm:Role_ROLE_07
+    tcm:grantsPermission tcm:Permission_PERM_AUTO_DISPENSE_CANCEL .
+
+tcm:Actor_ACTOR_ROLE_01
+    a owl:NamedIndividual ;
+    a tcm:Actor ;
+    rdfs:label "导诊员"@zh ;
+    skos:notation "ACTOR-ROLE-01" ;
+    tcm:actorType "HUMAN" ;
+    tcm:hasRole tcm:Role_ROLE_01 .
+
+tcm:Actor_ACTOR_ROLE_02
+    a owl:NamedIndividual ;
+    a tcm:Actor ;
+    rdfs:label "中医师"@zh ;
+    skos:notation "ACTOR-ROLE-02" ;
+    tcm:actorType "HUMAN" ;
+    tcm:hasRole tcm:Role_ROLE_02 .
+
+tcm:Actor_ACTOR_ROLE_03
+    a owl:NamedIndividual ;
+    a tcm:Actor ;
+    rdfs:label "中药师"@zh ;
+    skos:notation "ACTOR-ROLE-03" ;
+    tcm:actorType "HUMAN" ;
+    tcm:hasRole tcm:Role_ROLE_03 .
+
+tcm:Actor_ACTOR_ROLE_04
+    a owl:NamedIndividual ;
+    a tcm:Actor ;
+    rdfs:label "库房管理员"@zh ;
+    skos:notation "ACTOR-ROLE-04" ;
+    tcm:actorType "HUMAN" ;
+    tcm:hasRole tcm:Role_ROLE_04 .
+
+tcm:Actor_ACTOR_ROLE_05
+    a owl:NamedIndividual ;
+    a tcm:Actor ;
+    rdfs:label "科室管理员"@zh ;
+    skos:notation "ACTOR-ROLE-05" ;
+    tcm:actorType "HUMAN" ;
+    tcm:hasRole tcm:Role_ROLE_05 .
+
+tcm:Actor_ACTOR_ROLE_06
+    a owl:NamedIndividual ;
+    a tcm:Actor ;
+    rdfs:label "系统管理员"@zh ;
+    skos:notation "ACTOR-ROLE-06" ;
+    tcm:actorType "HUMAN" ;
+    tcm:hasRole tcm:Role_ROLE_06 .
+
+tcm:Actor_ACTOR_SYSTEM
+    a owl:NamedIndividual ;
+    a tcm:Actor ;
+    rdfs:label "系统自动执行主体"@zh ;
+    skos:notation "ACTOR-SYSTEM" ;
+    tcm:actorType "SYSTEM" ;
+    tcm:hasRole tcm:Role_ROLE_07 .
+
+
+# ---------- M2 行为 ----------
+tcm:Behavior_Patient_Save
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "患者建档与修改"@zh ;
+    skos:notation "Patient_Save" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-PATIENT-001" ;
+    tcm:ownerEntityName "患者"@zh ;
+    rdfs:comment "对应 FUNC-01；新增患者档案或修改既有档案基本信息"@zh ;
+    tcm:precondition "患者姓名为必填且长度 2～20 字"@zh ;
+    tcm:precondition "出生日期与年龄至少填写一项"@zh ;
+    tcm:precondition "同一「证件类型 + 证件号码」不存在重复建档（INV-01）"@zh ;
+    tcm:postcondition "{\"field\": \"patient.patientStatus\", \"setValue\": \"在用（新增时按默认值写入）\"}" ;
+    tcm:postcondition "{\"field\": \"patient.age\", \"setValue\": \"有出生日期时按出生日期自动计算\"}" .
+
+tcm:Behavior_Patient_ChangeStatus
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "患者停用与启用"@zh ;
+    skos:notation "Patient_ChangeStatus" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-PATIENT-001" ;
+    tcm:ownerEntityName "患者"@zh ;
+    rdfs:comment "对应 FUNC-01（停用并入建档功能，D-23）；不物理删除患者档案"@zh ;
+    tcm:precondition "停用时该患者不存在「已挂号」或「接诊中」的就诊记录"@zh ;
+    tcm:precondition "patient.patientStatus == '在用'（停用）或 '停用'（启用）"@zh ;
+    tcm:postcondition "{\"field\": \"patient.patientStatus\", \"setValue\": \"停用 或 在用\"}" .
+
+tcm:Behavior_Visit_Register
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "门诊挂号"@zh ;
+    skos:notation "Visit_Register" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-VISIT-001" ;
+    tcm:ownerEntityName "就诊记录"@zh ;
+    rdfs:comment "对应 FUNC-02；为患者在门诊挂号并建立就诊记录"@zh ;
+    tcm:precondition "patient.patientStatus == '在用'"@zh ;
+    tcm:precondition "就诊类型为复诊时必须选定上次就诊记录"@zh ;
+    tcm:postcondition "{\"field\": \"visit.visitStatus\", \"setValue\": \"已挂号\"}" ;
+    tcm:postcondition "{\"field\": \"visit.registerTime\", \"setValue\": \"NOW()\"}" .
+
+tcm:Behavior_Visit_Receive
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "接诊开单"@zh ;
+    skos:notation "Visit_Receive" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-VISIT-001" ;
+    tcm:ownerEntityName "就诊记录"@zh ;
+    rdfs:comment "对应 FUNC-03；医师开始接诊，记录接诊时间与接诊医师"@zh ;
+    tcm:precondition "visit.visitStatus == '已挂号'"@zh ;
+    tcm:precondition "主诉已填写，长度不超过 200 字（该环节负责录入主诉）"@zh ;
+    tcm:postcondition "{\"field\": \"visit.visitStatus\", \"setValue\": \"接诊中\"}" ;
+    tcm:postcondition "{\"field\": \"visit.receiveTime\", \"setValue\": \"NOW()\"}" ;
+    tcm:postcondition "{\"field\": \"visit.doctorId\", \"setValue\": \"当前登录用户\"}" .
+
+tcm:Behavior_Visit_SaveFourDiagnosis
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "录入四诊信息"@zh ;
+    skos:notation "Visit_SaveFourDiagnosis" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-VISIT-001" ;
+    tcm:ownerEntityName "就诊记录"@zh ;
+    rdfs:comment "对应 FUNC-04；录入或修改本次就诊的望闻问切结构化记录（聚合内子实体，同事务）"@zh ;
+    tcm:precondition "visit.visitStatus == '接诊中'"@zh ;
+    tcm:precondition "脉象为必填项"@zh ;
+    tcm:postcondition "{\"field\": \"visit.FourDiagnosis.pulseCode\", \"setValue\": \"按录入值保存\"}" ;
+    tcm:postcondition "{\"field\": \"visit.FourDiagnosis\", \"setValue\": \"新增或更新本次就诊唯一一份四诊信息\"}" .
+
+tcm:Behavior_Visit_Cancel
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "撤销就诊"@zh ;
+    skos:notation "Visit_Cancel" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-VISIT-001" ;
+    tcm:ownerEntityName "就诊记录"@zh ;
+    rdfs:comment "对应 FUNC-16；患者未就诊或误挂号时撤销就诊，不物理删除"@zh ;
+    tcm:precondition "visit.visitStatus IN ['已挂号', '接诊中']"@zh ;
+    tcm:precondition "该就诊下不存在任何处方"@zh ;
+    tcm:precondition "撤销原因已填写（记入备注）"@zh ;
+    tcm:postcondition "{\"field\": \"visit.visitStatus\", \"setValue\": \"已取消\"}" ;
+    tcm:postcondition "{\"field\": \"visit.remark\", \"setValue\": \"追加撤销原因\"}" .
+
+tcm:Behavior_Diagnosis_Save
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "保存辨证结论草稿"@zh ;
+    skos:notation "Diagnosis_Save" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-DIAGNOSIS-001" ;
+    tcm:ownerEntityName "辨证结论"@zh ;
+    rdfs:comment "对应 FUNC-05；保存辨证结论草稿，可反复修改"@zh ;
+    tcm:precondition "所属就诊存在四诊信息"@zh ;
+    tcm:precondition "证型、辨证方法、证型性质已选择"@zh ;
+    tcm:precondition "辨证依据不少于 10 字"@zh ;
+    tcm:postcondition "{\"field\": \"syndromeDiagnosis.conclusionStatus\", \"setValue\": \"草稿\"}" .
+
+tcm:Behavior_Diagnosis_Confirm
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "确认辨证结论"@zh ;
+    skos:notation "Diagnosis_Confirm" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-DIAGNOSIS-001" ;
+    tcm:ownerEntityName "辨证结论"@zh ;
+    rdfs:comment "对应 FUNC-05；结论定稿，之后可据此开方"@zh ;
+    tcm:precondition "所属就诊未完成（visit.visitStatus == '接诊中'）"@zh ;
+    tcm:precondition "主证性质结论在同一就诊下唯一（INV-02）"@zh ;
+    tcm:precondition "治法已填写"@zh ;
+    tcm:postcondition "{\"field\": \"syndromeDiagnosis.conclusionStatus\", \"setValue\": \"已确认\"}" .
+
+tcm:Behavior_Syndrome_Save
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "证型字典新增与修改"@zh ;
+    skos:notation "Syndrome_Save" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-SYNDROME-001" ;
+    tcm:ownerEntityName "证型字典"@zh ;
+    rdfs:comment "对应 FUNC-15；维护证型标准化定义"@zh ;
+    tcm:precondition "证型编码符合 Z + 三位流水号规则"@zh ;
+    tcm:precondition "证型名称唯一"@zh ;
+    tcm:precondition "所属辨证体系已选择"@zh ;
+    tcm:postcondition "{\"field\": \"syndromeType.syndromeCode\", \"setValue\": \"按规则生成或保存\"}" .
+
+tcm:Behavior_Syndrome_ChangeStatus
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "证型字典停用与启用"@zh ;
+    skos:notation "Syndrome_ChangeStatus" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-SYNDROME-001" ;
+    tcm:ownerEntityName "证型字典"@zh ;
+    rdfs:comment "对应 FUNC-15；被引用后不可删除，只能停用"@zh ;
+    tcm:precondition "syndromeType.syndromeStatus == '启用'（停用）或 '停用'（启用）"@zh ;
+    tcm:postcondition "{\"field\": \"syndromeType.syndromeStatus\", \"setValue\": \"停用 或 启用\"}" .
+
+tcm:Behavior_Formula_Save
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "方剂模板新增与修改"@zh ;
+    skos:notation "Formula_Save" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-FORMULA-001" ;
+    tcm:ownerEntityName "方剂模板"@zh ;
+    rdfs:comment "对应 FUNC-14；维护方剂模板及其组成明细（聚合内子实体，同事务）"@zh ;
+    tcm:precondition "方剂编码符合 F + 三位流水号规则"@zh ;
+    tcm:precondition "方剂名称唯一"@zh ;
+    tcm:precondition "组成明细至少一味药味，且药味不重复"@zh ;
+    tcm:postcondition "{\"field\": \"formulaTemplate.formulaCode\", \"setValue\": \"按规则生成或保存\"}" ;
+    tcm:postcondition "{\"field\": \"formulaTemplate.FormulaItem\", \"setValue\": \"全量覆盖保存组成明细\"}" .
+
+tcm:Behavior_Formula_ChangeStatus
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "方剂模板停用与启用"@zh ;
+    skos:notation "Formula_ChangeStatus" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-FORMULA-001" ;
+    tcm:ownerEntityName "方剂模板"@zh ;
+    rdfs:comment "对应 FUNC-14；被处方引用后不可删除，只能停用"@zh ;
+    tcm:precondition "formulaTemplate.formulaStatus == '启用'（停用）或 '停用'（启用）"@zh ;
+    tcm:postcondition "{\"field\": \"formulaTemplate.formulaStatus\", \"setValue\": \"停用 或 启用\"}" .
+
+tcm:Behavior_Herb_Save
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "饮片建档与修改"@zh ;
+    skos:notation "Herb_Save" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-HERB-001" ;
+    tcm:ownerEntityName "中药饮片"@zh ;
+    rdfs:comment "对应 FUNC-11；建立或修改饮片品目基础信息（常用量区间、毒性分级、预警值等）"@zh ;
+    tcm:precondition "饮片编码符合 Y + 四位流水号规则"@zh ;
+    tcm:precondition "饮片名称唯一"@zh ;
+    tcm:precondition "常用最小量 > 0 且常用最大量 ≥ 常用最小量"@zh ;
+    tcm:precondition "毒性分级已选择"@zh ;
+    tcm:postcondition "{\"field\": \"herb.herbCode\", \"setValue\": \"按规则生成或保存\"}" ;
+    tcm:postcondition "{\"field\": \"herb.stockQuantity\", \"setValue\": \"新增时为 0，不由本行为直接修改\"}" .
+
+tcm:Behavior_Herb_Inbound
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "饮片入库登记"@zh ;
+    skos:notation "Herb_Inbound" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-HERB-001" ;
+    tcm:ownerEntityName "中药饮片"@zh ;
+    rdfs:comment "对应 FUNC-11；登记合格入库数量与入库单号（饮片验收留线下，D-27），\n同时追加「入库」流水并增加库存，二者属同一聚合、同一事务"@zh ;
+    tcm:precondition "入伙数量大于 0"@zh ;
+    tcm:precondition "herb.herbStatus == '启用'"@zh ;
+    tcm:precondition "入库单号已填写"@zh ;
+    tcm:postcondition "{\"field\": \"herb.stockQuantity\", \"setValue\": \"stockQuantity + 入库数量\"}" ;
+    tcm:postcondition "{\"field\": \"herb.HerbStockFlow\", \"setValue\": \"追加一条业务类型为「入库」的流水（数量为正）\"}" .
+
+tcm:Behavior_Herb_ChangeStatus
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "饮片停用与启用"@zh ;
+    skos:notation "Herb_ChangeStatus" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-HERB-001" ;
+    tcm:ownerEntityName "中药饮片"@zh ;
+    rdfs:comment "对应 FUNC-11（停用并入建档入库功能，D-31）；产生过流水或被处方引用后不可删除"@zh ;
+    tcm:precondition "herb.herbStatus == '启用'（停用）或 '停用'（启用）"@zh ;
+    tcm:postcondition "{\"field\": \"herb.herbStatus\", \"setValue\": \"停用 或 启用\"}" .
+
+tcm:Behavior_Herb_Stocktake
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "饮片库存盘点调整"@zh ;
+    skos:notation "Herb_Stocktake" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-HERB-001" ;
+    tcm:ownerEntityName "中药饮片"@zh ;
+    rdfs:comment "对应 FUNC-12；按实盘结果登记盘点调整或报损（追加流水并修正库存），\n盘点前调用 R-06 输出账实差异供人工确认；低库存预警只做查询呈现，不推送（D-22）"@zh ;
+    tcm:precondition "盘点调整原因或报损原因已填写"@zh ;
+    tcm:precondition "调整数量不得为 0（REF-13）"@zh ;
+    tcm:precondition "调整后库存数量不得为负（REF-08）"@zh ;
+    tcm:postcondition "{\"field\": \"herb.stockQuantity\", \"setValue\": \"stockQuantity + 调整数量\"}" ;
+    tcm:postcondition "{\"field\": \"herb.HerbStockFlow\", \"setValue\": \"追加一条业务类型为「盘点调整」或「报损」的流水\"}" ;
+    tcm:appliedRule "RULE-HERB-STOCK-RECONCILE" .
+
+tcm:Behavior_Prescription_Save
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "开具处方与保存草稿"@zh ;
+    skos:notation "Prescription_Save" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-PRESCRIPTION-001" ;
+    tcm:ownerEntityName "处方"@zh ;
+    rdfs:comment "对应 FUNC-06；开具或修改处方主表与明细（聚合内同事务）。\n超量处理结论由 R-01 判定：NEED_REASON 时超量理由必填，BLOCK 时不允许保存"@zh ;
+    tcm:precondition "visit.visitStatus == '接诊中'；或处方状态为「已驳回」时允许修改后重新提交（M6 Q04 驳回重提闭环，此时就诊已随提交收尾为「已完成」）"@zh ;
+    tcm:precondition "所属就诊存在「已确认」的辨证结论"@zh ;
+    tcm:precondition "剂数在 1 到 30 之间（REF-10）"@zh ;
+    tcm:precondition "同一处方内饮片不重复，单剂剂量大于 0（REF-12）"@zh ;
+    tcm:postcondition "{\"field\": \"prescription.prescriptionStatus\", \"setValue\": \"草稿\"}" ;
+    tcm:postcondition "{\"field\": \"prescription.prescribeTime\", \"setValue\": \"NOW()（首次保存时）\"}" ;
+    tcm:postcondition "{\"field\": \"prescription.PrescriptionItem\", \"setValue\": \"全量覆盖保存处方明细（含超量理由）\"}" ;
+    tcm:appliedRule "RULE-PRESCRIPTION-DOSE-LIMIT-CHECK" .
+
+tcm:Behavior_Prescription_Submit
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "提交处方送审"@zh ;
+    skos:notation "Prescription_Submit" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-PRESCRIPTION-001" ;
+    tcm:ownerEntityName "处方"@zh ;
+    rdfs:comment "对应 FUNC-07；处方明细非空（INV-04）后提交进入药师审核队列，\n并同步触发就诊状态收尾（B-04）。超常用量上限 2 倍或超毒性上限由规则阻断"@zh ;
+    tcm:precondition "prescription.prescriptionStatus IN ['草稿', '已驳回']"@zh ;
+    tcm:precondition "处方明细至少一味饮片（INV-04）"@zh ;
+    tcm:precondition "超量药味已填写超量理由"@zh ;
+    tcm:postcondition "{\"field\": \"prescription.prescriptionStatus\", \"setValue\": \"待审核\"}" ;
+    tcm:postcondition "{\"field\": \"prescription.submitTime\", \"setValue\": \"NOW()\"}" ;
+    tcm:appliedRule "RULE-PRESCRIPTION-DOSE-LIMIT-CHECK" ;
+    tcm:appliedRule "RULE-HERB-TOXIC-TOTAL-LIMIT-CHECK" .
+
+tcm:Behavior_Prescription_Cancel
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "处方退回与作废"@zh ;
+    skos:notation "Prescription_Cancel" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-PRESCRIPTION-001" ;
+    tcm:ownerEntityName "处方"@zh ;
+    rdfs:comment "对应 FUNC-09；作废按 R-04 三分派执行——无调剂记录或「待调剂」记录时仅作废并取消待调剂记录；\n「已调剂」时作废并回冲库存；「已发药」时阻断作废（退药走线下）。不物理删除处方"@zh ;
+    tcm:precondition "prescription.prescriptionStatus IN ['草稿', '待审核', '审核通过', '已调剂']"@zh ;
+    tcm:precondition "R-04 判定结果不为 BLOCK（已发药/已作废不可作废）"@zh ;
+    tcm:precondition "作废原因已填写"@zh ;
+    tcm:postcondition "{\"field\": \"prescription.prescriptionStatus\", \"setValue\": \"已作废\"}" ;
+    tcm:postcondition "{\"field\": \"prescription.cancelReason\", \"setValue\": \"写入作废原因\"}" ;
+    tcm:appliedRule "RULE-PRESCRIPTION-VOID-DISPATCH" .
+
+tcm:Behavior_Prescription_Review
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "处方审核"@zh ;
+    skos:notation "Prescription_Review" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-PRESCRIPTION-001" ;
+    tcm:ownerEntityName "处方"@zh ;
+    rdfs:comment "对应审批行为 B-APP-01；中药师单节点审核（D-24：不做会签与条件加签，复核人选填）。\n审核通过置「审核通过」并进入调剂；驳回须填驳回原因并置「已驳回」，医师修改后可重新提交"@zh ;
+    tcm:precondition "prescription.prescriptionStatus == '待审核'"@zh ;
+    tcm:precondition "驳回时驳回原因已填写"@zh ;
+    tcm:precondition "当前用户具备中药师角色（ROLE-03）"@zh ;
+    tcm:postcondition "{\"field\": \"prescription.prescriptionStatus\", \"setValue\": \"审核通过 或 已驳回\"}" ;
+    tcm:postcondition "{\"field\": \"prescription.reviewerId\", \"setValue\": \"当前登录用户\"}" ;
+    tcm:postcondition "{\"field\": \"prescription.reviewTime\", \"setValue\": \"NOW()\"}" .
+
+tcm:Behavior_Dispense_Confirm
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "确认调剂"@zh ;
+    skos:notation "Dispense_Confirm" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-DISPENSE-001" ;
+    tcm:ownerEntityName "调剂发药记录"@zh ;
+    rdfs:comment "对应 FUNC-10；确认调剂并同步扣减饮片库存（D-14）。库存不足由 R-02 阻断，\n不允许先调剂后补库"@zh ;
+    tcm:precondition "dispenseRecord.recordStatus == '待调剂'"@zh ;
+    tcm:precondition "对应处方状态为「审核通过」"@zh ;
+    tcm:precondition "R-02 判定全部饮片库存充足"@zh ;
+    tcm:postcondition "{\"field\": \"dispenseRecord.recordStatus\", \"setValue\": \"已调剂\"}" ;
+    tcm:postcondition "{\"field\": \"dispenseRecord.dispenseTime\", \"setValue\": \"NOW()\"}" ;
+    tcm:postcondition "{\"field\": \"dispenseRecord.dispenserId\", \"setValue\": \"当前登录用户\"}" ;
+    tcm:postcondition "{\"field\": \"prescription.prescriptionStatus\", \"setValue\": \"已调剂\"}" ;
+    tcm:appliedRule "RULE-HERB-STOCK-SUFFICIENT" .
+
+tcm:Behavior_Dispense_Issue
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "发药确认"@zh ;
+    skos:notation "Dispense_Issue" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-DISPENSE-001" ;
+    tcm:ownerEntityName "调剂发药记录"@zh ;
+    rdfs:comment "对应 FUNC-10；确认发药，处方业务闭环（库存已在确认调剂时扣减）"@zh ;
+    tcm:precondition "dispenseRecord.recordStatus == '已调剂'"@zh ;
+    tcm:postcondition "{\"field\": \"dispenseRecord.recordStatus\", \"setValue\": \"已发药\"}" ;
+    tcm:postcondition "{\"field\": \"dispenseRecord.issueTime\", \"setValue\": \"NOW()\"}" ;
+    tcm:postcondition "{\"field\": \"prescription.prescriptionStatus\", \"setValue\": \"已发药\"}" .
+
+tcm:Behavior_FollowUp_Complete
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "复诊登记与疗效评价"@zh ;
+    skos:notation "FollowUp_Complete" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-FOLLOWUP-001" ;
+    tcm:ownerEntityName "复诊随访记录"@zh ;
+    rdfs:comment "对应 FUNC-13；患者实际复诊时回填本次就诊并记录疗效评价"@zh ;
+    tcm:precondition "followUp.recordStatus == '待随访'"@zh ;
+    tcm:precondition "实际随访日期不早于上次就诊挂号时间（R-05）"@zh ;
+    tcm:precondition "本次就诊记录已选定"@zh ;
+    tcm:postcondition "{\"field\": \"followUp.recordStatus\", \"setValue\": \"已完成\"}" ;
+    tcm:postcondition "{\"field\": \"followUp.actualVisitId\", \"setValue\": \"本次就诊记录\"}" ;
+    tcm:postcondition "{\"field\": \"followUp.actualFollowUpDate\", \"setValue\": \"按填入值保存\"}" ;
+    tcm:postcondition "{\"field\": \"followUp.efficacyLevel\", \"setValue\": \"按评价结果保存\"}" ;
+    tcm:appliedRule "RULE-FOLLOWUP-DATE-ORDER" .
+
+tcm:Behavior_FollowUp_MarkLost
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "标记失访"@zh ;
+    skos:notation "FollowUp_MarkLost" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-FOLLOWUP-001" ;
+    tcm:ownerEntityName "复诊随访记录"@zh ;
+    rdfs:comment "对应 FUNC-13；计划随访日期超期且患者未复诊时标记失访，不物理删除"@zh ;
+    tcm:precondition "followUp.recordStatus == '待随访'"@zh ;
+    tcm:precondition "计划随访日期已超期"@zh ;
+    tcm:precondition "失访原因已填写"@zh ;
+    tcm:postcondition "{\"field\": \"followUp.recordStatus\", \"setValue\": \"已失访\"}" ;
+    tcm:postcondition "{\"field\": \"followUp.remark\", \"setValue\": \"追加失访原因\"}" .
+
+tcm:Behavior_Visit_QueryStats
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "查询门诊量统计"@zh ;
+    skos:notation "Visit_QueryStats" ;
+    tcm:behaviorType "QUERY" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-VISIT-001" ;
+    tcm:ownerEntityName "就诊记录"@zh ;
+    rdfs:comment "对应 Q-01"@zh .
+
+tcm:Behavior_Diagnosis_QuerySyndromeDistribution
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "查询证型分布统计"@zh ;
+    skos:notation "Diagnosis_QuerySyndromeDistribution" ;
+    tcm:behaviorType "QUERY" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-DIAGNOSIS-001" ;
+    tcm:ownerEntityName "辨证结论"@zh ;
+    rdfs:comment "对应 Q-02"@zh .
+
+tcm:Behavior_Prescription_QueryHerbUsage
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "查询方剂与饮片使用统计"@zh ;
+    skos:notation "Prescription_QueryHerbUsage" ;
+    tcm:behaviorType "QUERY" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-PRESCRIPTION-001" ;
+    tcm:ownerEntityName "处方"@zh ;
+    rdfs:comment "对应 Q-03"@zh .
+
+tcm:Behavior_Visit_QueryVisitAndPrescription
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "查询就诊与处方记录"@zh ;
+    skos:notation "Visit_QueryVisitAndPrescription" ;
+    tcm:behaviorType "QUERY" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-VISIT-001" ;
+    tcm:ownerEntityName "就诊记录"@zh ;
+    rdfs:comment "对应 Q-04"@zh .
+
+tcm:Behavior_Herb_QueryStockAndAlert
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "查询饮片库存与预警"@zh ;
+    skos:notation "Herb_QueryStockAndAlert" ;
+    tcm:behaviorType "QUERY" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-HERB-001" ;
+    tcm:ownerEntityName "中药饮片"@zh ;
+    rdfs:comment "对应 Q-05"@zh .
+
+tcm:Behavior_Prescription_QueryOverdoseReview
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "查询超量毒性处方审核台账"@zh ;
+    skos:notation "Prescription_QueryOverdoseReview" ;
+    tcm:behaviorType "QUERY" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-PRESCRIPTION-001" ;
+    tcm:ownerEntityName "处方"@zh ;
+    rdfs:comment "对应 Q-06"@zh .
+
+tcm:Behavior_FollowUp_QueryCompletion
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "查询随访完成与失访分析"@zh ;
+    skos:notation "FollowUp_QueryCompletion" ;
+    tcm:behaviorType "QUERY" ;
+    tcm:triggerType "USER_ACTION" ;
+    tcm:ownerEntity "AGG-FOLLOWUP-001" ;
+    tcm:ownerEntityName "复诊随访记录"@zh ;
+    rdfs:comment "对应 Q-07"@zh .
+
+tcm:Behavior_Visit_Complete
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "就诊状态收尾"@zh ;
+    skos:notation "Visit_Complete" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "SYSTEM" ;
+    tcm:ownerEntity "AGG-VISIT-001" ;
+    tcm:ownerEntityName "就诊记录"@zh ;
+    rdfs:comment "对应 B-04；处方提交送审成功后由 Prescription_Submit 同步触发，就诊置「已完成」"@zh ;
+    tcm:precondition "visit.visitStatus == '接诊中'"@zh ;
+    tcm:precondition "存在已提交成功的处方"@zh ;
+    tcm:postcondition "{\"field\": \"visit.visitStatus\", \"setValue\": \"已完成\"}" .
+
+tcm:Behavior_FollowUp_CreatePlan
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "复诊提醒生成"@zh ;
+    skos:notation "FollowUp_CreatePlan" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "SYSTEM" ;
+    tcm:ownerEntity "AGG-FOLLOWUP-001" ;
+    tcm:ownerEntityName "复诊随访记录"@zh ;
+    rdfs:comment "对应 B-03；就诊完成后生成待随访记录，计划随访日期 = 就诊日 + 剂数 × 1 天（D-17）"@zh ;
+    tcm:precondition "就诊状态为「已完成」"@zh ;
+    tcm:precondition "该次就诊存在提交成功的处方"@zh ;
+    tcm:postcondition "{\"field\": \"followUp.followUpNo\", \"setValue\": \"系统生成\"}" ;
+    tcm:postcondition "{\"field\": \"followUp.recordStatus\", \"setValue\": \"待随访\"}" ;
+    tcm:postcondition "{\"field\": \"followUp.plannedFollowUpDate\", \"setValue\": \"就诊日期 + 剂数 × 1 天（按用法折算）\"}" .
+
+tcm:Behavior_Herb_DeductStock
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "饮片库存扣减"@zh ;
+    skos:notation "Herb_DeductStock" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "SYSTEM" ;
+    tcm:ownerEntity "AGG-HERB-001" ;
+    tcm:ownerEntityName "中药饮片"@zh ;
+    rdfs:comment "对应 B-01；确认调剂时经 R-02 校验通过后同步执行，\n按单剂剂量 × 剂数扣减各味饮片库存并追加调剂出库流水（同一聚合、同一事务）"@zh ;
+    tcm:precondition "R-02 判定库存充足"@zh ;
+    tcm:precondition "扣减后库存不为负（REF-08）"@zh ;
+    tcm:postcondition "{\"field\": \"herb.stockQuantity\", \"setValue\": \"stockQuantity - 单剂剂量 × 剂数\"}" ;
+    tcm:postcondition "{\"field\": \"herb.HerbStockFlow\", \"setValue\": \"逐味追加业务类型为「调剂出库」的流水（数量为负）\"}" ;
+    tcm:appliedRule "RULE-HERB-STOCK-SUFFICIENT" .
+
+tcm:Behavior_Herb_ReturnStock
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "饮片库存回冲"@zh ;
+    skos:notation "Herb_ReturnStock" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "SYSTEM" ;
+    tcm:ownerEntity "AGG-HERB-001" ;
+    tcm:ownerEntityName "中药饮片"@zh ;
+    rdfs:comment "对应 B-02；处方作废经 R-04 判定为「已调剂」分支时同步执行，\n按原出库量回冲库存并追加作废回冲流水"@zh ;
+    tcm:precondition "R-04 判定结果为 VOID_WITH_ROLLBACK"@zh ;
+    tcm:precondition "对应调剂出库流水存在"@zh ;
+    tcm:postcondition "{\"field\": \"herb.stockQuantity\", \"setValue\": \"stockQuantity + 原出库数量\"}" ;
+    tcm:postcondition "{\"field\": \"herb.HerbStockFlow\", \"setValue\": \"逐味追加业务类型为「作废回冲」的流水（数量为正）\"}" ;
+    tcm:appliedRule "RULE-PRESCRIPTION-VOID-DISPATCH" .
+
+tcm:Behavior_Dispense_CreatePending
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "创建待调剂记录"@zh ;
+    skos:notation "Dispense_CreatePending" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "SYSTEM" ;
+    tcm:ownerEntity "AGG-DISPENSE-001" ;
+    tcm:ownerEntityName "调剂发药记录"@zh ;
+    rdfs:comment "对应 B-05（建模补全）；处方审核通过后由审批流「通过」分支调用，\n生成该处方的调剂发药记录（状态「待调剂」），成为药剂师调剂入口"@zh ;
+    tcm:precondition "prescription.prescriptionStatus == '审核通过'"@zh ;
+    tcm:precondition "该处方不存在调剂发药记录（一对一约束）"@zh ;
+    tcm:postcondition "{\"field\": \"dispenseRecord.dispenseNo\", \"setValue\": \"系统生成\"}" ;
+    tcm:postcondition "{\"field\": \"dispenseRecord.recordStatus\", \"setValue\": \"待调剂\"}" .
+
+tcm:Behavior_Dispense_CancelPending
+    a owl:NamedIndividual ;
+    a tcm:Behavior ;
+    rdfs:label "取消待调剂记录"@zh ;
+    skos:notation "Dispense_CancelPending" ;
+    tcm:behaviorType "COMMAND" ;
+    tcm:triggerType "SYSTEM" ;
+    tcm:ownerEntity "AGG-DISPENSE-001" ;
+    tcm:ownerEntityName "调剂发药记录"@zh ;
+    rdfs:comment "对应 B-06（建模补全）；处方作废经 R-04 判定为「无记录/待调剂」分支时同步执行，\n取消该处方的待调剂记录（已发药记录不可取消）"@zh ;
+    tcm:precondition "R-04 判定结果为 VOID_ONLY"@zh ;
+    tcm:precondition "dispenseRecord.recordStatus == '待调剂'"@zh ;
+    tcm:precondition "处方状态已为「已作废」"@zh ;
+    tcm:postcondition "{\"field\": \"dispenseRecord.recordStatus\", \"setValue\": \"已取消\"}" ;
+    tcm:appliedRule "RULE-PRESCRIPTION-VOID-DISPATCH" .
+
+
+# ---------- M3 规则 ----------
+tcm:Behavior_Prescription_Save
+    tcm:appliesRule tcm:Rule_RULE_PRESCRIPTION_DOSE_LIMIT_CHECK .
+
+tcm:Behavior_Prescription_Submit
+    tcm:appliesRule tcm:Rule_RULE_PRESCRIPTION_DOSE_LIMIT_CHECK .
+
+tcm:Rule_RULE_PRESCRIPTION_DOSE_LIMIT_CHECK
+    a owl:NamedIndividual ;
+    a tcm:Rule ;
+    rdfs:label "剂量超常用量上限处理判定"@zh ;
+    skos:notation "RULE-PRESCRIPTION-DOSE-LIMIT-CHECK" ;
+    tcm:ruleType "VALIDATION" ;
+    tcm:outputType "String" ;
+    rdfs:comment "读取处方明细的单剂剂量与所引饮片的常用量区间，判定三种处理结论：\nPASS（未超常用上限，正常放行）/ NEED_REASON（超常用上限但在 2 倍以内，必须填写超量理由并强制药师审核）/\nBLOCK（超过常用上限 2 倍，直接阻断提交）。依据 D-11、D-16。"@zh ;
+    tcm:expression "\"IF singleDose <= maxCommonDose THEN 'PASS'\\nELSE IF singleDose > maxCommonDose * 2 THEN 'BLOCK'\\nELSE IF overDoseReason IS NULL OR LENGTH(overDoseReason) == 0 THEN 'NEED_REASON'\\nELSE 'NEED_REASON'\"" ;
+    tcm:inputParam "{\"name\": \"singleDose\", \"type\": \"Decimal\", \"sourceField\": \"PrescriptionItem.singleDose\", \"required\": true, \"description\": \"处方明细单剂剂量（g）\"}" ;
+    tcm:inputParam "{\"name\": \"maxCommonDose\", \"type\": \"Decimal\", \"sourceField\": \"Herb.maxCommonDose\", \"required\": true, \"description\": \"饮片常用最大量（g）\"}" ;
+    tcm:inputParam "{\"name\": \"minCommonDose\", \"type\": \"Decimal\", \"sourceField\": \"Herb.minCommonDose\", \"required\": true, \"description\": \"饮片常用最小量（g）\"}" ;
+    tcm:inputParam "{\"name\": \"overDoseReason\", \"type\": \"String\", \"sourceField\": \"PrescriptionItem.overDoseReason\", \"required\": false, \"description\": \"超量理由，超常用上限时必填\"}" ;
+    tcm:reusedByBehavior "Prescription_Save" ;
+    tcm:reusedByBehavior "Prescription_Submit" .
+
+tcm:Behavior_Dispense_Confirm
+    tcm:appliesRule tcm:Rule_RULE_HERB_STOCK_SUFFICIENT .
+
+tcm:Rule_RULE_HERB_STOCK_SUFFICIENT
+    a owl:NamedIndividual ;
+    a tcm:Rule ;
+    rdfs:label "饮片库存充足校验"@zh ;
+    skos:notation "RULE-HERB-STOCK-SUFFICIENT" ;
+    tcm:ruleType "VALIDATION" ;
+    tcm:outputType "Boolean" ;
+    rdfs:comment "按处方剂数计算各味饮片需求总量，逐味比对饮片当前库存数量，任一味不足则阻断调剂（D-14）。"@zh ;
+    tcm:expression "\"FOR EACH item IN prescriptionItems:\\n  IF item.singleDose * prescription.doses > herb(item.herbId).stockQuantity THEN RETURN false\\nRETURN true\"" ;
+    tcm:inputParam "{\"name\": \"requiredQuantity\", \"type\": \"Decimal\", \"sourceField\": \"PrescriptionItem.singleDose * Prescription.doses\", \"required\": true, \"description\": \"该味饮片需求总量 = 单剂剂量 × 剂数（g）\"}" ;
+    tcm:inputParam "{\"name\": \"stockQuantity\", \"type\": \"Decimal\", \"sourceField\": \"Herb.stockQuantity\", \"required\": true, \"description\": \"饮片当前库存数量（g）\"}" ;
+    tcm:reusedByBehavior "Dispense_Confirm" .
+
+tcm:Behavior_Prescription_Submit
+    tcm:appliesRule tcm:Rule_RULE_HERB_TOXIC_TOTAL_LIMIT_CHECK .
+
+tcm:Rule_RULE_HERB_TOXIC_TOTAL_LIMIT_CHECK
+    a owl:NamedIndividual ;
+    a tcm:Rule ;
+    rdfs:label "毒性饮片处方总量上限校验"@zh ;
+    skos:notation "RULE-HERB-TOXIC-TOTAL-LIMIT-CHECK" ;
+    tcm:ruleType "VALIDATION" ;
+    tcm:outputType "Boolean" ;
+    rdfs:comment "对处方内毒性分级非「无毒」的饮片，按单剂剂量汇总同味饮片总量，与饮片维护的「毒性单张处方总量上限」比对，\n超上限即阻断提交；未维护上限的毒性饮片只做强制审核提示。依据 D-11。"@zh ;
+    tcm:expression "\"IF toxicityLevel == 'NONE' THEN RETURN true\\nIF toxicDoseLimit IS NULL THEN RETURN true\\nRETURN totalDoseInPrescription <= toxicDoseLimit\"" ;
+    tcm:inputParam "{\"name\": \"herbId\", \"type\": \"String\", \"sourceField\": \"PrescriptionItem.herbId\", \"required\": true}" ;
+    tcm:inputParam "{\"name\": \"toxicityLevel\", \"type\": \"String\", \"sourceField\": \"Herb.toxicityLevel\", \"required\": true, \"description\": \"毒性分级字典值，NONE 表示无毒\"}" ;
+    tcm:inputParam "{\"name\": \"toxicDoseLimit\", \"type\": \"Decimal\", \"sourceField\": \"Herb.toxicDoseLimit\", \"required\": false, \"description\": \"毒性单张处方总量上限（g），为空表示不单独设限\"}" ;
+    tcm:inputParam "{\"name\": \"totalDoseInPrescription\", \"type\": \"Decimal\", \"sourceField\": \"SUM(PrescriptionItem.singleDose)\", \"required\": true, \"description\": \"同一处方内该味饮片的单剂总量（g）\"}" ;
+    tcm:reusedByBehavior "Prescription_Submit" .
+
+tcm:Behavior_Prescription_Cancel
+    tcm:appliesRule tcm:Rule_RULE_PRESCRIPTION_VOID_DISPATCH .
+
+tcm:Rule_RULE_PRESCRIPTION_VOID_DISPATCH
+    a owl:NamedIndividual ;
+    a tcm:Rule ;
+    rdfs:label "处方作废处理判定与阻断"@zh ;
+    skos:notation "RULE-PRESCRIPTION-VOID-DISPATCH" ;
+    tcm:ruleType "VALIDATION" ;
+    tcm:outputType "String" ;
+    rdfs:comment "按调剂发药记录状态三分派：无记录或「待调剂」→ VOID_ONLY（允许作废，无库存动作，同步取消待调剂记录）；\n「已调剂」→ VOID_WITH_ROLLBACK（允许作废并按 B-02 回冲库存）；「已发药」→ BLOCK（阻断作废，\n退药走线下处理）。规则只判断与分派，状态变化由行为完成。依据 D-08、D-19。"@zh ;
+    tcm:expression "\"IF recordStatus IS NULL THEN RETURN 'VOID_ONLY'\\nIF recordStatus == 'PENDING' THEN RETURN 'VOID_ONLY'\\nIF recordStatus == 'DISPENSED' THEN RETURN 'VOID_WITH_ROLLBACK'\\nIF recordStatus == 'ISSUED' THEN RETURN 'BLOCK'\\nRETURN 'VOID_ONLY'\"" ;
+    tcm:inputParam "{\"name\": \"recordStatus\", \"type\": \"String\", \"sourceField\": \"DispenseRecord.recordStatus\", \"required\": false, \"description\": \"调剂发药记录状态；无记录时为空\"}" ;
+    tcm:inputParam "{\"name\": \"prescriptionStatus\", \"type\": \"String\", \"sourceField\": \"Prescription.prescriptionStatus\", \"required\": true, \"description\": \"当前处方状态\"}" ;
+    tcm:reusedByBehavior "Prescription_Cancel" .
+
+tcm:Behavior_FollowUp_Complete
+    tcm:appliesRule tcm:Rule_RULE_FOLLOWUP_DATE_ORDER .
+
+tcm:Rule_RULE_FOLLOWUP_DATE_ORDER
+    a owl:NamedIndividual ;
+    a tcm:Rule ;
+    rdfs:label "复诊日期顺序校验"@zh ;
+    skos:notation "RULE-FOLLOWUP-DATE-ORDER" ;
+    tcm:ruleType "VALIDATION" ;
+    tcm:outputType "Boolean" ;
+    rdfs:comment "实际随访日期不得早于随访来源就诊的挂号时间；违反时提示并要求修正（D-17）。"@zh ;
+    tcm:expression "\"actualFollowUpDate >= DATE(sourceVisitRegisterTime)\"" ;
+    tcm:inputParam "{\"name\": \"actualFollowUpDate\", \"type\": \"Date\", \"sourceField\": \"FollowUp.actualFollowUpDate\", \"required\": true}" ;
+    tcm:inputParam "{\"name\": \"sourceVisitRegisterTime\", \"type\": \"DateTime\", \"sourceField\": \"Visit.registerTime\", \"required\": true, \"description\": \"上次就诊（随访来源）的挂号时间\"}" ;
+    tcm:reusedByBehavior "FollowUp_Complete" .
+
+tcm:Behavior_Herb_Stocktake
+    tcm:appliesRule tcm:Rule_RULE_HERB_STOCK_RECONCILE .
+
+tcm:Rule_RULE_HERB_STOCK_RECONCILE
+    a owl:NamedIndividual ;
+    a tcm:Rule ;
+    rdfs:label "饮片库存对账校验"@zh ;
+    skos:notation "RULE-HERB-STOCK-RECONCILE" ;
+    tcm:ruleType "VALIDATION" ;
+    tcm:outputType "Decimal" ;
+    rdfs:comment "盘点时以饮片库存数量与全部出入库流水数量净和比对，输出对账结论与差异值（不阻断业务，供盘点人员据以发起盘点调整）。\n与 M1 聚合不变量 INV-03 同源：INV-03 为写入时强制的聚合不变量，本规则为盘点行为的对账判定与差异呈现。依据 INV-03。"@zh ;
+    tcm:expression "\"stockQuantity - flowNetQuantity\"" ;
+    tcm:inputParam "{\"name\": \"stockQuantity\", \"type\": \"Decimal\", \"sourceField\": \"Herb.stockQuantity\", \"required\": true}" ;
+    tcm:inputParam "{\"name\": \"flowNetQuantity\", \"type\": \"Decimal\", \"sourceField\": \"SUM(HerbStockFlow.quantity)\", \"required\": true, \"description\": \"该饮片全部出入库流水数量净和（g）\"}" ;
+    tcm:reusedByBehavior "Herb_Stocktake" .
+
+
+# ---------- M6 流程 ----------
+tcm:Flow_FLOW_VISIT_001
+    a owl:NamedIndividual ;
+    a tcm:Flow ;
+    rdfs:label "门诊问诊开方主流程"@zh ;
+    skos:notation "FLOW-VISIT-001" ;
+    tcm:flowType "COLLABORATION" ;
+    rdfs:comment "完成一名患者从建档挂号、四诊采集、辨证开方、处方审核到调剂发药的全过程"@zh ;
+    tcm:businessObject "AGG-PATIENT-001" ;
+    tcm:businessObject "AGG-VISIT-001" ;
+    tcm:businessObject "AGG-DIAGNOSIS-001" ;
+    tcm:businessObject "AGG-FORMULA-001" ;
+    tcm:businessObject "AGG-PRESCRIPTION-001" ;
+    tcm:businessObject "AGG-HERB-001" ;
+    tcm:businessObject "AGG-DISPENSE-001" ;
+    tcm:businessObject "AGG-FOLLOWUP-001" ;
+    tcm:involvedRole "ROLE-01" ;
+    tcm:involvedRole "ROLE-02" ;
+    tcm:involvedRole "ROLE-03" ;
+    tcm:involvedRole "ROLE-05" ;
+    tcm:startActivity "A01" ;
+    tcm:endActivity "E01" ;
+    tcm:endActivity "E02" ;
+    tcm:endActivity "E03" ;
+    tcm:endActivity "E04" .
+
+tcm:Activity_FLOW_VISIT_001_A01
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "开始（患者到达门诊）"@zh ;
+    skos:notation "A01" ;
+    tcm:activityType "START" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A01 .
+
+tcm:Activity_FLOW_VISIT_001_A02
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "患者建档（老患者跳过）"@zh ;
+    skos:notation "A02" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-01" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A02 .
+
+tcm:Activity_FLOW_VISIT_001_A03
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "门诊挂号"@zh ;
+    skos:notation "A03" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-01" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A03 .
+
+tcm:Activity_FLOW_VISIT_001_A04
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "接诊开单"@zh ;
+    skos:notation "A04" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-02" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A04 .
+
+tcm:Activity_FLOW_VISIT_001_A05
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "录入四诊信息"@zh ;
+    skos:notation "A05" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-02" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A05 .
+
+tcm:Activity_FLOW_VISIT_001_A06
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "辨证判定并确认结论"@zh ;
+    skos:notation "A06" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-02" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A06 .
+
+tcm:Activity_FLOW_VISIT_001_A07
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "开具处方（可引用方剂模板）"@zh ;
+    skos:notation "A07" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-02" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A07 .
+
+tcm:Activity_FLOW_VISIT_001_A08
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "提交处方送审"@zh ;
+    skos:notation "A08" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-02" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A08 .
+
+tcm:Activity_FLOW_VISIT_001_G01
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "剂量超常用量上限判定"@zh ;
+    skos:notation "G01" ;
+    tcm:activityType "GATEWAY" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_G01 .
+
+tcm:Activity_FLOW_VISIT_001_G02
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "毒性饮片单张处方总量判定"@zh ;
+    skos:notation "G02" ;
+    tcm:activityType "GATEWAY" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_G02 .
+
+tcm:Activity_FLOW_VISIT_001_A09
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "就诊状态收尾"@zh ;
+    skos:notation "A09" ;
+    tcm:activityType "SYSTEM_TASK" ;
+    rdfs:comment "B-04；由 A08 提交成功经 syncTriggers 同步执行，流程仅标注联动结果活动"@zh .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A09 .
+
+tcm:Activity_FLOW_VISIT_001_A10
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "生成复诊随访记录"@zh ;
+    skos:notation "A10" ;
+    tcm:activityType "SYSTEM_TASK" ;
+    rdfs:comment "B-03；由 A09 经 syncTriggers 同步执行；计划随访日期 = 就诊日 + 剂数 × 1 天"@zh .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A10 .
+
+tcm:Activity_FLOW_VISIT_001_A11
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "中药处方审核"@zh ;
+    skos:notation "A11" ;
+    tcm:activityType "SUB_FLOW_CALL" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A11 .
+
+tcm:Activity_FLOW_VISIT_001_G03
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "处方审核结果判定"@zh ;
+    skos:notation "G03" ;
+    tcm:activityType "GATEWAY" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_G03 .
+
+tcm:Activity_FLOW_VISIT_001_A12
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "创建待调剂记录"@zh ;
+    skos:notation "A12" ;
+    tcm:activityType "SYSTEM_TASK" ;
+    rdfs:comment "B-05；审核通过后生成待调剂记录（药剂师调剂入口）"@zh .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A12 .
+
+tcm:Activity_FLOW_VISIT_001_A13
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "确认调剂（按明细配齐饮片）"@zh ;
+    skos:notation "A13" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-03" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A13 .
+
+tcm:Activity_FLOW_VISIT_001_G04
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "饮片库存充足性判定"@zh ;
+    skos:notation "G04" ;
+    tcm:activityType "GATEWAY" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_G04 .
+
+tcm:Activity_FLOW_VISIT_001_A14
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "发药确认（与患者核对交接）"@zh ;
+    skos:notation "A14" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-03" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A14 .
+
+tcm:Activity_FLOW_VISIT_001_A15
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "处方作废（未调剂前）"@zh ;
+    skos:notation "A15" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-02" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A15 .
+
+tcm:Activity_FLOW_VISIT_001_G05
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "处方作废处理判定"@zh ;
+    skos:notation "G05" ;
+    tcm:activityType "GATEWAY" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_G05 .
+
+tcm:Activity_FLOW_VISIT_001_A16
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "饮片库存回冲"@zh ;
+    skos:notation "A16" ;
+    tcm:activityType "SYSTEM_TASK" ;
+    rdfs:comment "B-02；由 A15 经 R-04 判定的 syncTriggers 同步执行，生成作废回冲流水"@zh .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A16 .
+
+tcm:Activity_FLOW_VISIT_001_A17
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "撤销就诊（患者未就诊或误挂号）"@zh ;
+    skos:notation "A17" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-01" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A17 .
+
+tcm:Activity_FLOW_VISIT_001_A18
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "取消待调剂记录"@zh ;
+    skos:notation "A18" ;
+    tcm:activityType "SYSTEM_TASK" ;
+    rdfs:comment "B-06；由 A15 经 R-04 判定的 syncTriggers 同步执行"@zh .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_A18 .
+
+tcm:Activity_FLOW_VISIT_001_E01
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "异常终止（调剂阻断：饮片库存不足）"@zh ;
+    skos:notation "E01" ;
+    tcm:activityType "END" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_E01 .
+
+tcm:Activity_FLOW_VISIT_001_E02
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "正常结束（处方已发药）"@zh ;
+    skos:notation "E02" ;
+    tcm:activityType "END" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_E02 .
+
+tcm:Activity_FLOW_VISIT_001_E03
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "异常终止（处方已作废）"@zh ;
+    skos:notation "E03" ;
+    tcm:activityType "END" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_E03 .
+
+tcm:Activity_FLOW_VISIT_001_E04
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "阻断（处方已发药，不可作废）"@zh ;
+    skos:notation "E04" ;
+    tcm:activityType "END" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_E04 .
+
+tcm:Activity_FLOW_VISIT_001_E05
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "异常终止（就诊已取消）"@zh ;
+    skos:notation "E05" ;
+    tcm:activityType "END" .
+
+tcm:Flow_FLOW_VISIT_001
+    tcm:hasActivity tcm:Activity_FLOW_VISIT_001_E05 .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    a owl:NamedIndividual ;
+    a tcm:Flow ;
+    rdfs:label "复诊调方流程"@zh ;
+    skos:notation "FLOW-FOLLOWUP-001" ;
+    tcm:flowType "COLLABORATION" ;
+    rdfs:comment "基于上次就诊的疗效评价完成调方，并闭合随访管理"@zh ;
+    tcm:businessObject "AGG-PATIENT-001" ;
+    tcm:businessObject "AGG-VISIT-001" ;
+    tcm:businessObject "AGG-DIAGNOSIS-001" ;
+    tcm:businessObject "AGG-PRESCRIPTION-001" ;
+    tcm:businessObject "AGG-HERB-001" ;
+    tcm:businessObject "AGG-DISPENSE-001" ;
+    tcm:businessObject "AGG-FOLLOWUP-001" ;
+    tcm:involvedRole "ROLE-01" ;
+    tcm:involvedRole "ROLE-02" ;
+    tcm:involvedRole "ROLE-03" ;
+    tcm:involvedRole "ROLE-05" ;
+    tcm:startActivity "P01" ;
+    tcm:endActivity "E01" ;
+    tcm:endActivity "E02" ;
+    tcm:endActivity "E03" ;
+    tcm:endActivity "E04" .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P01
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "开始（存在待随访记录或复诊挂号）"@zh ;
+    skos:notation "P01" ;
+    tcm:activityType "START" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P01 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P02
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "复诊挂号并关联上次就诊"@zh ;
+    skos:notation "P02" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-01" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P02 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P03
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "选择待随访记录并回填本次就诊"@zh ;
+    skos:notation "P03" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-01" ;
+    rdfs:comment "挂号环节将随访记录的「本次就诊」回填为本次就诊（ActualVisitId）；\n疗效评价与记录置「已完成」在 P06 由同一行为第二次执行时收口"@zh .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P03 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_G01
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "随访日期顺序判定"@zh ;
+    skos:notation "G01" ;
+    tcm:activityType "GATEWAY" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_G01 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P04
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "接诊开单（调阅上次四诊与处方）"@zh ;
+    skos:notation "P04" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-02" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P04 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P05
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "重新录入四诊信息"@zh ;
+    skos:notation "P05" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-02" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P05 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P06
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "录入疗效评价、症状变化与是否继续用药"@zh ;
+    skos:notation "P06" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-02" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P06 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P07
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "辨证复判"@zh ;
+    skos:notation "P07" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-02" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P07 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P08
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "调方（加减药味与剂量）"@zh ;
+    skos:notation "P08" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-02" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P08 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P09
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "提交处方送审"@zh ;
+    skos:notation "P09" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-02" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P09 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P10
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "标记已失访（超期未复诊）"@zh ;
+    skos:notation "P10" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-01" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P10 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P11
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "就诊状态收尾"@zh ;
+    skos:notation "P11" ;
+    tcm:activityType "SYSTEM_TASK" ;
+    rdfs:comment "B-04；由 P09 提交成功经 syncTriggers 同步执行"@zh .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P11 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P12
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "生成新的待随访记录"@zh ;
+    skos:notation "P12" ;
+    tcm:activityType "SYSTEM_TASK" ;
+    rdfs:comment "B-03；由 P11 经 syncTriggers 同步执行"@zh .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P12 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P13
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "处方作废（未调剂前）"@zh ;
+    skos:notation "P13" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-05" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P13 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P14
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "中药处方审核"@zh ;
+    skos:notation "P14" ;
+    tcm:activityType "SUB_FLOW_CALL" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P14 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_G02
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "处方审核结果判定"@zh ;
+    skos:notation "G02" ;
+    tcm:activityType "GATEWAY" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_G02 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P15
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "创建待调剂记录"@zh ;
+    skos:notation "P15" ;
+    tcm:activityType "SYSTEM_TASK" ;
+    rdfs:comment "B-05；审核通过后生成待调剂记录"@zh .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P15 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P16
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "确认调剂"@zh ;
+    skos:notation "P16" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-03" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P16 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_G04
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "饮片库存充足性判定"@zh ;
+    skos:notation "G04" ;
+    tcm:activityType "GATEWAY" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_G04 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P17
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "发药确认"@zh ;
+    skos:notation "P17" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-03" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P17 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P18
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "本次随访记录置已完成"@zh ;
+    skos:notation "P18" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-02" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P18 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_G03
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "处方作废处理判定"@zh ;
+    skos:notation "G03" ;
+    tcm:activityType "GATEWAY" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_G03 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P19
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "饮片库存回冲"@zh ;
+    skos:notation "P19" ;
+    tcm:activityType "SYSTEM_TASK" ;
+    rdfs:comment "B-02；由 P13 经 R-04 判定的 syncTriggers 同步执行"@zh .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P19 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_P20
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "取消待调剂记录"@zh ;
+    skos:notation "P20" ;
+    tcm:activityType "SYSTEM_TASK" ;
+    rdfs:comment "B-06；由 P13 经 R-04 判定的 syncTriggers 同步执行"@zh .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_P20 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_E01
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "异常终止（调剂阻断：饮片库存不足）"@zh ;
+    skos:notation "E01" ;
+    tcm:activityType "END" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_E01 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_E02
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "正常结束（调方发药且随访闭环）"@zh ;
+    skos:notation "E02" ;
+    tcm:activityType "END" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_E02 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_E03
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "异常终止（随访终止：已失访）"@zh ;
+    skos:notation "E03" ;
+    tcm:activityType "END" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_E03 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_E04
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "阻断（处方已发药，不可作废）"@zh ;
+    skos:notation "E04" ;
+    tcm:activityType "END" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_E04 .
+
+tcm:Activity_FLOW_FOLLOWUP_001_E05
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "异常终止（处方已作废）"@zh ;
+    skos:notation "E05" ;
+    tcm:activityType "END" .
+
+tcm:Flow_FLOW_FOLLOWUP_001
+    tcm:hasActivity tcm:Activity_FLOW_FOLLOWUP_001_E05 .
+
+tcm:Flow_FLOW_HERB_INBOUND_001
+    a owl:NamedIndividual ;
+    a tcm:Flow ;
+    rdfs:label "饮片入库流程"@zh ;
+    skos:notation "FLOW-HERB-INBOUND-001" ;
+    tcm:flowType "COLLABORATION" ;
+    rdfs:comment "完成饮片到货验收、品目建档、入库登记与库存更新；本流程对象同属中药饮片聚合，不涉及跨对象联动"@zh ;
+    tcm:businessObject "AGG-HERB-001" ;
+    tcm:involvedRole "ROLE-04" ;
+    tcm:involvedRole "ROLE-03" ;
+    tcm:startActivity "H01" ;
+    tcm:endActivity "E01" ;
+    tcm:endActivity "E02" .
+
+tcm:Activity_FLOW_HERB_INBOUND_001_H01
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "开始（饮片到货）"@zh ;
+    skos:notation "H01" ;
+    tcm:activityType "START" .
+
+tcm:Flow_FLOW_HERB_INBOUND_001
+    tcm:hasActivity tcm:Activity_FLOW_HERB_INBOUND_001_H01 .
+
+tcm:Activity_FLOW_HERB_INBOUND_001_H02
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "线下验收（核对随货清单、数量与质量）"@zh ;
+    skos:notation "H02" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-04" ;
+    rdfs:comment "线下活动，无系统功能点（D-27：饮片验收留线下，系统只登记合格入库数量与单号）"@zh .
+
+tcm:Flow_FLOW_HERB_INBOUND_001
+    tcm:hasActivity tcm:Activity_FLOW_HERB_INBOUND_001_H02 .
+
+tcm:Activity_FLOW_HERB_INBOUND_001_G01
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "验收是否合格"@zh ;
+    skos:notation "G01" ;
+    tcm:activityType "GATEWAY" .
+
+tcm:Flow_FLOW_HERB_INBOUND_001
+    tcm:hasActivity tcm:Activity_FLOW_HERB_INBOUND_001_G01 .
+
+tcm:Activity_FLOW_HERB_INBOUND_001_H03
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "线下退货"@zh ;
+    skos:notation "H03" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-04" ;
+    rdfs:comment "线下活动，无系统功能点"@zh .
+
+tcm:Flow_FLOW_HERB_INBOUND_001
+    tcm:hasActivity tcm:Activity_FLOW_HERB_INBOUND_001_H03 .
+
+tcm:Activity_FLOW_HERB_INBOUND_001_G02
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "品目是否已建档"@zh ;
+    skos:notation "G02" ;
+    tcm:activityType "GATEWAY" .
+
+tcm:Flow_FLOW_HERB_INBOUND_001
+    tcm:hasActivity tcm:Activity_FLOW_HERB_INBOUND_001_G02 .
+
+tcm:Activity_FLOW_HERB_INBOUND_001_H04
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "饮片建档"@zh ;
+    skos:notation "H04" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-04" .
+
+tcm:Flow_FLOW_HERB_INBOUND_001
+    tcm:hasActivity tcm:Activity_FLOW_HERB_INBOUND_001_H04 .
+
+tcm:Activity_FLOW_HERB_INBOUND_001_H05
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "入库登记（录入数量、入库单号）"@zh ;
+    skos:notation "H05" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-04" ;
+    rdfs:comment "同一聚合同事务完成「追加入库流水 + 增加库存数量」，\n对应需求文档 1.4.3 步骤 3 与步骤 4，不拆分为两个活动"@zh .
+
+tcm:Flow_FLOW_HERB_INBOUND_001
+    tcm:hasActivity tcm:Activity_FLOW_HERB_INBOUND_001_H05 .
+
+tcm:Activity_FLOW_HERB_INBOUND_001_H06
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "库存盘点与差异调整"@zh ;
+    skos:notation "H06" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-04" .
+
+tcm:Flow_FLOW_HERB_INBOUND_001
+    tcm:hasActivity tcm:Activity_FLOW_HERB_INBOUND_001_H06 .
+
+tcm:Activity_FLOW_HERB_INBOUND_001_H07
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "查看库存与低库存预警清单"@zh ;
+    skos:notation "H07" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-04" .
+
+tcm:Flow_FLOW_HERB_INBOUND_001
+    tcm:hasActivity tcm:Activity_FLOW_HERB_INBOUND_001_H07 .
+
+tcm:Activity_FLOW_HERB_INBOUND_001_E01
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "异常终止（验收不合格，不入库）"@zh ;
+    skos:notation "E01" ;
+    tcm:activityType "END" .
+
+tcm:Flow_FLOW_HERB_INBOUND_001
+    tcm:hasActivity tcm:Activity_FLOW_HERB_INBOUND_001_E01 .
+
+tcm:Activity_FLOW_HERB_INBOUND_001_E02
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "正常结束（入库完成，库存已更新）"@zh ;
+    skos:notation "E02" ;
+    tcm:activityType "END" .
+
+tcm:Flow_FLOW_HERB_INBOUND_001
+    tcm:hasActivity tcm:Activity_FLOW_HERB_INBOUND_001_E02 .
+
+tcm:Flow_FLOW_PRESCRIPTION_APPROVAL_001
+    a owl:NamedIndividual ;
+    a tcm:Flow ;
+    rdfs:label "中药处方审核流"@zh ;
+    skos:notation "FLOW-PRESCRIPTION-APPROVAL-001" ;
+    tcm:flowType "APPROVAL" ;
+    rdfs:comment "中药师对中医师提交的处方做单节点审核（D-24：不做会签、或签与条件加签，复核人选填）；\n通过后生成待调剂记录进入调剂环节，驳回后由中医师修改并重新提交（可多次循环）。\n按 D-25 不支持撤回，改方走作废后重开。"@zh ;
+    tcm:businessObject "AGG-PRESCRIPTION-001" ;
+    tcm:businessObject "AGG-DISPENSE-001" ;
+    tcm:involvedRole "ROLE-02" ;
+    tcm:involvedRole "ROLE-03" ;
+    tcm:startActivity "Q01" ;
+    tcm:endActivity "QE01" ;
+    tcm:endActivity "QE02" .
+
+tcm:Activity_FLOW_PRESCRIPTION_APPROVAL_001_Q01
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "开始（中医师提交处方送审）"@zh ;
+    skos:notation "Q01" ;
+    tcm:activityType "START" .
+
+tcm:Flow_FLOW_PRESCRIPTION_APPROVAL_001
+    tcm:hasActivity tcm:Activity_FLOW_PRESCRIPTION_APPROVAL_001_Q01 .
+
+tcm:Activity_FLOW_PRESCRIPTION_APPROVAL_001_Q02
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "中药师审核处方"@zh ;
+    skos:notation "Q02" ;
+    tcm:activityType "APPROVAL_TASK" ;
+    tcm:performer "ROLE-03" ;
+    rdfs:comment "单节点审批；超量与毒性提示、超量理由在本节点展示给审批人，不增加审批节点。\n本系统不单设「退回修改」结论：退回等同于驳回（D-25），故 approvalOutcomes 只有 APPROVE 与 REJECT"@zh .
+
+tcm:Flow_FLOW_PRESCRIPTION_APPROVAL_001
+    tcm:hasActivity tcm:Activity_FLOW_PRESCRIPTION_APPROVAL_001_Q02 .
+
+tcm:Activity_FLOW_PRESCRIPTION_APPROVAL_001_Q03
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "审核结果判定"@zh ;
+    skos:notation "Q03" ;
+    tcm:activityType "GATEWAY" .
+
+tcm:Flow_FLOW_PRESCRIPTION_APPROVAL_001
+    tcm:hasActivity tcm:Activity_FLOW_PRESCRIPTION_APPROVAL_001_Q03 .
+
+tcm:Activity_FLOW_PRESCRIPTION_APPROVAL_001_Q04
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "中医师修改处方并重新提交"@zh ;
+    skos:notation "Q04" ;
+    tcm:activityType "USER_TASK" ;
+    tcm:performer "ROLE-02" ;
+    rdfs:comment "已驳回处方可多次修改重提（FUNC-06 修改 → FUNC-07 重新提交）"@zh .
+
+tcm:Flow_FLOW_PRESCRIPTION_APPROVAL_001
+    tcm:hasActivity tcm:Activity_FLOW_PRESCRIPTION_APPROVAL_001_Q04 .
+
+tcm:Activity_FLOW_PRESCRIPTION_APPROVAL_001_Q05
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "创建待调剂记录"@zh ;
+    skos:notation "Q05" ;
+    tcm:activityType "SYSTEM_TASK" ;
+    rdfs:comment "B-05；审核通过后生成状态为「待调剂」的调剂发药记录（药剂师调剂入口）"@zh .
+
+tcm:Flow_FLOW_PRESCRIPTION_APPROVAL_001
+    tcm:hasActivity tcm:Activity_FLOW_PRESCRIPTION_APPROVAL_001_Q05 .
+
+tcm:Activity_FLOW_PRESCRIPTION_APPROVAL_001_QE01
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "审批通过结束"@zh ;
+    skos:notation "QE01" ;
+    tcm:activityType "END" .
+
+tcm:Flow_FLOW_PRESCRIPTION_APPROVAL_001
+    tcm:hasActivity tcm:Activity_FLOW_PRESCRIPTION_APPROVAL_001_QE01 .
+
+tcm:Activity_FLOW_PRESCRIPTION_APPROVAL_001_QE02
+    a owl:NamedIndividual ;
+    a tcm:FlowActivity ;
+    rdfs:label "终止（处方已作废，审批实例结束）"@zh ;
+    skos:notation "QE02" ;
+    tcm:activityType "END" .
+
+tcm:Flow_FLOW_PRESCRIPTION_APPROVAL_001
+    tcm:hasActivity tcm:Activity_FLOW_PRESCRIPTION_APPROVAL_001_QE02 .
+
+
+# ---------- M7 报表 ----------
+tcm:Report_RPT_VISIT_STATS_001
+    a owl:NamedIndividual ;
+    a tcm:Report ;
+    rdfs:label "门诊量统计"@zh ;
+    skos:notation "RPT-VISIT-STATS-001" ;
+    rdfs:label "visitStats"@en ;
+    rdfs:comment "按期间、科室、接诊医师与就诊类型统计门诊接诊量，掌握门诊负荷与初诊/复诊结构；表格底部给出合计行"@zh ;
+    tcm:behaviorRef "Visit_QueryStats" ;
+    tcm:sourceObject "AGG-VISIT-001 (主表)" ;
+    tcm:sourceObject "AGG-PATIENT-001" ;
+    tcm:resultColumn "{\"name\": \"statDate\", \"label\": \"统计日期\", \"dataType\": \"Date\", \"sourceExpression\": \"DATE_TRUNC(visit.registerTime, granularity)\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"deptCode\", \"label\": \"科室\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"visit.deptCode\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"doctorId\", \"label\": \"接诊医师\", \"dataType\": \"String\", \"sourceExpression\": \"visit.doctorId\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"visitType\", \"label\": \"就诊类型\", \"dataType\": \"Enum\", \"sourceExpression\": \"visit.visitType\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"patientCount\", \"label\": \"就诊人数\", \"dataType\": \"Integer\", \"sourceExpression\": \"visit.patientId\", \"aggregateFunction\": \"COUNT_DISTINCT\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"visitCount\", \"label\": \"就诊人次\", \"dataType\": \"Integer\", \"sourceExpression\": \"visit.visitNo\", \"aggregateFunction\": \"COUNT\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"firstVisitCount\", \"label\": \"初诊人次\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN visit.visitType = 'FIRST' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"followUpVisitCount\", \"label\": \"复诊人次\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN visit.visitType = 'FOLLOW_UP' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"completedCount\", \"label\": \"已完成人次\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN visit.visitStatus = 'COMPLETED' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"cancelledCount\", \"label\": \"已取消人次\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN visit.visitStatus = 'CANCELLED' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"followUpRatio\", \"label\": \"复诊占比\", \"dataType\": \"Decimal\", \"sourceExpression\": \"SUM(CASE WHEN visit.visitType = 'FOLLOW_UP' THEN 1 ELSE 0 END) / NULLIF(COUNT(visit.visitNo), 0)\", \"aggregateFunction\": \"NONE\", \"format\": \"0.00%\", \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:parameter "{\"name\": \"registerDateFrom\", \"label\": \"挂号日期起\", \"dataType\": \"Date\", \"required\": false, \"defaultValue\": \"MONTH_START\", \"allowedOperators\": [\"GE\"], \"sourceField\": \"visit.registerTime\"}" ;
+    tcm:parameter "{\"name\": \"registerDateTo\", \"label\": \"挂号日期止\", \"dataType\": \"Date\", \"required\": false, \"defaultValue\": \"MONTH_END\", \"allowedOperators\": [\"LE\"], \"sourceField\": \"visit.registerTime\"}" ;
+    tcm:parameter "{\"name\": \"deptCode\", \"label\": \"科室\", \"dataType\": \"DictionaryRef\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.deptCode\"}" ;
+    tcm:parameter "{\"name\": \"doctorId\", \"label\": \"接诊医师\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.doctorId\"}" ;
+    tcm:parameter "{\"name\": \"visitType\", \"label\": \"就诊类型\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.visitType\"}" ;
+    tcm:parameter "{\"name\": \"visitStatus\", \"label\": \"就诊状态\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.visitStatus\"}" ;
+    tcm:parameter "{\"name\": \"granularity\", \"label\": \"日期粒度\", \"dataType\": \"Enum\", \"required\": false, \"defaultValue\": \"DAY\", \"enumValues\": [\"DAY\", \"MONTH\"], \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.registerTime\"}" ;
+    tcm:groupBy "DATE_TRUNC(visit.registerTime, granularity)" ;
+    tcm:groupBy "visit.deptCode" ;
+    tcm:groupBy "visit.doctorId" ;
+    tcm:groupBy "visit.visitType" .
+
+tcm:Report_RPT_SYNDROME_DIST_001
+    a owl:NamedIndividual ;
+    a tcm:Report ;
+    rdfs:label "证型分布统计"@zh ;
+    skos:notation "RPT-SYNDROME-DIST-001" ;
+    rdfs:label "syndromeDistribution"@en ;
+    rdfs:comment "按期间统计各证型出现频次与占比，支撑辨证规律分析与科室病种结构分析；底部给出总例数"@zh ;
+    tcm:behaviorRef "Diagnosis_QuerySyndromeDistribution" ;
+    tcm:sourceObject "AGG-DIAGNOSIS-001 (主表)" ;
+    tcm:sourceObject "AGG-SYNDROME-001" ;
+    tcm:sourceObject "AGG-VISIT-001" ;
+    tcm:resultColumn "{\"name\": \"syndromeCode\", \"label\": \"证型编码\", \"dataType\": \"String\", \"sourceExpression\": \"syndrome.syndromeCode\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"syndromeName\", \"label\": \"证型名称\", \"dataType\": \"String\", \"sourceExpression\": \"syndrome.syndromeName\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"diagnosisMethod\", \"label\": \"所属辨证体系\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"syndrome.diagnosisMethod\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"syndromeNature\", \"label\": \"证型性质\", \"dataType\": \"Enum\", \"sourceExpression\": \"diagnosis.syndromeNature\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"caseCount\", \"label\": \"辨证例数\", \"dataType\": \"Integer\", \"sourceExpression\": \"diagnosis.diagnosisNo\", \"aggregateFunction\": \"COUNT\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"caseRatio\", \"label\": \"占比\", \"dataType\": \"Decimal\", \"sourceExpression\": \"COUNT(diagnosis.diagnosisNo) / NULLIF(SUBTOTAL(COUNT(diagnosis.diagnosisNo)), 0)\", \"aggregateFunction\": \"NONE\", \"format\": \"0.00%\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:parameter "{\"name\": \"visitDateFrom\", \"label\": \"就诊日期起\", \"dataType\": \"Date\", \"required\": false, \"defaultValue\": \"MONTH_START\", \"allowedOperators\": [\"GE\"], \"sourceField\": \"visit.registerTime\"}" ;
+    tcm:parameter "{\"name\": \"visitDateTo\", \"label\": \"就诊日期止\", \"dataType\": \"Date\", \"required\": false, \"defaultValue\": \"MONTH_END\", \"allowedOperators\": [\"LE\"], \"sourceField\": \"visit.registerTime\"}" ;
+    tcm:parameter "{\"name\": \"diagnosisMethod\", \"label\": \"辨证体系\", \"dataType\": \"DictionaryRef\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"diagnosis.diagnosisMethod\"}" ;
+    tcm:parameter "{\"name\": \"syndromeNature\", \"label\": \"证型性质\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"diagnosis.syndromeNature\"}" ;
+    tcm:parameter "{\"name\": \"syndromeId\", \"label\": \"证型\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\", \"IN\"], \"sourceField\": \"diagnosis.syndromeId\"}" ;
+    tcm:parameter "{\"name\": \"deptCode\", \"label\": \"科室\", \"dataType\": \"DictionaryRef\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.deptCode\"}" ;
+    tcm:parameter "{\"name\": \"doctorId\", \"label\": \"接诊医师\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.doctorId\"}" ;
+    tcm:groupBy "syndrome.syndromeCode" ;
+    tcm:groupBy "syndrome.syndromeName" ;
+    tcm:groupBy "syndrome.diagnosisMethod" ;
+    tcm:groupBy "diagnosis.syndromeNature" .
+
+tcm:Report_RPT_HERB_USAGE_001
+    a owl:NamedIndividual ;
+    a tcm:Report ;
+    rdfs:label "方剂与饮片使用统计"@zh ;
+    skos:notation "RPT-HERB-USAGE-001" ;
+    rdfs:label "herbUsageStats"@en ;
+    rdfs:comment "统计饮片累计用量与方剂模板引用情况，支撑饮片采购计划、效期管理与方剂使用分析；按饮片与按方剂模板两个维度分别查询，底部合计累计用量与总张数"@zh ;
+    tcm:behaviorRef "Prescription_QueryHerbUsage" ;
+    tcm:sourceObject "AGG-PRESCRIPTION-001 (主表)" ;
+    tcm:sourceObject "AGG-PRESCRIPTION-001" ;
+    tcm:sourceObject "AGG-HERB-001" ;
+    tcm:sourceObject "AGG-FORMULA-001" ;
+    tcm:sourceObject "AGG-VISIT-001" ;
+    tcm:resultColumn "{\"name\": \"herbCode\", \"label\": \"饮片编码\", \"dataType\": \"String\", \"sourceExpression\": \"herb.herbCode\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"herbName\", \"label\": \"饮片名称\", \"dataType\": \"String\", \"sourceExpression\": \"herb.herbName\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"herbCategory\", \"label\": \"药材类别\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"herb.herbCategory\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"toxicityLevel\", \"label\": \"毒性分级\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"herb.toxicityLevel\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"doseCount\", \"label\": \"使用剂数\", \"dataType\": \"Integer\", \"sourceExpression\": \"prescription.doses\", \"aggregateFunction\": \"SUM\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"totalQuantity\", \"label\": \"累计用量（g）\", \"dataType\": \"Decimal\", \"sourceExpression\": \"SUM(itemAgg.doseSum * prescription.doses)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"avgSingleDose\", \"label\": \"单剂平均用量（g）\", \"dataType\": \"Decimal\", \"sourceExpression\": \"SUM(itemAgg.doseSum * prescription.doses) / NULLIF(SUM(prescription.doses), 0)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"prescriptionCount\", \"label\": \"涉及处方张数\", \"dataType\": \"Integer\", \"sourceExpression\": \"prescription.prescriptionNo\", \"aggregateFunction\": \"COUNT_DISTINCT\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"patientCount\", \"label\": \"涉及患者数\", \"dataType\": \"Integer\", \"sourceExpression\": \"prescription.patientId\", \"aggregateFunction\": \"COUNT_DISTINCT\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"formulaCode\", \"label\": \"方剂编码\", \"dataType\": \"String\", \"sourceExpression\": \"formula.formulaCode\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"formulaName\", \"label\": \"方剂名称\", \"dataType\": \"String\", \"sourceExpression\": \"formula.formulaName\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"formulaType\", \"label\": \"方剂类型\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"formula.formulaType\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"formulaRefCount\", \"label\": \"引用张数\", \"dataType\": \"Integer\", \"sourceExpression\": \"prescription.prescriptionNo\", \"aggregateFunction\": \"COUNT_DISTINCT\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"formulaRefRatio\", \"label\": \"引用占比\", \"dataType\": \"Decimal\", \"sourceExpression\": \"COUNT(DISTINCT prescription.prescriptionNo) / NULLIF(SUBTOTAL(COUNT(DISTINCT prescription.prescriptionNo)), 0)\", \"aggregateFunction\": \"NONE\", \"format\": \"0.00%\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:parameter "{\"name\": \"prescribeDateFrom\", \"label\": \"开方日期起\", \"dataType\": \"Date\", \"required\": false, \"defaultValue\": \"MONTH_START\", \"allowedOperators\": [\"GE\"], \"sourceField\": \"prescription.prescribeTime\"}" ;
+    tcm:parameter "{\"name\": \"prescribeDateTo\", \"label\": \"开方日期止\", \"dataType\": \"Date\", \"required\": false, \"defaultValue\": \"MONTH_END\", \"allowedOperators\": [\"LE\"], \"sourceField\": \"prescription.prescribeTime\"}" ;
+    tcm:parameter "{\"name\": \"herbCategory\", \"label\": \"饮片类别\", \"dataType\": \"DictionaryRef\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"herb.herbCategory\"}" ;
+    tcm:parameter "{\"name\": \"herbId\", \"label\": \"饮片\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\", \"IN\"], \"sourceField\": \"herb.herbCode\"}" ;
+    tcm:parameter "{\"name\": \"formulaTemplateId\", \"label\": \"方剂模板\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"formula.formulaCode\"}" ;
+    tcm:parameter "{\"name\": \"prescriptionType\", \"label\": \"处方类型\", \"dataType\": \"DictionaryRef\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"prescription.prescriptionType\"}" ;
+    tcm:parameter "{\"name\": \"deptCode\", \"label\": \"科室\", \"dataType\": \"DictionaryRef\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.deptCode\"}" ;
+    tcm:parameter "{\"name\": \"statsDimension\", \"label\": \"统计维度\", \"dataType\": \"Enum\", \"required\": false, \"defaultValue\": \"HERB\", \"enumValues\": [\"HERB\", \"FORMULA_TEMPLATE\"], \"allowedOperators\": [\"EQ\"], \"sourceField\": \"itemAgg.herbId\"}" ;
+    tcm:groupBy "herb.herbCode" ;
+    tcm:groupBy "herb.herbName" ;
+    tcm:groupBy "herb.herbCategory" ;
+    tcm:groupBy "herb.toxicityLevel" .
+
+tcm:Report_QR_VISIT_PRESCRIPTION_001
+    a owl:NamedIndividual ;
+    a tcm:Report ;
+    rdfs:label "就诊与处方记录查询"@zh ;
+    skos:notation "QR-VISIT-PRESCRIPTION-001" ;
+    rdfs:label "visitPrescriptionQuery"@en ;
+    rdfs:comment "按多种业务条件检索患者就诊与对应处方记录（主从三级结构），供门诊、药房日常查询与历史追溯"@zh ;
+    tcm:behaviorRef "Visit_QueryVisitAndPrescription" ;
+    tcm:sourceObject "AGG-VISIT-001 (主表)" ;
+    tcm:sourceObject "AGG-PATIENT-001" ;
+    tcm:sourceObject "AGG-PRESCRIPTION-001" ;
+    tcm:sourceObject "AGG-PRESCRIPTION-001" ;
+    tcm:sourceObject "AGG-PRESCRIPTION-001" ;
+    tcm:sourceObject "AGG-PRESCRIPTION-001" ;
+    tcm:resultColumn "{\"name\": \"visitNo\", \"label\": \"就诊号\", \"dataType\": \"String\", \"sourceExpression\": \"visit.visitNo\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"patientNo\", \"label\": \"患者编号\", \"dataType\": \"String\", \"sourceExpression\": \"patient.patientNo\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"patientName\", \"label\": \"患者姓名\", \"dataType\": \"String\", \"sourceExpression\": \"patient.patientName\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"gender\", \"label\": \"性别\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"patient.gender\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"age\", \"label\": \"年龄\", \"dataType\": \"Integer\", \"sourceExpression\": \"patient.age\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"visitType\", \"label\": \"就诊类型\", \"dataType\": \"Enum\", \"sourceExpression\": \"visit.visitType\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"registerTime\", \"label\": \"挂号时间\", \"dataType\": \"DateTime\", \"sourceExpression\": \"visit.registerTime\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd HH:mm\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"receiveTime\", \"label\": \"接诊时间\", \"dataType\": \"DateTime\", \"sourceExpression\": \"visit.receiveTime\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd HH:mm\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"doctorId\", \"label\": \"接诊医师\", \"dataType\": \"String\", \"sourceExpression\": \"visit.doctorId\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"deptCode\", \"label\": \"科室\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"visit.deptCode\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"visitStatus\", \"label\": \"就诊状态\", \"dataType\": \"Enum\", \"sourceExpression\": \"visit.visitStatus\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"prescriptionNo\", \"label\": \"处方号\", \"dataType\": \"String\", \"sourceExpression\": \"prescription.prescriptionNo\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"prescriptionStatus\", \"label\": \"处方状态\", \"dataType\": \"Enum\", \"sourceExpression\": \"prescription.prescriptionStatus\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"prescriptionType\", \"label\": \"处方类型\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"prescription.prescriptionType\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"doses\", \"label\": \"剂数\", \"dataType\": \"Integer\", \"sourceExpression\": \"prescription.doses\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"usageMethod\", \"label\": \"用法\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"prescription.usageMethod\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"prescribeTime\", \"label\": \"开方时间\", \"dataType\": \"DateTime\", \"sourceExpression\": \"prescription.prescribeTime\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd HH:mm\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"reviewerId\", \"label\": \"审核人\", \"dataType\": \"String\", \"sourceExpression\": \"prescription.reviewerId\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"reviewTime\", \"label\": \"审核时间\", \"dataType\": \"DateTime\", \"sourceExpression\": \"prescription.reviewTime\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd HH:mm\", \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"rejectReason\", \"label\": \"驳回原因\", \"dataType\": \"String\", \"sourceExpression\": \"prescription.rejectReason\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"itemsPerPrescription\", \"label\": \"处方药味数\", \"dataType\": \"Integer\", \"sourceExpression\": \"itemAgg.itemCount\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"prescriptionTotalDose\", \"label\": \"处方总量（g）\", \"dataType\": \"Decimal\", \"sourceExpression\": \"itemAgg.doseTotal * prescription.doses\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"visitPrescriptionCount\", \"label\": \"处方张数\", \"dataType\": \"Integer\", \"sourceExpression\": \"visitPrescriptionAgg.prescriptionCount\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"visitDoseTotal\", \"label\": \"总剂数\", \"dataType\": \"Integer\", \"sourceExpression\": \"visitPrescriptionAgg.doseSum\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"itemHerbName\", \"label\": \"药味名称\", \"dataType\": \"String\", \"sourceExpression\": \"prescriptionItem.herbId\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"itemSingleDose\", \"label\": \"单剂剂量（g）\", \"dataType\": \"Decimal\", \"sourceExpression\": \"prescriptionItem.singleDose\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"itemDecoctionMethod\", \"label\": \"特殊煎法\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"prescriptionItem.decoctionMethod\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:parameter "{\"name\": \"patientName\", \"label\": \"患者姓名\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"LIKE\"], \"sourceField\": \"patient.patientName\"}" ;
+    tcm:parameter "{\"name\": \"patientNo\", \"label\": \"患者编号\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"LIKE\", \"EQ\"], \"sourceField\": \"patient.patientNo\"}" ;
+    tcm:parameter "{\"name\": \"visitNo\", \"label\": \"就诊号\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"LIKE\", \"EQ\"], \"sourceField\": \"visit.visitNo\"}" ;
+    tcm:parameter "{\"name\": \"prescriptionNo\", \"label\": \"处方号\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"LIKE\", \"EQ\"], \"sourceField\": \"prescription.prescriptionNo\"}" ;
+    tcm:parameter "{\"name\": \"registerDateFrom\", \"label\": \"挂号日期起\", \"dataType\": \"Date\", \"required\": false, \"allowedOperators\": [\"GE\"], \"sourceField\": \"visit.registerTime\"}" ;
+    tcm:parameter "{\"name\": \"registerDateTo\", \"label\": \"挂号日期止\", \"dataType\": \"Date\", \"required\": false, \"allowedOperators\": [\"LE\"], \"sourceField\": \"visit.registerTime\"}" ;
+    tcm:parameter "{\"name\": \"visitStatus\", \"label\": \"就诊状态\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"IN\"], \"sourceField\": \"visit.visitStatus\"}" ;
+    tcm:parameter "{\"name\": \"prescriptionStatus\", \"label\": \"处方状态\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"IN\"], \"sourceField\": \"prescription.prescriptionStatus\"}" ;
+    tcm:parameter "{\"name\": \"visitType\", \"label\": \"就诊类型\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.visitType\"}" ;
+    tcm:parameter "{\"name\": \"doctorId\", \"label\": \"接诊医师\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.doctorId\"}" ;
+    tcm:parameter "{\"name\": \"reviewerId\", \"label\": \"审核药师\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"prescription.reviewerId\"}" .
+
+tcm:Report_QR_HERB_STOCK_001
+    a owl:NamedIndividual ;
+    a tcm:Report ;
+    rdfs:label "饮片库存与预警查询"@zh ;
+    skos:notation "QR-HERB-STOCK-001" ;
+    rdfs:label "herbStockAlertQuery"@en ;
+    rdfs:comment "查看饮片当前库存与低库存预警清单，支撑补货决策与调剂可用性判断"@zh ;
+    tcm:behaviorRef "Herb_QueryStockAndAlert" ;
+    tcm:sourceObject "AGG-HERB-001 (主表)" ;
+    tcm:sourceObject "AGG-HERB-001" ;
+    tcm:resultColumn "{\"name\": \"herbCode\", \"label\": \"饮片编码\", \"dataType\": \"String\", \"sourceExpression\": \"herb.herbCode\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"herbName\", \"label\": \"饮片名称\", \"dataType\": \"String\", \"sourceExpression\": \"herb.herbName\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"aliasName\", \"label\": \"别名\", \"dataType\": \"String\", \"sourceExpression\": \"herb.aliasName\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"herbCategory\", \"label\": \"药材类别\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"herb.herbCategory\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"toxicityLevel\", \"label\": \"毒性分级\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"herb.toxicityLevel\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"spec\", \"label\": \"规格\", \"dataType\": \"String\", \"sourceExpression\": \"herb.spec\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"origin\", \"label\": \"产地\", \"dataType\": \"String\", \"sourceExpression\": \"herb.origin\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"stockQuantity\", \"label\": \"库存数量（g）\", \"dataType\": \"Decimal\", \"sourceExpression\": \"herb.stockQuantity\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"lowStockThreshold\", \"label\": \"低库存预警值\", \"dataType\": \"Decimal\", \"sourceExpression\": \"herb.lowStockThreshold\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"alertStatus\", \"label\": \"预警状态\", \"dataType\": \"String\", \"sourceExpression\": \"CASE WHEN herb.stockQuantity < herb.lowStockThreshold THEN '预警' ELSE '正常' END\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"alertGap\", \"label\": \"预警差额（g）\", \"dataType\": \"Decimal\", \"sourceExpression\": \"herb.lowStockThreshold - herb.stockQuantity\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"minCommonDose\", \"label\": \"常用最小量\", \"dataType\": \"Decimal\", \"sourceExpression\": \"herb.minCommonDose\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"maxCommonDose\", \"label\": \"常用最大量\", \"dataType\": \"Decimal\", \"sourceExpression\": \"herb.maxCommonDose\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"latestInboundDate\", \"label\": \"最近入库日期\", \"dataType\": \"DateTime\", \"sourceExpression\": \"flowAgg.latestInboundDate\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"latestOutboundDate\", \"label\": \"最近出库日期\", \"dataType\": \"DateTime\", \"sourceExpression\": \"flowAgg.latestOutboundDate\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:parameter "{\"name\": \"herbName\", \"label\": \"饮片名称\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"LIKE\"], \"sourceField\": \"herb.herbName\"}" ;
+    tcm:parameter "{\"name\": \"herbCode\", \"label\": \"饮片编码\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"herb.herbCode\"}" ;
+    tcm:parameter "{\"name\": \"herbCategory\", \"label\": \"药材类别\", \"dataType\": \"DictionaryRef\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"herb.herbCategory\"}" ;
+    tcm:parameter "{\"name\": \"toxicityLevel\", \"label\": \"毒性分级\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"herb.toxicityLevel\"}" ;
+    tcm:parameter "{\"name\": \"herbStatus\", \"label\": \"状态\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"herb.herbStatus\"}" ;
+    tcm:parameter "{\"name\": \"stockQuantityFrom\", \"label\": \"库存数量下限（g）\", \"dataType\": \"Decimal\", \"required\": false, \"allowedOperators\": [\"GE\"], \"sourceField\": \"herb.stockQuantity\"}" ;
+    tcm:parameter "{\"name\": \"stockQuantityTo\", \"label\": \"库存数量上限（g）\", \"dataType\": \"Decimal\", \"required\": false, \"allowedOperators\": [\"LE\"], \"sourceField\": \"herb.stockQuantity\"}" ;
+    tcm:parameter "{\"name\": \"onlyAlert\", \"label\": \"仅看预警项\", \"dataType\": \"Boolean\", \"required\": false, \"defaultValue\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"herb.stockQuantity\"}" .
+
+tcm:Report_QR_PRESCRIPTION_OVERDOSE_001
+    a owl:NamedIndividual ;
+    a tcm:Report ;
+    rdfs:label "超量毒性处方审核台账"@zh ;
+    skos:notation "QR-PRESCRIPTION-OVERDOSE-001" ;
+    rdfs:label "prescriptionOverdoseReview"@en ;
+    rdfs:comment "集中查看超出常用量上限或含毒性饮片的处方及其审核处理情况，用于用药安全复盘"@zh ;
+    tcm:behaviorRef "Prescription_QueryOverdoseReview" ;
+    tcm:sourceObject "AGG-PRESCRIPTION-001 (主表)" ;
+    tcm:sourceObject "AGG-PRESCRIPTION-001" ;
+    tcm:sourceObject "AGG-HERB-001" ;
+    tcm:sourceObject "AGG-PATIENT-001" ;
+    tcm:resultColumn "{\"name\": \"prescriptionNo\", \"label\": \"处方号\", \"dataType\": \"String\", \"sourceExpression\": \"prescription.prescriptionNo\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"patientName\", \"label\": \"患者姓名\", \"dataType\": \"String\", \"sourceExpression\": \"patient.patientName\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"prescribeDate\", \"label\": \"开方日期\", \"dataType\": \"DateTime\", \"sourceExpression\": \"prescription.prescribeTime\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"doctorId\", \"label\": \"接诊医师\", \"dataType\": \"String\", \"sourceExpression\": \"prescription.doctorId\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"herbName\", \"label\": \"超量药味\", \"dataType\": \"String\", \"sourceExpression\": \"herb.herbName\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"singleDose\", \"label\": \"单剂剂量（g）\", \"dataType\": \"Decimal\", \"sourceExpression\": \"prescriptionItem.singleDose\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"maxCommonDose\", \"label\": \"常用最大量（g）\", \"dataType\": \"Decimal\", \"sourceExpression\": \"herb.maxCommonDose\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"exceedRatio\", \"label\": \"超出倍数\", \"dataType\": \"Decimal\", \"sourceExpression\": \"prescriptionItem.singleDose / NULLIF(herb.maxCommonDose, 0)\", \"aggregateFunction\": \"NONE\", \"format\": \"0.00\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"toxicityLevel\", \"label\": \"毒性分级\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"herb.toxicityLevel\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"overDoseReason\", \"label\": \"超量理由\", \"dataType\": \"String\", \"sourceExpression\": \"prescriptionItem.overDoseReason\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"prescriptionStatus\", \"label\": \"处方状态\", \"dataType\": \"Enum\", \"sourceExpression\": \"prescription.prescriptionStatus\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"reviewerId\", \"label\": \"审核人\", \"dataType\": \"String\", \"sourceExpression\": \"prescription.reviewerId\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"reviewTime\", \"label\": \"审核时间\", \"dataType\": \"DateTime\", \"sourceExpression\": \"prescription.reviewTime\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd HH:mm\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"rejectReason\", \"label\": \"驳回原因\", \"dataType\": \"String\", \"sourceExpression\": \"prescription.rejectReason\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:parameter "{\"name\": \"prescribeDateFrom\", \"label\": \"开方日期起\", \"dataType\": \"Date\", \"required\": false, \"allowedOperators\": [\"GE\"], \"sourceField\": \"prescription.prescribeTime\"}" ;
+    tcm:parameter "{\"name\": \"prescribeDateTo\", \"label\": \"开方日期止\", \"dataType\": \"Date\", \"required\": false, \"allowedOperators\": [\"LE\"], \"sourceField\": \"prescription.prescribeTime\"}" ;
+    tcm:parameter "{\"name\": \"triggerType\", \"label\": \"触发类型\", \"dataType\": \"Enum\", \"required\": false, \"defaultValue\": \"BOTH\", \"enumValues\": [\"OVERDOSE\", \"TOXIC\", \"BOTH\"], \"allowedOperators\": [\"EQ\"], \"sourceField\": \"herb.maxCommonDose\"}" ;
+    tcm:parameter "{\"name\": \"prescriptionStatus\", \"label\": \"处方状态\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\", \"IN\"], \"sourceField\": \"prescription.prescriptionStatus\"}" ;
+    tcm:parameter "{\"name\": \"reviewerId\", \"label\": \"审核药师\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"prescription.reviewerId\"}" ;
+    tcm:parameter "{\"name\": \"reviewResult\", \"label\": \"处理结果\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"IN\"], \"sourceField\": \"prescription.prescriptionStatus\"}" .
+
+tcm:Report_RPT_FOLLOWUP_COMPLETION_001
+    a owl:NamedIndividual ;
+    a tcm:Report ;
+    rdfs:label "随访完成与失访分析"@zh ;
+    skos:notation "RPT-FOLLOWUP-COMPLETION-001" ;
+    rdfs:label "followUpCompletion"@en ;
+    rdfs:comment "统计复诊随访的完成率、失访率与疗效分布，评估治疗依从性与疗效；底部合计"@zh ;
+    tcm:behaviorRef "FollowUp_QueryCompletion" ;
+    tcm:sourceObject "AGG-FOLLOWUP-001 (主表)" ;
+    tcm:sourceObject "AGG-VISIT-001" ;
+    tcm:sourceObject "AGG-PATIENT-001" ;
+    tcm:resultColumn "{\"name\": \"statPeriod\", \"label\": \"统计期间\", \"dataType\": \"Date\", \"sourceExpression\": \"DATE_TRUNC(followUp.plannedFollowUpDate, MONTH)\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"deptCode\", \"label\": \"科室\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"visit.deptCode\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"doctorId\", \"label\": \"接诊医师\", \"dataType\": \"String\", \"sourceExpression\": \"visit.doctorId\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"plannedCount\", \"label\": \"计划随访数\", \"dataType\": \"Integer\", \"sourceExpression\": \"followUp.followUpNo\", \"aggregateFunction\": \"COUNT\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"completedCount\", \"label\": \"已完成数\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN followUp.recordStatus = 'COMPLETED' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"lostCount\", \"label\": \"已失访数\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN followUp.recordStatus = 'LOST' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"completionRatio\", \"label\": \"完成率\", \"dataType\": \"Decimal\", \"sourceExpression\": \"SUM(CASE WHEN followUp.recordStatus = 'COMPLETED' THEN 1 ELSE 0 END) / NULLIF(COUNT(followUp.followUpNo), 0)\", \"aggregateFunction\": \"NONE\", \"format\": \"0.00%\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"lostRatio\", \"label\": \"失访率\", \"dataType\": \"Decimal\", \"sourceExpression\": \"SUM(CASE WHEN followUp.recordStatus = 'LOST' THEN 1 ELSE 0 END) / NULLIF(COUNT(followUp.followUpNo), 0)\", \"aggregateFunction\": \"NONE\", \"format\": \"0.00%\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"curedCount\", \"label\": \"痊愈数\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN followUp.efficacyLevel = 'CURED' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"markedEffectCount\", \"label\": \"显效数\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN followUp.efficacyLevel = 'MARKED_EFFECT' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"effectiveCount\", \"label\": \"有效数\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN followUp.efficacyLevel = 'EFFECTIVE' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"ineffectiveCount\", \"label\": \"无效数\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN followUp.efficacyLevel = 'INEFFECTIVE' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"aggravatedCount\", \"label\": \"加重数\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN followUp.efficacyLevel = 'AGGRAVATED' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"effectiveRatio\", \"label\": \"有效率\", \"dataType\": \"Decimal\", \"sourceExpression\": \"SUM(CASE WHEN followUp.efficacyLevel IN ('CURED', 'MARKED_EFFECT', 'EFFECTIVE') THEN 1 ELSE 0 END) / NULLIF(SUM(CASE WHEN followUp.recordStatus = 'COMPLETED' THEN 1 ELSE 0 END), 0)\", \"aggregateFunction\": \"NONE\", \"format\": \"0.00%\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:parameter "{\"name\": \"plannedDateFrom\", \"label\": \"计划随访日期起\", \"dataType\": \"Date\", \"required\": false, \"defaultValue\": \"MONTH_START\", \"allowedOperators\": [\"GE\"], \"sourceField\": \"followUp.plannedFollowUpDate\"}" ;
+    tcm:parameter "{\"name\": \"plannedDateTo\", \"label\": \"计划随访日期止\", \"dataType\": \"Date\", \"required\": false, \"defaultValue\": \"MONTH_END\", \"allowedOperators\": [\"LE\"], \"sourceField\": \"followUp.plannedFollowUpDate\"}" ;
+    tcm:parameter "{\"name\": \"deptCode\", \"label\": \"科室\", \"dataType\": \"DictionaryRef\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.deptCode\"}" ;
+    tcm:parameter "{\"name\": \"doctorId\", \"label\": \"接诊医师\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.doctorId\"}" ;
+    tcm:parameter "{\"name\": \"recordStatus\", \"label\": \"随访状态\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\", \"IN\"], \"sourceField\": \"followUp.recordStatus\"}" ;
+    tcm:parameter "{\"name\": \"efficacyLevel\", \"label\": \"疗效评价\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\", \"IN\"], \"sourceField\": \"followUp.efficacyLevel\"}" ;
+    tcm:groupBy "DATE_TRUNC(followUp.plannedFollowUpDate, MONTH)" ;
+    tcm:groupBy "visit.deptCode" ;
+    tcm:groupBy "visit.doctorId" .
+
+
+# ---------- MU 界面 ----------
+tcm:Screen_frmPatientCreate
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "患者建档"@zh ;
+    skos:notation "frmPatientCreate" ;
+    tcm:screenType "SINGLE_FORM" ;
+    tcm:elementCount "15" ;
+    tcm:actionCount "2" .
+
+tcm:Screen_frmVisitRegister
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "门诊挂号（含撤销就诊）"@zh ;
+    skos:notation "frmVisitRegister" ;
+    tcm:screenType "SINGLE_FORM" ;
+    tcm:elementCount "12" ;
+    tcm:actionCount "2" .
+
+tcm:Screen_frmVisitReceive
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "接诊开单"@zh ;
+    skos:notation "frmVisitReceive" ;
+    tcm:screenType "SINGLE_FORM" ;
+    tcm:elementCount "13" ;
+    tcm:actionCount "1" .
+
+tcm:Screen_frmFourDiagnosis
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "四诊录入"@zh ;
+    skos:notation "frmFourDiagnosis" ;
+    tcm:screenType "SINGLE_FORM" ;
+    tcm:elementCount "20" ;
+    tcm:actionCount "1" .
+
+tcm:Screen_frmDiagnosisJudge
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "辨证判定"@zh ;
+    skos:notation "frmDiagnosisJudge" ;
+    tcm:screenType "MASTER_DETAIL_FORM" ;
+    tcm:elementCount "9" ;
+    tcm:actionCount "2" .
+
+tcm:Screen_frmPrescription
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "开具处方"@zh ;
+    skos:notation "frmPrescription" ;
+    tcm:screenType "MASTER_DETAIL_FORM" ;
+    tcm:elementCount "15" ;
+    tcm:actionCount "2" .
+
+tcm:Screen_frmPrescriptionReview
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "处方审核"@zh ;
+    skos:notation "frmPrescriptionReview" ;
+    tcm:screenType "SINGLE_FORM" ;
+    tcm:elementCount "12" ;
+    tcm:actionCount "2" .
+
+tcm:Screen_frmDispense
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "调剂发药"@zh ;
+    skos:notation "frmDispense" ;
+    tcm:screenType "MASTER_DETAIL_FORM" ;
+    tcm:elementCount "13" ;
+    tcm:actionCount "2" .
+
+tcm:Screen_frmHerbMaintain
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "饮片建档与入库"@zh ;
+    skos:notation "frmHerbMaintain" ;
+    tcm:screenType "MASTER_DETAIL_FORM" ;
+    tcm:elementCount "22" ;
+    tcm:actionCount "3" .
+
+tcm:Screen_frmHerbStock
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "饮片库存与预警（含盘点）"@zh ;
+    skos:notation "frmHerbStock" ;
+    tcm:screenType "QUERY_LIST" ;
+    tcm:elementCount "25" ;
+    tcm:actionCount "3" .
+
+tcm:Screen_frmFollowUp
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "复诊随访登记"@zh ;
+    skos:notation "frmFollowUp" ;
+    tcm:screenType "LIST_MAINTENANCE" ;
+    tcm:elementCount "25" ;
+    tcm:actionCount "4" .
+
+tcm:Screen_frmSyndromeMaintain
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "证型字典维护"@zh ;
+    skos:notation "frmSyndromeMaintain" ;
+    tcm:screenType "LIST_MAINTENANCE" ;
+    tcm:elementCount "20" ;
+    tcm:actionCount "3" .
+
+tcm:Screen_frmFormulaMaintain
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "方剂模板维护"@zh ;
+    skos:notation "frmFormulaMaintain" ;
+    tcm:screenType "MASTER_DETAIL_FORM" ;
+    tcm:elementCount "13" ;
+    tcm:actionCount "3" .
+
+tcm:Screen_frmVisitStats
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "门诊量统计"@zh ;
+    skos:notation "frmVisitStats" ;
+    tcm:screenType "QUERY_LIST" ;
+    tcm:elementCount "15" ;
+    tcm:actionCount "2" .
+
+tcm:Screen_frmSyndromeDist
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "证型分布统计"@zh ;
+    skos:notation "frmSyndromeDist" ;
+    tcm:screenType "QUERY_LIST" ;
+    tcm:elementCount "16" ;
+    tcm:actionCount "2" .
+
+tcm:Screen_frmHerbUsageStats
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "方剂与饮片使用统计"@zh ;
+    skos:notation "frmHerbUsageStats" ;
+    tcm:screenType "QUERY_LIST" ;
+    tcm:elementCount "15" ;
+    tcm:actionCount "2" .
+
+tcm:Screen_frmVisitPrescriptionQuery
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "就诊与处方记录查询"@zh ;
+    skos:notation "frmVisitPrescriptionQuery" ;
+    tcm:screenType "QUERY_LIST" ;
+    tcm:elementCount "22" ;
+    tcm:actionCount "3" .
+
+tcm:Screen_frmOverdoseLedger
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "超量·毒性处方审核台账"@zh ;
+    skos:notation "frmOverdoseLedger" ;
+    tcm:screenType "QUERY_LIST" ;
+    tcm:elementCount "14" ;
+    tcm:actionCount "2" .
+
+tcm:Screen_frmFollowUpAnalysis
+    a owl:NamedIndividual ;
+    a tcm:Screen ;
+    rdfs:label "随访完成与失访分析"@zh ;
+    skos:notation "frmFollowUpAnalysis" ;
+    tcm:screenType "QUERY_LIST" ;
+    tcm:elementCount "14" ;
+    tcm:actionCount "2" .
+
