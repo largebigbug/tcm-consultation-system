@@ -1,0 +1,694 @@
+# 中医问诊系统 · 值域词表（SKOS）。由 tools/ontology_extras.py 生成，请勿手改。
+# 与主本体同命名空间：每个取值同时是本体里对应枚举类的个体。
+
+@prefix tcm:  <http://hermes.local/tcm-ontology#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+tcm:vocabulary a skos:ConceptScheme ;
+    rdfs:label "中医问诊系统 · 值域词表"@zh ;
+    rdfs:comment "M1 数据字典的全部取值，按字典类型组织"@zh .
+
+tcm:scheme_USE_STATUS a skos:ConceptScheme ;
+    skos:prefLabel "启用停用状态"@zh ;
+    skos:notation "USE_STATUS" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-COMMON" .
+
+tcm:USE_STATUS_ENABLED a skos:Concept, tcm:Enum_USE_STATUS ;
+    skos:prefLabel "启用"@zh ;
+    skos:notation "ENABLED" ;
+    skos:inScheme tcm:scheme_USE_STATUS .
+
+tcm:USE_STATUS_DISABLED a skos:Concept, tcm:Enum_USE_STATUS ;
+    skos:prefLabel "停用"@zh ;
+    skos:notation "DISABLED" ;
+    skos:inScheme tcm:scheme_USE_STATUS .
+
+tcm:scheme_GENDER a skos:ConceptScheme ;
+    skos:prefLabel "性别"@zh ;
+    skos:notation "GENDER" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-PATIENT" .
+
+tcm:GENDER_MALE a skos:Concept, tcm:Enum_GENDER ;
+    skos:prefLabel "男"@zh ;
+    skos:notation "MALE" ;
+    skos:inScheme tcm:scheme_GENDER .
+
+tcm:GENDER_FEMALE a skos:Concept, tcm:Enum_GENDER ;
+    skos:prefLabel "女"@zh ;
+    skos:notation "FEMALE" ;
+    skos:inScheme tcm:scheme_GENDER .
+
+tcm:GENDER_UNKNOWN a skos:Concept, tcm:Enum_GENDER ;
+    skos:prefLabel "未知"@zh ;
+    skos:notation "UNKNOWN" ;
+    skos:inScheme tcm:scheme_GENDER .
+
+tcm:scheme_ID_TYPE a skos:ConceptScheme ;
+    skos:prefLabel "证件类型"@zh ;
+    skos:notation "ID_TYPE" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-PATIENT" .
+
+tcm:ID_TYPE_ID_CARD a skos:Concept, tcm:Enum_ID_TYPE ;
+    skos:prefLabel "居民身份证"@zh ;
+    skos:notation "ID_CARD" ;
+    skos:inScheme tcm:scheme_ID_TYPE .
+
+tcm:ID_TYPE_PASSPORT a skos:Concept, tcm:Enum_ID_TYPE ;
+    skos:prefLabel "护照"@zh ;
+    skos:notation "PASSPORT" ;
+    skos:inScheme tcm:scheme_ID_TYPE .
+
+tcm:ID_TYPE_HK_MO_TW a skos:Concept, tcm:Enum_ID_TYPE ;
+    skos:prefLabel "港澳台通行证"@zh ;
+    skos:notation "HK_MO_TW" ;
+    skos:inScheme tcm:scheme_ID_TYPE .
+
+tcm:ID_TYPE_OTHER a skos:Concept, tcm:Enum_ID_TYPE ;
+    skos:prefLabel "其他"@zh ;
+    skos:notation "OTHER" ;
+    skos:inScheme tcm:scheme_ID_TYPE .
+
+tcm:scheme_PATIENT_STATUS a skos:ConceptScheme ;
+    skos:prefLabel "患者状态"@zh ;
+    skos:notation "PATIENT_STATUS" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-PATIENT" .
+
+tcm:PATIENT_STATUS_ACTIVE a skos:Concept, tcm:Enum_PATIENT_STATUS ;
+    skos:prefLabel "在用"@zh ;
+    skos:notation "ACTIVE" ;
+    skos:inScheme tcm:scheme_PATIENT_STATUS .
+
+tcm:PATIENT_STATUS_INACTIVE a skos:Concept, tcm:Enum_PATIENT_STATUS ;
+    skos:prefLabel "停用"@zh ;
+    skos:notation "INACTIVE" ;
+    skos:inScheme tcm:scheme_PATIENT_STATUS .
+
+tcm:scheme_VISIT_TYPE a skos:ConceptScheme ;
+    skos:prefLabel "就诊类型"@zh ;
+    skos:notation "VISIT_TYPE" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-VISIT" .
+
+tcm:VISIT_TYPE_FIRST a skos:Concept, tcm:Enum_VISIT_TYPE ;
+    skos:prefLabel "初诊"@zh ;
+    skos:notation "FIRST" ;
+    skos:inScheme tcm:scheme_VISIT_TYPE .
+
+tcm:VISIT_TYPE_FOLLOW_UP a skos:Concept, tcm:Enum_VISIT_TYPE ;
+    skos:prefLabel "复诊"@zh ;
+    skos:notation "FOLLOW_UP" ;
+    skos:inScheme tcm:scheme_VISIT_TYPE .
+
+tcm:scheme_VISIT_STATUS a skos:ConceptScheme ;
+    skos:prefLabel "就诊状态"@zh ;
+    skos:notation "VISIT_STATUS" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-VISIT" .
+
+tcm:VISIT_STATUS_REGISTERED a skos:Concept, tcm:Enum_VISIT_STATUS ;
+    skos:prefLabel "已挂号"@zh ;
+    skos:notation "REGISTERED" ;
+    skos:inScheme tcm:scheme_VISIT_STATUS .
+
+tcm:VISIT_STATUS_IN_PROGRESS a skos:Concept, tcm:Enum_VISIT_STATUS ;
+    skos:prefLabel "接诊中"@zh ;
+    skos:notation "IN_PROGRESS" ;
+    skos:inScheme tcm:scheme_VISIT_STATUS .
+
+tcm:VISIT_STATUS_COMPLETED a skos:Concept, tcm:Enum_VISIT_STATUS ;
+    skos:prefLabel "已完成"@zh ;
+    skos:notation "COMPLETED" ;
+    skos:inScheme tcm:scheme_VISIT_STATUS .
+
+tcm:VISIT_STATUS_CANCELLED a skos:Concept, tcm:Enum_VISIT_STATUS ;
+    skos:prefLabel "已取消"@zh ;
+    skos:notation "CANCELLED" ;
+    skos:inScheme tcm:scheme_VISIT_STATUS .
+
+tcm:scheme_DEPT a skos:ConceptScheme ;
+    skos:prefLabel "科室"@zh ;
+    skos:notation "DEPT" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-VISIT" .
+
+tcm:DEPT_TCM_INTERNAL a skos:Concept, tcm:Enum_DEPT ;
+    skos:prefLabel "中医内科"@zh ;
+    skos:notation "TCM_INTERNAL" ;
+    skos:inScheme tcm:scheme_DEPT .
+
+tcm:DEPT_TCM_GYN a skos:Concept, tcm:Enum_DEPT ;
+    skos:prefLabel "中医妇科"@zh ;
+    skos:notation "TCM_GYN" ;
+    skos:inScheme tcm:scheme_DEPT .
+
+tcm:DEPT_TCM_PEDIATRIC a skos:Concept, tcm:Enum_DEPT ;
+    skos:prefLabel "中医儿科"@zh ;
+    skos:notation "TCM_PEDIATRIC" ;
+    skos:inScheme tcm:scheme_DEPT .
+
+tcm:DEPT_ACUPUNCTURE a skos:Concept, tcm:Enum_DEPT ;
+    skos:prefLabel "针灸科"@zh ;
+    skos:notation "ACUPUNCTURE" ;
+    skos:inScheme tcm:scheme_DEPT .
+
+tcm:DEPT_TUINA a skos:Concept, tcm:Enum_DEPT ;
+    skos:prefLabel "推拿科"@zh ;
+    skos:notation "TUINA" ;
+    skos:inScheme tcm:scheme_DEPT .
+
+tcm:scheme_TONGUE_BODY a skos:ConceptScheme ;
+    skos:prefLabel "舌质"@zh ;
+    skos:notation "TONGUE_BODY" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-TCM-SIGN" .
+
+tcm:TONGUE_BODY_PALE_RED a skos:Concept, tcm:Enum_TONGUE_BODY ;
+    skos:prefLabel "淡红"@zh ;
+    skos:notation "PALE_RED" ;
+    skos:inScheme tcm:scheme_TONGUE_BODY .
+
+tcm:TONGUE_BODY_PALE_WHITE a skos:Concept, tcm:Enum_TONGUE_BODY ;
+    skos:prefLabel "淡白"@zh ;
+    skos:notation "PALE_WHITE" ;
+    skos:inScheme tcm:scheme_TONGUE_BODY .
+
+tcm:TONGUE_BODY_RED a skos:Concept, tcm:Enum_TONGUE_BODY ;
+    skos:prefLabel "红"@zh ;
+    skos:notation "RED" ;
+    skos:inScheme tcm:scheme_TONGUE_BODY .
+
+tcm:TONGUE_BODY_CRIMSON a skos:Concept, tcm:Enum_TONGUE_BODY ;
+    skos:prefLabel "绛"@zh ;
+    skos:notation "CRIMSON" ;
+    skos:inScheme tcm:scheme_TONGUE_BODY .
+
+tcm:TONGUE_BODY_PURPLE_DARK a skos:Concept, tcm:Enum_TONGUE_BODY ;
+    skos:prefLabel "紫暗"@zh ;
+    skos:notation "PURPLE_DARK" ;
+    skos:inScheme tcm:scheme_TONGUE_BODY .
+
+tcm:TONGUE_BODY_ECCHYMOSIS a skos:Concept, tcm:Enum_TONGUE_BODY ;
+    skos:prefLabel "瘀点"@zh ;
+    skos:notation "ECCHYMOSIS" ;
+    skos:inScheme tcm:scheme_TONGUE_BODY .
+
+tcm:scheme_TONGUE_COATING a skos:ConceptScheme ;
+    skos:prefLabel "舌苔"@zh ;
+    skos:notation "TONGUE_COATING" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-TCM-SIGN" .
+
+tcm:TONGUE_COATING_THIN_WHITE a skos:Concept, tcm:Enum_TONGUE_COATING ;
+    skos:prefLabel "薄白"@zh ;
+    skos:notation "THIN_WHITE" ;
+    skos:inScheme tcm:scheme_TONGUE_COATING .
+
+tcm:TONGUE_COATING_WHITE_GREASY a skos:Concept, tcm:Enum_TONGUE_COATING ;
+    skos:prefLabel "白腻"@zh ;
+    skos:notation "WHITE_GREASY" ;
+    skos:inScheme tcm:scheme_TONGUE_COATING .
+
+tcm:TONGUE_COATING_YELLOW_GREASY a skos:Concept, tcm:Enum_TONGUE_COATING ;
+    skos:prefLabel "黄腻"@zh ;
+    skos:notation "YELLOW_GREASY" ;
+    skos:inScheme tcm:scheme_TONGUE_COATING .
+
+tcm:TONGUE_COATING_SCANTY a skos:Concept, tcm:Enum_TONGUE_COATING ;
+    skos:prefLabel "少苔"@zh ;
+    skos:notation "SCANTY" ;
+    skos:inScheme tcm:scheme_TONGUE_COATING .
+
+tcm:TONGUE_COATING_NO_COATING a skos:Concept, tcm:Enum_TONGUE_COATING ;
+    skos:prefLabel "无苔"@zh ;
+    skos:notation "NO_COATING" ;
+    skos:inScheme tcm:scheme_TONGUE_COATING .
+
+tcm:scheme_PULSE a skos:ConceptScheme ;
+    skos:prefLabel "脉象"@zh ;
+    skos:notation "PULSE" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-TCM-SIGN" .
+
+tcm:PULSE_FLOAT a skos:Concept, tcm:Enum_PULSE ;
+    skos:prefLabel "浮"@zh ;
+    skos:notation "FLOAT" ;
+    skos:inScheme tcm:scheme_PULSE .
+
+tcm:PULSE_DEEP a skos:Concept, tcm:Enum_PULSE ;
+    skos:prefLabel "沉"@zh ;
+    skos:notation "DEEP" ;
+    skos:inScheme tcm:scheme_PULSE .
+
+tcm:PULSE_SLOW a skos:Concept, tcm:Enum_PULSE ;
+    skos:prefLabel "迟"@zh ;
+    skos:notation "SLOW" ;
+    skos:inScheme tcm:scheme_PULSE .
+
+tcm:PULSE_RAPID a skos:Concept, tcm:Enum_PULSE ;
+    skos:prefLabel "数"@zh ;
+    skos:notation "RAPID" ;
+    skos:inScheme tcm:scheme_PULSE .
+
+tcm:PULSE_VACUOUS a skos:Concept, tcm:Enum_PULSE ;
+    skos:prefLabel "虚"@zh ;
+    skos:notation "VACUOUS" ;
+    skos:inScheme tcm:scheme_PULSE .
+
+tcm:PULSE_EXCESS a skos:Concept, tcm:Enum_PULSE ;
+    skos:prefLabel "实"@zh ;
+    skos:notation "EXCESS" ;
+    skos:inScheme tcm:scheme_PULSE .
+
+tcm:PULSE_SLIPPERY a skos:Concept, tcm:Enum_PULSE ;
+    skos:prefLabel "滑"@zh ;
+    skos:notation "SLIPPERY" ;
+    skos:inScheme tcm:scheme_PULSE .
+
+tcm:PULSE_ROUGH a skos:Concept, tcm:Enum_PULSE ;
+    skos:prefLabel "涩"@zh ;
+    skos:notation "ROUGH" ;
+    skos:inScheme tcm:scheme_PULSE .
+
+tcm:PULSE_WIRY a skos:Concept, tcm:Enum_PULSE ;
+    skos:prefLabel "弦"@zh ;
+    skos:notation "WIRY" ;
+    skos:inScheme tcm:scheme_PULSE .
+
+tcm:PULSE_TIGHT a skos:Concept, tcm:Enum_PULSE ;
+    skos:prefLabel "紧"@zh ;
+    skos:notation "TIGHT" ;
+    skos:inScheme tcm:scheme_PULSE .
+
+tcm:scheme_DIAG_METHOD a skos:ConceptScheme ;
+    skos:prefLabel "辨证方法"@zh ;
+    skos:notation "DIAG_METHOD" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-SYNDROME" .
+
+tcm:DIAG_METHOD_EIGHT_PRINCIPLES a skos:Concept, tcm:Enum_DIAG_METHOD ;
+    skos:prefLabel "八纲辨证"@zh ;
+    skos:notation "EIGHT_PRINCIPLES" ;
+    skos:inScheme tcm:scheme_DIAG_METHOD .
+
+tcm:DIAG_METHOD_ZANGFU a skos:Concept, tcm:Enum_DIAG_METHOD ;
+    skos:prefLabel "脏腑辨证"@zh ;
+    skos:notation "ZANGFU" ;
+    skos:inScheme tcm:scheme_DIAG_METHOD .
+
+tcm:DIAG_METHOD_QI_BLOOD_FLUID a skos:Concept, tcm:Enum_DIAG_METHOD ;
+    skos:prefLabel "气血津液辨证"@zh ;
+    skos:notation "QI_BLOOD_FLUID" ;
+    skos:inScheme tcm:scheme_DIAG_METHOD .
+
+tcm:DIAG_METHOD_SIX_MERIDIANS a skos:Concept, tcm:Enum_DIAG_METHOD ;
+    skos:prefLabel "六经辨证"@zh ;
+    skos:notation "SIX_MERIDIANS" ;
+    skos:inScheme tcm:scheme_DIAG_METHOD .
+
+tcm:DIAG_METHOD_WEIQI_YINGXUE a skos:Concept, tcm:Enum_DIAG_METHOD ;
+    skos:prefLabel "卫气营血辨证"@zh ;
+    skos:notation "WEIQI_YINGXUE" ;
+    skos:inScheme tcm:scheme_DIAG_METHOD .
+
+tcm:DIAG_METHOD_TRIPLE_BURNER a skos:Concept, tcm:Enum_DIAG_METHOD ;
+    skos:prefLabel "三焦辨证"@zh ;
+    skos:notation "TRIPLE_BURNER" ;
+    skos:inScheme tcm:scheme_DIAG_METHOD .
+
+tcm:scheme_SYNDROME_NATURE a skos:ConceptScheme ;
+    skos:prefLabel "证型性质"@zh ;
+    skos:notation "SYNDROME_NATURE" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-SYNDROME" .
+
+tcm:SYNDROME_NATURE_PRIMARY a skos:Concept, tcm:Enum_SYNDROME_NATURE ;
+    skos:prefLabel "主证"@zh ;
+    skos:notation "PRIMARY" ;
+    skos:inScheme tcm:scheme_SYNDROME_NATURE .
+
+tcm:SYNDROME_NATURE_SECONDARY a skos:Concept, tcm:Enum_SYNDROME_NATURE ;
+    skos:prefLabel "兼证"@zh ;
+    skos:notation "SECONDARY" ;
+    skos:inScheme tcm:scheme_SYNDROME_NATURE .
+
+tcm:scheme_CONCLUSION_STATUS a skos:ConceptScheme ;
+    skos:prefLabel "结论状态"@zh ;
+    skos:notation "CONCLUSION_STATUS" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-SYNDROME" .
+
+tcm:CONCLUSION_STATUS_DRAFT a skos:Concept, tcm:Enum_CONCLUSION_STATUS ;
+    skos:prefLabel "草稿"@zh ;
+    skos:notation "DRAFT" ;
+    skos:inScheme tcm:scheme_CONCLUSION_STATUS .
+
+tcm:CONCLUSION_STATUS_CONFIRMED a skos:Concept, tcm:Enum_CONCLUSION_STATUS ;
+    skos:prefLabel "已确认"@zh ;
+    skos:notation "CONFIRMED" ;
+    skos:inScheme tcm:scheme_CONCLUSION_STATUS .
+
+tcm:scheme_FORMULA_TYPE a skos:ConceptScheme ;
+    skos:prefLabel "方剂类型"@zh ;
+    skos:notation "FORMULA_TYPE" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-FORMULA" .
+
+tcm:FORMULA_TYPE_CLASSIC a skos:Concept, tcm:Enum_FORMULA_TYPE ;
+    skos:prefLabel "经方"@zh ;
+    skos:notation "CLASSIC" ;
+    skos:inScheme tcm:scheme_FORMULA_TYPE .
+
+tcm:FORMULA_TYPE_MODERN a skos:Concept, tcm:Enum_FORMULA_TYPE ;
+    skos:prefLabel "时方"@zh ;
+    skos:notation "MODERN" ;
+    skos:inScheme tcm:scheme_FORMULA_TYPE .
+
+tcm:FORMULA_TYPE_EXPERIENCE a skos:Concept, tcm:Enum_FORMULA_TYPE ;
+    skos:prefLabel "经验方"@zh ;
+    skos:notation "EXPERIENCE" ;
+    skos:inScheme tcm:scheme_FORMULA_TYPE .
+
+tcm:FORMULA_TYPE_INSTITUTIONAL a skos:Concept, tcm:Enum_FORMULA_TYPE ;
+    skos:prefLabel "院内协定方"@zh ;
+    skos:notation "INSTITUTIONAL" ;
+    skos:inScheme tcm:scheme_FORMULA_TYPE .
+
+tcm:scheme_HERB_CATEGORY a skos:ConceptScheme ;
+    skos:prefLabel "药材类别"@zh ;
+    skos:notation "HERB_CATEGORY" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-HERB" .
+
+tcm:HERB_CATEGORY_RELIEVING_EXTERIOR a skos:Concept, tcm:Enum_HERB_CATEGORY ;
+    skos:prefLabel "解表药"@zh ;
+    skos:notation "RELIEVING_EXTERIOR" ;
+    skos:inScheme tcm:scheme_HERB_CATEGORY .
+
+tcm:HERB_CATEGORY_CLEARING_HEAT a skos:Concept, tcm:Enum_HERB_CATEGORY ;
+    skos:prefLabel "清热药"@zh ;
+    skos:notation "CLEARING_HEAT" ;
+    skos:inScheme tcm:scheme_HERB_CATEGORY .
+
+tcm:HERB_CATEGORY_TONIFYING a skos:Concept, tcm:Enum_HERB_CATEGORY ;
+    skos:prefLabel "补益药"@zh ;
+    skos:notation "TONIFYING" ;
+    skos:inScheme tcm:scheme_HERB_CATEGORY .
+
+tcm:HERB_CATEGORY_REGULATING_QI a skos:Concept, tcm:Enum_HERB_CATEGORY ;
+    skos:prefLabel "理气药"@zh ;
+    skos:notation "REGULATING_QI" ;
+    skos:inScheme tcm:scheme_HERB_CATEGORY .
+
+tcm:HERB_CATEGORY_ACTIVATING_BLOOD a skos:Concept, tcm:Enum_HERB_CATEGORY ;
+    skos:prefLabel "活血化瘀药"@zh ;
+    skos:notation "ACTIVATING_BLOOD" ;
+    skos:inScheme tcm:scheme_HERB_CATEGORY .
+
+tcm:HERB_CATEGORY_STOPPING_COUGH a skos:Concept, tcm:Enum_HERB_CATEGORY ;
+    skos:prefLabel "化痰止咳药"@zh ;
+    skos:notation "STOPPING_COUGH" ;
+    skos:inScheme tcm:scheme_HERB_CATEGORY .
+
+tcm:HERB_CATEGORY_DIURETIC a skos:Concept, tcm:Enum_HERB_CATEGORY ;
+    skos:prefLabel "利水渗湿药"@zh ;
+    skos:notation "DIURETIC" ;
+    skos:inScheme tcm:scheme_HERB_CATEGORY .
+
+tcm:HERB_CATEGORY_WARMING_INTERIOR a skos:Concept, tcm:Enum_HERB_CATEGORY ;
+    skos:prefLabel "温里药"@zh ;
+    skos:notation "WARMING_INTERIOR" ;
+    skos:inScheme tcm:scheme_HERB_CATEGORY .
+
+tcm:HERB_CATEGORY_OTHER a skos:Concept, tcm:Enum_HERB_CATEGORY ;
+    skos:prefLabel "其他"@zh ;
+    skos:notation "OTHER" ;
+    skos:inScheme tcm:scheme_HERB_CATEGORY .
+
+tcm:scheme_TOXICITY_LEVEL a skos:ConceptScheme ;
+    skos:prefLabel "毒性分级"@zh ;
+    skos:notation "TOXICITY_LEVEL" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-HERB" .
+
+tcm:TOXICITY_LEVEL_NONE a skos:Concept, tcm:Enum_TOXICITY_LEVEL ;
+    skos:prefLabel "无毒"@zh ;
+    skos:notation "NONE" ;
+    skos:inScheme tcm:scheme_TOXICITY_LEVEL .
+
+tcm:TOXICITY_LEVEL_SLIGHT a skos:Concept, tcm:Enum_TOXICITY_LEVEL ;
+    skos:prefLabel "小毒"@zh ;
+    skos:notation "SLIGHT" ;
+    skos:inScheme tcm:scheme_TOXICITY_LEVEL .
+
+tcm:TOXICITY_LEVEL_TOXIC a skos:Concept, tcm:Enum_TOXICITY_LEVEL ;
+    skos:prefLabel "有毒"@zh ;
+    skos:notation "TOXIC" ;
+    skos:inScheme tcm:scheme_TOXICITY_LEVEL .
+
+tcm:TOXICITY_LEVEL_HIGHLY_TOXIC a skos:Concept, tcm:Enum_TOXICITY_LEVEL ;
+    skos:prefLabel "大毒"@zh ;
+    skos:notation "HIGHLY_TOXIC" ;
+    skos:inScheme tcm:scheme_TOXICITY_LEVEL .
+
+tcm:scheme_PRESCRIPTION_TYPE a skos:ConceptScheme ;
+    skos:prefLabel "处方类型"@zh ;
+    skos:notation "PRESCRIPTION_TYPE" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-PRESCRIPTION" .
+
+tcm:PRESCRIPTION_TYPE_HERBAL_DECOCTION a skos:Concept, tcm:Enum_PRESCRIPTION_TYPE ;
+    skos:prefLabel "中药饮片处方"@zh ;
+    skos:notation "HERBAL_DECOCTION" ;
+    skos:inScheme tcm:scheme_PRESCRIPTION_TYPE .
+
+tcm:PRESCRIPTION_TYPE_GRANULE a skos:Concept, tcm:Enum_PRESCRIPTION_TYPE ;
+    skos:prefLabel "中药颗粒剂处方"@zh ;
+    skos:notation "GRANULE" ;
+    skos:inScheme tcm:scheme_PRESCRIPTION_TYPE .
+
+tcm:PRESCRIPTION_TYPE_BOILED_BY_HOSPITAL a skos:Concept, tcm:Enum_PRESCRIPTION_TYPE ;
+    skos:prefLabel "代煎"@zh ;
+    skos:notation "BOILED_BY_HOSPITAL" ;
+    skos:inScheme tcm:scheme_PRESCRIPTION_TYPE .
+
+tcm:scheme_USAGE_METHOD a skos:ConceptScheme ;
+    skos:prefLabel "用法"@zh ;
+    skos:notation "USAGE_METHOD" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-PRESCRIPTION" .
+
+tcm:USAGE_METHOD_DAILY_1_2 a skos:Concept, tcm:Enum_USAGE_METHOD ;
+    skos:prefLabel "每日 1 剂分 2 次温服"@zh ;
+    skos:notation "DAILY_1_2" ;
+    skos:inScheme tcm:scheme_USAGE_METHOD .
+
+tcm:USAGE_METHOD_DAILY_1_3 a skos:Concept, tcm:Enum_USAGE_METHOD ;
+    skos:prefLabel "每日 1 剂分 3 次温服"@zh ;
+    skos:notation "DAILY_1_3" ;
+    skos:inScheme tcm:scheme_USAGE_METHOD .
+
+tcm:USAGE_METHOD_EXTERNAL_WASH a skos:Concept, tcm:Enum_USAGE_METHOD ;
+    skos:prefLabel "外用熏洗"@zh ;
+    skos:notation "EXTERNAL_WASH" ;
+    skos:inScheme tcm:scheme_USAGE_METHOD .
+
+tcm:scheme_PRESCRIPTION_STATUS a skos:ConceptScheme ;
+    skos:prefLabel "处方状态"@zh ;
+    skos:notation "PRESCRIPTION_STATUS" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-PRESCRIPTION" .
+
+tcm:PRESCRIPTION_STATUS_DRAFT a skos:Concept, tcm:Enum_PRESCRIPTION_STATUS ;
+    skos:prefLabel "草稿"@zh ;
+    skos:notation "DRAFT" ;
+    skos:inScheme tcm:scheme_PRESCRIPTION_STATUS .
+
+tcm:PRESCRIPTION_STATUS_PENDING_REVIEW a skos:Concept, tcm:Enum_PRESCRIPTION_STATUS ;
+    skos:prefLabel "待审核"@zh ;
+    skos:notation "PENDING_REVIEW" ;
+    skos:inScheme tcm:scheme_PRESCRIPTION_STATUS .
+
+tcm:PRESCRIPTION_STATUS_APPROVED a skos:Concept, tcm:Enum_PRESCRIPTION_STATUS ;
+    skos:prefLabel "审核通过"@zh ;
+    skos:notation "APPROVED" ;
+    skos:inScheme tcm:scheme_PRESCRIPTION_STATUS .
+
+tcm:PRESCRIPTION_STATUS_REJECTED a skos:Concept, tcm:Enum_PRESCRIPTION_STATUS ;
+    skos:prefLabel "已驳回"@zh ;
+    skos:notation "REJECTED" ;
+    skos:inScheme tcm:scheme_PRESCRIPTION_STATUS .
+
+tcm:PRESCRIPTION_STATUS_DISPENSING a skos:Concept, tcm:Enum_PRESCRIPTION_STATUS ;
+    skos:prefLabel "已调剂"@zh ;
+    skos:notation "DISPENSING" ;
+    skos:inScheme tcm:scheme_PRESCRIPTION_STATUS .
+
+tcm:PRESCRIPTION_STATUS_ISSUED a skos:Concept, tcm:Enum_PRESCRIPTION_STATUS ;
+    skos:prefLabel "已发药"@zh ;
+    skos:notation "ISSUED" ;
+    skos:inScheme tcm:scheme_PRESCRIPTION_STATUS .
+
+tcm:PRESCRIPTION_STATUS_VOIDED a skos:Concept, tcm:Enum_PRESCRIPTION_STATUS ;
+    skos:prefLabel "已作废"@zh ;
+    skos:notation "VOIDED" ;
+    skos:inScheme tcm:scheme_PRESCRIPTION_STATUS .
+
+tcm:scheme_DECOCTION_METHOD a skos:ConceptScheme ;
+    skos:prefLabel "特殊煎法"@zh ;
+    skos:notation "DECOCTION_METHOD" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-PRESCRIPTION" .
+
+tcm:DECOCTION_METHOD_NONE a skos:Concept, tcm:Enum_DECOCTION_METHOD ;
+    skos:prefLabel "无"@zh ;
+    skos:notation "NONE" ;
+    skos:inScheme tcm:scheme_DECOCTION_METHOD .
+
+tcm:DECOCTION_METHOD_PRE_DECOCT a skos:Concept, tcm:Enum_DECOCTION_METHOD ;
+    skos:prefLabel "先煎"@zh ;
+    skos:notation "PRE_DECOCT" ;
+    skos:inScheme tcm:scheme_DECOCTION_METHOD .
+
+tcm:DECOCTION_METHOD_LATE_ADD a skos:Concept, tcm:Enum_DECOCTION_METHOD ;
+    skos:prefLabel "后下"@zh ;
+    skos:notation "LATE_ADD" ;
+    skos:inScheme tcm:scheme_DECOCTION_METHOD .
+
+tcm:DECOCTION_METHOD_WRAP_DECOCT a skos:Concept, tcm:Enum_DECOCTION_METHOD ;
+    skos:prefLabel "包煎"@zh ;
+    skos:notation "WRAP_DECOCT" ;
+    skos:inScheme tcm:scheme_DECOCTION_METHOD .
+
+tcm:DECOCTION_METHOD_SEPARATE_DECOCT a skos:Concept, tcm:Enum_DECOCTION_METHOD ;
+    skos:prefLabel "另煎"@zh ;
+    skos:notation "SEPARATE_DECOCT" ;
+    skos:inScheme tcm:scheme_DECOCTION_METHOD .
+
+tcm:DECOCTION_METHOD_TAKE_UNCOOKED a skos:Concept, tcm:Enum_DECOCTION_METHOD ;
+    skos:prefLabel "冲服"@zh ;
+    skos:notation "TAKE_UNCOOKED" ;
+    skos:inScheme tcm:scheme_DECOCTION_METHOD .
+
+tcm:DECOCTION_METHOD_MELT a skos:Concept, tcm:Enum_DECOCTION_METHOD ;
+    skos:prefLabel "烊化"@zh ;
+    skos:notation "MELT" ;
+    skos:inScheme tcm:scheme_DECOCTION_METHOD .
+
+tcm:scheme_FLOW_BIZ_TYPE a skos:ConceptScheme ;
+    skos:prefLabel "出入库业务类型"@zh ;
+    skos:notation "FLOW_BIZ_TYPE" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-STOCK-FLOW" .
+
+tcm:FLOW_BIZ_TYPE_INBOUND a skos:Concept, tcm:Enum_FLOW_BIZ_TYPE ;
+    skos:prefLabel "入库"@zh ;
+    skos:notation "INBOUND" ;
+    skos:inScheme tcm:scheme_FLOW_BIZ_TYPE .
+
+tcm:FLOW_BIZ_TYPE_DISPENSE_OUT a skos:Concept, tcm:Enum_FLOW_BIZ_TYPE ;
+    skos:prefLabel "调剂出库"@zh ;
+    skos:notation "DISPENSE_OUT" ;
+    skos:inScheme tcm:scheme_FLOW_BIZ_TYPE .
+
+tcm:FLOW_BIZ_TYPE_VOID_ROLLBACK a skos:Concept, tcm:Enum_FLOW_BIZ_TYPE ;
+    skos:prefLabel "作废回冲"@zh ;
+    skos:notation "VOID_ROLLBACK" ;
+    skos:inScheme tcm:scheme_FLOW_BIZ_TYPE .
+
+tcm:FLOW_BIZ_TYPE_STOCKTAKE_ADJUST a skos:Concept, tcm:Enum_FLOW_BIZ_TYPE ;
+    skos:prefLabel "盘点调整"@zh ;
+    skos:notation "STOCKTAKE_ADJUST" ;
+    skos:inScheme tcm:scheme_FLOW_BIZ_TYPE .
+
+tcm:FLOW_BIZ_TYPE_LOSS_REPORT a skos:Concept, tcm:Enum_FLOW_BIZ_TYPE ;
+    skos:prefLabel "报损"@zh ;
+    skos:notation "LOSS_REPORT" ;
+    skos:inScheme tcm:scheme_FLOW_BIZ_TYPE .
+
+tcm:scheme_DISPENSE_STATUS a skos:ConceptScheme ;
+    skos:prefLabel "调剂发药记录状态"@zh ;
+    skos:notation "DISPENSE_STATUS" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-DISPENSE" .
+
+tcm:DISPENSE_STATUS_PENDING a skos:Concept, tcm:Enum_DISPENSE_STATUS ;
+    skos:prefLabel "待调剂"@zh ;
+    skos:notation "PENDING" ;
+    skos:inScheme tcm:scheme_DISPENSE_STATUS .
+
+tcm:DISPENSE_STATUS_DISPENSED a skos:Concept, tcm:Enum_DISPENSE_STATUS ;
+    skos:prefLabel "已调剂"@zh ;
+    skos:notation "DISPENSED" ;
+    skos:inScheme tcm:scheme_DISPENSE_STATUS .
+
+tcm:DISPENSE_STATUS_ISSUED a skos:Concept, tcm:Enum_DISPENSE_STATUS ;
+    skos:prefLabel "已发药"@zh ;
+    skos:notation "ISSUED" ;
+    skos:inScheme tcm:scheme_DISPENSE_STATUS .
+
+tcm:DISPENSE_STATUS_CANCELLED a skos:Concept, tcm:Enum_DISPENSE_STATUS ;
+    skos:prefLabel "已取消"@zh ;
+    skos:notation "CANCELLED" ;
+    skos:inScheme tcm:scheme_DISPENSE_STATUS .
+
+tcm:scheme_EFFICACY_LEVEL a skos:ConceptScheme ;
+    skos:prefLabel "疗效评价"@zh ;
+    skos:notation "EFFICACY_LEVEL" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-FOLLOWUP" .
+
+tcm:EFFICACY_LEVEL_CURED a skos:Concept, tcm:Enum_EFFICACY_LEVEL ;
+    skos:prefLabel "痊愈"@zh ;
+    skos:notation "CURED" ;
+    skos:inScheme tcm:scheme_EFFICACY_LEVEL .
+
+tcm:EFFICACY_LEVEL_MARKED_EFFECT a skos:Concept, tcm:Enum_EFFICACY_LEVEL ;
+    skos:prefLabel "显效"@zh ;
+    skos:notation "MARKED_EFFECT" ;
+    skos:inScheme tcm:scheme_EFFICACY_LEVEL .
+
+tcm:EFFICACY_LEVEL_EFFECTIVE a skos:Concept, tcm:Enum_EFFICACY_LEVEL ;
+    skos:prefLabel "有效"@zh ;
+    skos:notation "EFFECTIVE" ;
+    skos:inScheme tcm:scheme_EFFICACY_LEVEL .
+
+tcm:EFFICACY_LEVEL_INEFFECTIVE a skos:Concept, tcm:Enum_EFFICACY_LEVEL ;
+    skos:prefLabel "无效"@zh ;
+    skos:notation "INEFFECTIVE" ;
+    skos:inScheme tcm:scheme_EFFICACY_LEVEL .
+
+tcm:EFFICACY_LEVEL_AGGRAVATED a skos:Concept, tcm:Enum_EFFICACY_LEVEL ;
+    skos:prefLabel "加重"@zh ;
+    skos:notation "AGGRAVATED" ;
+    skos:inScheme tcm:scheme_EFFICACY_LEVEL .
+
+tcm:scheme_FOLLOWUP_STATUS a skos:ConceptScheme ;
+    skos:prefLabel "随访记录状态"@zh ;
+    skos:notation "FOLLOWUP_STATUS" ;
+    skos:inScheme tcm:vocabulary ;
+    tcm:dictionaryId "DICT-FOLLOWUP" .
+
+tcm:FOLLOWUP_STATUS_PENDING a skos:Concept, tcm:Enum_FOLLOWUP_STATUS ;
+    skos:prefLabel "待随访"@zh ;
+    skos:notation "PENDING" ;
+    skos:inScheme tcm:scheme_FOLLOWUP_STATUS .
+
+tcm:FOLLOWUP_STATUS_COMPLETED a skos:Concept, tcm:Enum_FOLLOWUP_STATUS ;
+    skos:prefLabel "已完成"@zh ;
+    skos:notation "COMPLETED" ;
+    skos:inScheme tcm:scheme_FOLLOWUP_STATUS .
+
+tcm:FOLLOWUP_STATUS_LOST a skos:Concept, tcm:Enum_FOLLOWUP_STATUS ;
+    skos:prefLabel "已失访"@zh ;
+    skos:notation "LOST" ;
+    skos:inScheme tcm:scheme_FOLLOWUP_STATUS .

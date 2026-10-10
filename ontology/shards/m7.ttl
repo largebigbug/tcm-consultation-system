@@ -1,0 +1,510 @@
+# 中医问诊系统本体 · M7 报表模型 分片（由 tools/ontology_extras.py 从主文件拆分）
+# 用途：分工维护与评审。完整导入 WebProtégé 请用上级目录的 tcm-ontology.ttl
+
+@prefix tcm:  <http://hermes.local/tcm-ontology#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+tcm:ontology
+    a owl:Ontology ;
+    rdfs:label "中医问诊系统本体"@zh ;
+    rdfs:comment "由 7 个本体模型（M1/M2/M3/M5/M6/M7/MU）机械生成；领域：中医问诊"@zh ;
+    dcterms:source "中医问诊系统-需求规格说明书-V9" ;
+    owl:versionInfo "2.1" .
+
+tcm:Aggregate
+    a owl:Class ;
+    rdfs:label "聚合根"@zh ;
+    rdfs:comment "可独立存在的业务对象（M1 聚合根）"@zh .
+
+tcm:Enumeration
+    a owl:Class ;
+    rdfs:label "枚举字典"@zh ;
+    rdfs:comment "M1 数据字典中的取值类型"@zh .
+
+tcm:Role
+    a owl:Class ;
+    rdfs:label "角色"@zh ;
+    rdfs:comment "M5 角色（权限集合）"@zh .
+
+tcm:Actor
+    a owl:Class ;
+    rdfs:label "人员/主体"@zh ;
+    rdfs:comment "M5 参与者（人）"@zh .
+
+tcm:Behavior
+    a owl:Class ;
+    rdfs:label "行为"@zh ;
+    rdfs:comment "M2 行为（命令/查询等）"@zh .
+
+tcm:Permission
+    a owl:Class ;
+    rdfs:label "权限"@zh ;
+    rdfs:comment "M5 权限项（行为级 + 数据范围）"@zh .
+
+tcm:Rule
+    a owl:Class ;
+    rdfs:label "业务规则"@zh ;
+    rdfs:comment "M3 规则（校验/计算/分派）"@zh .
+
+tcm:Flow
+    a owl:Class ;
+    rdfs:label "流程"@zh ;
+    rdfs:comment "M6 流程定义"@zh .
+
+tcm:FlowActivity
+    a owl:Class ;
+    rdfs:label "流程活动"@zh ;
+    rdfs:comment "M6 流程内的活动节点"@zh .
+
+tcm:Report
+    a owl:Class ;
+    rdfs:label "报表"@zh ;
+    rdfs:comment "M7 查询与报表"@zh .
+
+tcm:Screen
+    a owl:Class ;
+    rdfs:label "界面"@zh ;
+    rdfs:comment "MU 屏幕"@zh .
+
+tcm:grantsPermission
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Role ;
+    rdfs:range tcm:Permission ;
+    rdfs:label "角色授予权限"@zh .
+
+tcm:hasRole
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Actor ;
+    rdfs:range tcm:Role ;
+    rdfs:label "人员具有角色"@zh .
+
+tcm:appliesRule
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Behavior ;
+    rdfs:range tcm:Rule ;
+    rdfs:label "行为适用规则"@zh .
+
+tcm:hasActivity
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Flow ;
+    rdfs:range tcm:FlowActivity ;
+    rdfs:label "流程包含活动"@zh .
+
+tcm:lifecycle
+    a owl:AnnotationProperty ;
+    rdfs:label "生命周期"@zh .
+
+tcm:required
+    a owl:AnnotationProperty ;
+    rdfs:label "是否必填"@zh .
+
+tcm:unique
+    a owl:AnnotationProperty ;
+    rdfs:label "是否唯一"@zh .
+
+tcm:defaultValue
+    a owl:AnnotationProperty ;
+    rdfs:label "默认值"@zh .
+
+tcm:dictionaryId
+    a owl:AnnotationProperty ;
+    rdfs:label "所属字典"@zh .
+
+tcm:sortOrder
+    a owl:AnnotationProperty ;
+    rdfs:label "排序"@zh .
+
+tcm:inverseLabel
+    a owl:AnnotationProperty ;
+    rdfs:label "反向角色名"@zh .
+
+tcm:cardinality
+    a owl:AnnotationProperty ;
+    rdfs:label "基数"@zh .
+
+tcm:referenceField
+    a owl:AnnotationProperty ;
+    rdfs:label "引用字段"@zh .
+
+tcm:targetType
+    a owl:AnnotationProperty ;
+    rdfs:label "目标类型"@zh .
+
+tcm:dataScope
+    a owl:AnnotationProperty ;
+    rdfs:label "数据范围"@zh .
+
+tcm:actorType
+    a owl:AnnotationProperty ;
+    rdfs:label "主体类型"@zh .
+
+tcm:behaviorType
+    a owl:AnnotationProperty ;
+    rdfs:label "行为类型"@zh .
+
+tcm:triggerType
+    a owl:AnnotationProperty ;
+    rdfs:label "触发方式"@zh .
+
+tcm:ownerEntity
+    a owl:AnnotationProperty ;
+    rdfs:label "所属实体ID"@zh .
+
+tcm:ownerEntityName
+    a owl:AnnotationProperty ;
+    rdfs:label "所属实体"@zh .
+
+tcm:precondition
+    a owl:AnnotationProperty ;
+    rdfs:label "前置条件"@zh .
+
+tcm:postcondition
+    a owl:AnnotationProperty ;
+    rdfs:label "后置条件"@zh .
+
+tcm:appliedRule
+    a owl:AnnotationProperty ;
+    rdfs:label "适用规则ID"@zh .
+
+tcm:ruleType
+    a owl:AnnotationProperty ;
+    rdfs:label "规则类型"@zh .
+
+tcm:outputType
+    a owl:AnnotationProperty ;
+    rdfs:label "输出类型"@zh .
+
+tcm:expression
+    a owl:AnnotationProperty ;
+    rdfs:label "规则表达式"@zh .
+
+tcm:inputParam
+    a owl:AnnotationProperty ;
+    rdfs:label "输入参数"@zh .
+
+tcm:reusedByBehavior
+    a owl:AnnotationProperty ;
+    rdfs:label "被行为引用"@zh .
+
+tcm:flowType
+    a owl:AnnotationProperty ;
+    rdfs:label "流程类型"@zh .
+
+tcm:businessObject
+    a owl:AnnotationProperty ;
+    rdfs:label "涉及业务对象"@zh .
+
+tcm:involvedRole
+    a owl:AnnotationProperty ;
+    rdfs:label "涉及角色"@zh .
+
+tcm:startActivity
+    a owl:AnnotationProperty ;
+    rdfs:label "起始活动"@zh .
+
+tcm:endActivity
+    a owl:AnnotationProperty ;
+    rdfs:label "结束活动"@zh .
+
+tcm:performer
+    a owl:AnnotationProperty ;
+    rdfs:label "执行角色"@zh .
+
+tcm:activityType
+    a owl:AnnotationProperty ;
+    rdfs:label "活动类型"@zh .
+
+tcm:behaviorRef
+    a owl:AnnotationProperty ;
+    rdfs:label "对应行为"@zh .
+
+tcm:sourceObject
+    a owl:AnnotationProperty ;
+    rdfs:label "来源对象"@zh .
+
+tcm:resultColumn
+    a owl:AnnotationProperty ;
+    rdfs:label "结果列"@zh .
+
+tcm:parameter
+    a owl:AnnotationProperty ;
+    rdfs:label "参数"@zh .
+
+tcm:groupBy
+    a owl:AnnotationProperty ;
+    rdfs:label "分组字段"@zh .
+
+tcm:screenType
+    a owl:AnnotationProperty ;
+    rdfs:label "屏幕类型"@zh .
+
+tcm:elementCount
+    a owl:AnnotationProperty ;
+    rdfs:label "元素数"@zh .
+
+tcm:actionCount
+    a owl:AnnotationProperty ;
+    rdfs:label "动作数"@zh .
+
+tcm:Report_RPT_VISIT_STATS_001
+    a owl:NamedIndividual ;
+    a tcm:Report ;
+    rdfs:label "门诊量统计"@zh ;
+    skos:notation "RPT-VISIT-STATS-001" ;
+    rdfs:label "visitStats"@en ;
+    rdfs:comment "按期间、科室、接诊医师与就诊类型统计门诊接诊量，掌握门诊负荷与初诊/复诊结构；表格底部给出合计行"@zh ;
+    tcm:behaviorRef "Visit_QueryStats" ;
+    tcm:sourceObject "AGG-VISIT-001 (主表)" ;
+    tcm:sourceObject "AGG-PATIENT-001" ;
+    tcm:resultColumn "{\"name\": \"statDate\", \"label\": \"统计日期\", \"dataType\": \"Date\", \"sourceExpression\": \"DATE_TRUNC(visit.registerTime, granularity)\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"deptCode\", \"label\": \"科室\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"visit.deptCode\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"doctorId\", \"label\": \"接诊医师\", \"dataType\": \"String\", \"sourceExpression\": \"visit.doctorId\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"visitType\", \"label\": \"就诊类型\", \"dataType\": \"Enum\", \"sourceExpression\": \"visit.visitType\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"patientCount\", \"label\": \"就诊人数\", \"dataType\": \"Integer\", \"sourceExpression\": \"visit.patientId\", \"aggregateFunction\": \"COUNT_DISTINCT\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"visitCount\", \"label\": \"就诊人次\", \"dataType\": \"Integer\", \"sourceExpression\": \"visit.visitNo\", \"aggregateFunction\": \"COUNT\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"firstVisitCount\", \"label\": \"初诊人次\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN visit.visitType = 'FIRST' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"followUpVisitCount\", \"label\": \"复诊人次\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN visit.visitType = 'FOLLOW_UP' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"completedCount\", \"label\": \"已完成人次\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN visit.visitStatus = 'COMPLETED' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"cancelledCount\", \"label\": \"已取消人次\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN visit.visitStatus = 'CANCELLED' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"followUpRatio\", \"label\": \"复诊占比\", \"dataType\": \"Decimal\", \"sourceExpression\": \"SUM(CASE WHEN visit.visitType = 'FOLLOW_UP' THEN 1 ELSE 0 END) / NULLIF(COUNT(visit.visitNo), 0)\", \"aggregateFunction\": \"NONE\", \"format\": \"0.00%\", \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:parameter "{\"name\": \"registerDateFrom\", \"label\": \"挂号日期起\", \"dataType\": \"Date\", \"required\": false, \"defaultValue\": \"MONTH_START\", \"allowedOperators\": [\"GE\"], \"sourceField\": \"visit.registerTime\"}" ;
+    tcm:parameter "{\"name\": \"registerDateTo\", \"label\": \"挂号日期止\", \"dataType\": \"Date\", \"required\": false, \"defaultValue\": \"MONTH_END\", \"allowedOperators\": [\"LE\"], \"sourceField\": \"visit.registerTime\"}" ;
+    tcm:parameter "{\"name\": \"deptCode\", \"label\": \"科室\", \"dataType\": \"DictionaryRef\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.deptCode\"}" ;
+    tcm:parameter "{\"name\": \"doctorId\", \"label\": \"接诊医师\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.doctorId\"}" ;
+    tcm:parameter "{\"name\": \"visitType\", \"label\": \"就诊类型\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.visitType\"}" ;
+    tcm:parameter "{\"name\": \"visitStatus\", \"label\": \"就诊状态\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.visitStatus\"}" ;
+    tcm:parameter "{\"name\": \"granularity\", \"label\": \"日期粒度\", \"dataType\": \"Enum\", \"required\": false, \"defaultValue\": \"DAY\", \"enumValues\": [\"DAY\", \"MONTH\"], \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.registerTime\"}" ;
+    tcm:groupBy "DATE_TRUNC(visit.registerTime, granularity)" ;
+    tcm:groupBy "visit.deptCode" ;
+    tcm:groupBy "visit.doctorId" ;
+    tcm:groupBy "visit.visitType" .
+
+tcm:Report_RPT_SYNDROME_DIST_001
+    a owl:NamedIndividual ;
+    a tcm:Report ;
+    rdfs:label "证型分布统计"@zh ;
+    skos:notation "RPT-SYNDROME-DIST-001" ;
+    rdfs:label "syndromeDistribution"@en ;
+    rdfs:comment "按期间统计各证型出现频次与占比，支撑辨证规律分析与科室病种结构分析；底部给出总例数"@zh ;
+    tcm:behaviorRef "Diagnosis_QuerySyndromeDistribution" ;
+    tcm:sourceObject "AGG-DIAGNOSIS-001 (主表)" ;
+    tcm:sourceObject "AGG-SYNDROME-001" ;
+    tcm:sourceObject "AGG-VISIT-001" ;
+    tcm:resultColumn "{\"name\": \"syndromeCode\", \"label\": \"证型编码\", \"dataType\": \"String\", \"sourceExpression\": \"syndrome.syndromeCode\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"syndromeName\", \"label\": \"证型名称\", \"dataType\": \"String\", \"sourceExpression\": \"syndrome.syndromeName\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"diagnosisMethod\", \"label\": \"所属辨证体系\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"syndrome.diagnosisMethod\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"syndromeNature\", \"label\": \"证型性质\", \"dataType\": \"Enum\", \"sourceExpression\": \"diagnosis.syndromeNature\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"caseCount\", \"label\": \"辨证例数\", \"dataType\": \"Integer\", \"sourceExpression\": \"diagnosis.diagnosisNo\", \"aggregateFunction\": \"COUNT\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"caseRatio\", \"label\": \"占比\", \"dataType\": \"Decimal\", \"sourceExpression\": \"COUNT(diagnosis.diagnosisNo) / NULLIF(SUBTOTAL(COUNT(diagnosis.diagnosisNo)), 0)\", \"aggregateFunction\": \"NONE\", \"format\": \"0.00%\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:parameter "{\"name\": \"visitDateFrom\", \"label\": \"就诊日期起\", \"dataType\": \"Date\", \"required\": false, \"defaultValue\": \"MONTH_START\", \"allowedOperators\": [\"GE\"], \"sourceField\": \"visit.registerTime\"}" ;
+    tcm:parameter "{\"name\": \"visitDateTo\", \"label\": \"就诊日期止\", \"dataType\": \"Date\", \"required\": false, \"defaultValue\": \"MONTH_END\", \"allowedOperators\": [\"LE\"], \"sourceField\": \"visit.registerTime\"}" ;
+    tcm:parameter "{\"name\": \"diagnosisMethod\", \"label\": \"辨证体系\", \"dataType\": \"DictionaryRef\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"diagnosis.diagnosisMethod\"}" ;
+    tcm:parameter "{\"name\": \"syndromeNature\", \"label\": \"证型性质\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"diagnosis.syndromeNature\"}" ;
+    tcm:parameter "{\"name\": \"syndromeId\", \"label\": \"证型\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\", \"IN\"], \"sourceField\": \"diagnosis.syndromeId\"}" ;
+    tcm:parameter "{\"name\": \"deptCode\", \"label\": \"科室\", \"dataType\": \"DictionaryRef\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.deptCode\"}" ;
+    tcm:parameter "{\"name\": \"doctorId\", \"label\": \"接诊医师\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.doctorId\"}" ;
+    tcm:groupBy "syndrome.syndromeCode" ;
+    tcm:groupBy "syndrome.syndromeName" ;
+    tcm:groupBy "syndrome.diagnosisMethod" ;
+    tcm:groupBy "diagnosis.syndromeNature" .
+
+tcm:Report_RPT_HERB_USAGE_001
+    a owl:NamedIndividual ;
+    a tcm:Report ;
+    rdfs:label "方剂与饮片使用统计"@zh ;
+    skos:notation "RPT-HERB-USAGE-001" ;
+    rdfs:label "herbUsageStats"@en ;
+    rdfs:comment "统计饮片累计用量与方剂模板引用情况，支撑饮片采购计划、效期管理与方剂使用分析；按饮片与按方剂模板两个维度分别查询，底部合计累计用量与总张数"@zh ;
+    tcm:behaviorRef "Prescription_QueryHerbUsage" ;
+    tcm:sourceObject "AGG-PRESCRIPTION-001 (主表)" ;
+    tcm:sourceObject "AGG-PRESCRIPTION-001" ;
+    tcm:sourceObject "AGG-HERB-001" ;
+    tcm:sourceObject "AGG-FORMULA-001" ;
+    tcm:sourceObject "AGG-VISIT-001" ;
+    tcm:resultColumn "{\"name\": \"herbCode\", \"label\": \"饮片编码\", \"dataType\": \"String\", \"sourceExpression\": \"herb.herbCode\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"herbName\", \"label\": \"饮片名称\", \"dataType\": \"String\", \"sourceExpression\": \"herb.herbName\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"herbCategory\", \"label\": \"药材类别\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"herb.herbCategory\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"toxicityLevel\", \"label\": \"毒性分级\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"herb.toxicityLevel\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"doseCount\", \"label\": \"使用剂数\", \"dataType\": \"Integer\", \"sourceExpression\": \"prescription.doses\", \"aggregateFunction\": \"SUM\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"totalQuantity\", \"label\": \"累计用量（g）\", \"dataType\": \"Decimal\", \"sourceExpression\": \"SUM(itemAgg.doseSum * prescription.doses)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"avgSingleDose\", \"label\": \"单剂平均用量（g）\", \"dataType\": \"Decimal\", \"sourceExpression\": \"SUM(itemAgg.doseSum * prescription.doses) / NULLIF(SUM(prescription.doses), 0)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"prescriptionCount\", \"label\": \"涉及处方张数\", \"dataType\": \"Integer\", \"sourceExpression\": \"prescription.prescriptionNo\", \"aggregateFunction\": \"COUNT_DISTINCT\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"patientCount\", \"label\": \"涉及患者数\", \"dataType\": \"Integer\", \"sourceExpression\": \"prescription.patientId\", \"aggregateFunction\": \"COUNT_DISTINCT\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"formulaCode\", \"label\": \"方剂编码\", \"dataType\": \"String\", \"sourceExpression\": \"formula.formulaCode\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"formulaName\", \"label\": \"方剂名称\", \"dataType\": \"String\", \"sourceExpression\": \"formula.formulaName\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"formulaType\", \"label\": \"方剂类型\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"formula.formulaType\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"formulaRefCount\", \"label\": \"引用张数\", \"dataType\": \"Integer\", \"sourceExpression\": \"prescription.prescriptionNo\", \"aggregateFunction\": \"COUNT_DISTINCT\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"formulaRefRatio\", \"label\": \"引用占比\", \"dataType\": \"Decimal\", \"sourceExpression\": \"COUNT(DISTINCT prescription.prescriptionNo) / NULLIF(SUBTOTAL(COUNT(DISTINCT prescription.prescriptionNo)), 0)\", \"aggregateFunction\": \"NONE\", \"format\": \"0.00%\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:parameter "{\"name\": \"prescribeDateFrom\", \"label\": \"开方日期起\", \"dataType\": \"Date\", \"required\": false, \"defaultValue\": \"MONTH_START\", \"allowedOperators\": [\"GE\"], \"sourceField\": \"prescription.prescribeTime\"}" ;
+    tcm:parameter "{\"name\": \"prescribeDateTo\", \"label\": \"开方日期止\", \"dataType\": \"Date\", \"required\": false, \"defaultValue\": \"MONTH_END\", \"allowedOperators\": [\"LE\"], \"sourceField\": \"prescription.prescribeTime\"}" ;
+    tcm:parameter "{\"name\": \"herbCategory\", \"label\": \"饮片类别\", \"dataType\": \"DictionaryRef\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"herb.herbCategory\"}" ;
+    tcm:parameter "{\"name\": \"herbId\", \"label\": \"饮片\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\", \"IN\"], \"sourceField\": \"herb.herbCode\"}" ;
+    tcm:parameter "{\"name\": \"formulaTemplateId\", \"label\": \"方剂模板\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"formula.formulaCode\"}" ;
+    tcm:parameter "{\"name\": \"prescriptionType\", \"label\": \"处方类型\", \"dataType\": \"DictionaryRef\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"prescription.prescriptionType\"}" ;
+    tcm:parameter "{\"name\": \"deptCode\", \"label\": \"科室\", \"dataType\": \"DictionaryRef\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.deptCode\"}" ;
+    tcm:parameter "{\"name\": \"statsDimension\", \"label\": \"统计维度\", \"dataType\": \"Enum\", \"required\": false, \"defaultValue\": \"HERB\", \"enumValues\": [\"HERB\", \"FORMULA_TEMPLATE\"], \"allowedOperators\": [\"EQ\"], \"sourceField\": \"itemAgg.herbId\"}" ;
+    tcm:groupBy "herb.herbCode" ;
+    tcm:groupBy "herb.herbName" ;
+    tcm:groupBy "herb.herbCategory" ;
+    tcm:groupBy "herb.toxicityLevel" .
+
+tcm:Report_QR_VISIT_PRESCRIPTION_001
+    a owl:NamedIndividual ;
+    a tcm:Report ;
+    rdfs:label "就诊与处方记录查询"@zh ;
+    skos:notation "QR-VISIT-PRESCRIPTION-001" ;
+    rdfs:label "visitPrescriptionQuery"@en ;
+    rdfs:comment "按多种业务条件检索患者就诊与对应处方记录（主从三级结构），供门诊、药房日常查询与历史追溯"@zh ;
+    tcm:behaviorRef "Visit_QueryVisitAndPrescription" ;
+    tcm:sourceObject "AGG-VISIT-001 (主表)" ;
+    tcm:sourceObject "AGG-PATIENT-001" ;
+    tcm:sourceObject "AGG-PRESCRIPTION-001" ;
+    tcm:sourceObject "AGG-PRESCRIPTION-001" ;
+    tcm:sourceObject "AGG-PRESCRIPTION-001" ;
+    tcm:sourceObject "AGG-PRESCRIPTION-001" ;
+    tcm:resultColumn "{\"name\": \"visitNo\", \"label\": \"就诊号\", \"dataType\": \"String\", \"sourceExpression\": \"visit.visitNo\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"patientNo\", \"label\": \"患者编号\", \"dataType\": \"String\", \"sourceExpression\": \"patient.patientNo\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"patientName\", \"label\": \"患者姓名\", \"dataType\": \"String\", \"sourceExpression\": \"patient.patientName\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"gender\", \"label\": \"性别\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"patient.gender\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"age\", \"label\": \"年龄\", \"dataType\": \"Integer\", \"sourceExpression\": \"patient.age\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"visitType\", \"label\": \"就诊类型\", \"dataType\": \"Enum\", \"sourceExpression\": \"visit.visitType\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"registerTime\", \"label\": \"挂号时间\", \"dataType\": \"DateTime\", \"sourceExpression\": \"visit.registerTime\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd HH:mm\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"receiveTime\", \"label\": \"接诊时间\", \"dataType\": \"DateTime\", \"sourceExpression\": \"visit.receiveTime\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd HH:mm\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"doctorId\", \"label\": \"接诊医师\", \"dataType\": \"String\", \"sourceExpression\": \"visit.doctorId\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"deptCode\", \"label\": \"科室\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"visit.deptCode\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"visitStatus\", \"label\": \"就诊状态\", \"dataType\": \"Enum\", \"sourceExpression\": \"visit.visitStatus\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"prescriptionNo\", \"label\": \"处方号\", \"dataType\": \"String\", \"sourceExpression\": \"prescription.prescriptionNo\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"prescriptionStatus\", \"label\": \"处方状态\", \"dataType\": \"Enum\", \"sourceExpression\": \"prescription.prescriptionStatus\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"prescriptionType\", \"label\": \"处方类型\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"prescription.prescriptionType\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"doses\", \"label\": \"剂数\", \"dataType\": \"Integer\", \"sourceExpression\": \"prescription.doses\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"usageMethod\", \"label\": \"用法\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"prescription.usageMethod\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"prescribeTime\", \"label\": \"开方时间\", \"dataType\": \"DateTime\", \"sourceExpression\": \"prescription.prescribeTime\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd HH:mm\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"reviewerId\", \"label\": \"审核人\", \"dataType\": \"String\", \"sourceExpression\": \"prescription.reviewerId\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"reviewTime\", \"label\": \"审核时间\", \"dataType\": \"DateTime\", \"sourceExpression\": \"prescription.reviewTime\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd HH:mm\", \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"rejectReason\", \"label\": \"驳回原因\", \"dataType\": \"String\", \"sourceExpression\": \"prescription.rejectReason\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"itemsPerPrescription\", \"label\": \"处方药味数\", \"dataType\": \"Integer\", \"sourceExpression\": \"itemAgg.itemCount\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"prescriptionTotalDose\", \"label\": \"处方总量（g）\", \"dataType\": \"Decimal\", \"sourceExpression\": \"itemAgg.doseTotal * prescription.doses\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"visitPrescriptionCount\", \"label\": \"处方张数\", \"dataType\": \"Integer\", \"sourceExpression\": \"visitPrescriptionAgg.prescriptionCount\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"visitDoseTotal\", \"label\": \"总剂数\", \"dataType\": \"Integer\", \"sourceExpression\": \"visitPrescriptionAgg.doseSum\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"itemHerbName\", \"label\": \"药味名称\", \"dataType\": \"String\", \"sourceExpression\": \"prescriptionItem.herbId\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"itemSingleDose\", \"label\": \"单剂剂量（g）\", \"dataType\": \"Decimal\", \"sourceExpression\": \"prescriptionItem.singleDose\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"itemDecoctionMethod\", \"label\": \"特殊煎法\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"prescriptionItem.decoctionMethod\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:parameter "{\"name\": \"patientName\", \"label\": \"患者姓名\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"LIKE\"], \"sourceField\": \"patient.patientName\"}" ;
+    tcm:parameter "{\"name\": \"patientNo\", \"label\": \"患者编号\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"LIKE\", \"EQ\"], \"sourceField\": \"patient.patientNo\"}" ;
+    tcm:parameter "{\"name\": \"visitNo\", \"label\": \"就诊号\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"LIKE\", \"EQ\"], \"sourceField\": \"visit.visitNo\"}" ;
+    tcm:parameter "{\"name\": \"prescriptionNo\", \"label\": \"处方号\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"LIKE\", \"EQ\"], \"sourceField\": \"prescription.prescriptionNo\"}" ;
+    tcm:parameter "{\"name\": \"registerDateFrom\", \"label\": \"挂号日期起\", \"dataType\": \"Date\", \"required\": false, \"allowedOperators\": [\"GE\"], \"sourceField\": \"visit.registerTime\"}" ;
+    tcm:parameter "{\"name\": \"registerDateTo\", \"label\": \"挂号日期止\", \"dataType\": \"Date\", \"required\": false, \"allowedOperators\": [\"LE\"], \"sourceField\": \"visit.registerTime\"}" ;
+    tcm:parameter "{\"name\": \"visitStatus\", \"label\": \"就诊状态\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"IN\"], \"sourceField\": \"visit.visitStatus\"}" ;
+    tcm:parameter "{\"name\": \"prescriptionStatus\", \"label\": \"处方状态\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"IN\"], \"sourceField\": \"prescription.prescriptionStatus\"}" ;
+    tcm:parameter "{\"name\": \"visitType\", \"label\": \"就诊类型\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.visitType\"}" ;
+    tcm:parameter "{\"name\": \"doctorId\", \"label\": \"接诊医师\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.doctorId\"}" ;
+    tcm:parameter "{\"name\": \"reviewerId\", \"label\": \"审核药师\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"prescription.reviewerId\"}" .
+
+tcm:Report_QR_HERB_STOCK_001
+    a owl:NamedIndividual ;
+    a tcm:Report ;
+    rdfs:label "饮片库存与预警查询"@zh ;
+    skos:notation "QR-HERB-STOCK-001" ;
+    rdfs:label "herbStockAlertQuery"@en ;
+    rdfs:comment "查看饮片当前库存与低库存预警清单，支撑补货决策与调剂可用性判断"@zh ;
+    tcm:behaviorRef "Herb_QueryStockAndAlert" ;
+    tcm:sourceObject "AGG-HERB-001 (主表)" ;
+    tcm:sourceObject "AGG-HERB-001" ;
+    tcm:resultColumn "{\"name\": \"herbCode\", \"label\": \"饮片编码\", \"dataType\": \"String\", \"sourceExpression\": \"herb.herbCode\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"herbName\", \"label\": \"饮片名称\", \"dataType\": \"String\", \"sourceExpression\": \"herb.herbName\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"aliasName\", \"label\": \"别名\", \"dataType\": \"String\", \"sourceExpression\": \"herb.aliasName\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"herbCategory\", \"label\": \"药材类别\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"herb.herbCategory\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"toxicityLevel\", \"label\": \"毒性分级\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"herb.toxicityLevel\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"spec\", \"label\": \"规格\", \"dataType\": \"String\", \"sourceExpression\": \"herb.spec\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"origin\", \"label\": \"产地\", \"dataType\": \"String\", \"sourceExpression\": \"herb.origin\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"stockQuantity\", \"label\": \"库存数量（g）\", \"dataType\": \"Decimal\", \"sourceExpression\": \"herb.stockQuantity\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"lowStockThreshold\", \"label\": \"低库存预警值\", \"dataType\": \"Decimal\", \"sourceExpression\": \"herb.lowStockThreshold\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"alertStatus\", \"label\": \"预警状态\", \"dataType\": \"String\", \"sourceExpression\": \"CASE WHEN herb.stockQuantity < herb.lowStockThreshold THEN '预警' ELSE '正常' END\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"alertGap\", \"label\": \"预警差额（g）\", \"dataType\": \"Decimal\", \"sourceExpression\": \"herb.lowStockThreshold - herb.stockQuantity\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"minCommonDose\", \"label\": \"常用最小量\", \"dataType\": \"Decimal\", \"sourceExpression\": \"herb.minCommonDose\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"maxCommonDose\", \"label\": \"常用最大量\", \"dataType\": \"Decimal\", \"sourceExpression\": \"herb.maxCommonDose\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"latestInboundDate\", \"label\": \"最近入库日期\", \"dataType\": \"DateTime\", \"sourceExpression\": \"flowAgg.latestInboundDate\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"latestOutboundDate\", \"label\": \"最近出库日期\", \"dataType\": \"DateTime\", \"sourceExpression\": \"flowAgg.latestOutboundDate\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:parameter "{\"name\": \"herbName\", \"label\": \"饮片名称\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"LIKE\"], \"sourceField\": \"herb.herbName\"}" ;
+    tcm:parameter "{\"name\": \"herbCode\", \"label\": \"饮片编码\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"herb.herbCode\"}" ;
+    tcm:parameter "{\"name\": \"herbCategory\", \"label\": \"药材类别\", \"dataType\": \"DictionaryRef\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"herb.herbCategory\"}" ;
+    tcm:parameter "{\"name\": \"toxicityLevel\", \"label\": \"毒性分级\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"herb.toxicityLevel\"}" ;
+    tcm:parameter "{\"name\": \"herbStatus\", \"label\": \"状态\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"herb.herbStatus\"}" ;
+    tcm:parameter "{\"name\": \"stockQuantityFrom\", \"label\": \"库存数量下限（g）\", \"dataType\": \"Decimal\", \"required\": false, \"allowedOperators\": [\"GE\"], \"sourceField\": \"herb.stockQuantity\"}" ;
+    tcm:parameter "{\"name\": \"stockQuantityTo\", \"label\": \"库存数量上限（g）\", \"dataType\": \"Decimal\", \"required\": false, \"allowedOperators\": [\"LE\"], \"sourceField\": \"herb.stockQuantity\"}" ;
+    tcm:parameter "{\"name\": \"onlyAlert\", \"label\": \"仅看预警项\", \"dataType\": \"Boolean\", \"required\": false, \"defaultValue\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"herb.stockQuantity\"}" .
+
+tcm:Report_QR_PRESCRIPTION_OVERDOSE_001
+    a owl:NamedIndividual ;
+    a tcm:Report ;
+    rdfs:label "超量毒性处方审核台账"@zh ;
+    skos:notation "QR-PRESCRIPTION-OVERDOSE-001" ;
+    rdfs:label "prescriptionOverdoseReview"@en ;
+    rdfs:comment "集中查看超出常用量上限或含毒性饮片的处方及其审核处理情况，用于用药安全复盘"@zh ;
+    tcm:behaviorRef "Prescription_QueryOverdoseReview" ;
+    tcm:sourceObject "AGG-PRESCRIPTION-001 (主表)" ;
+    tcm:sourceObject "AGG-PRESCRIPTION-001" ;
+    tcm:sourceObject "AGG-HERB-001" ;
+    tcm:sourceObject "AGG-PATIENT-001" ;
+    tcm:resultColumn "{\"name\": \"prescriptionNo\", \"label\": \"处方号\", \"dataType\": \"String\", \"sourceExpression\": \"prescription.prescriptionNo\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"patientName\", \"label\": \"患者姓名\", \"dataType\": \"String\", \"sourceExpression\": \"patient.patientName\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"prescribeDate\", \"label\": \"开方日期\", \"dataType\": \"DateTime\", \"sourceExpression\": \"prescription.prescribeTime\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"doctorId\", \"label\": \"接诊医师\", \"dataType\": \"String\", \"sourceExpression\": \"prescription.doctorId\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"herbName\", \"label\": \"超量药味\", \"dataType\": \"String\", \"sourceExpression\": \"herb.herbName\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"singleDose\", \"label\": \"单剂剂量（g）\", \"dataType\": \"Decimal\", \"sourceExpression\": \"prescriptionItem.singleDose\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"maxCommonDose\", \"label\": \"常用最大量（g）\", \"dataType\": \"Decimal\", \"sourceExpression\": \"herb.maxCommonDose\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0.00\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"exceedRatio\", \"label\": \"超出倍数\", \"dataType\": \"Decimal\", \"sourceExpression\": \"prescriptionItem.singleDose / NULLIF(herb.maxCommonDose, 0)\", \"aggregateFunction\": \"NONE\", \"format\": \"0.00\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"toxicityLevel\", \"label\": \"毒性分级\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"herb.toxicityLevel\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"overDoseReason\", \"label\": \"超量理由\", \"dataType\": \"String\", \"sourceExpression\": \"prescriptionItem.overDoseReason\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"prescriptionStatus\", \"label\": \"处方状态\", \"dataType\": \"Enum\", \"sourceExpression\": \"prescription.prescriptionStatus\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"reviewerId\", \"label\": \"审核人\", \"dataType\": \"String\", \"sourceExpression\": \"prescription.reviewerId\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"reviewTime\", \"label\": \"审核时间\", \"dataType\": \"DateTime\", \"sourceExpression\": \"prescription.reviewTime\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM-dd HH:mm\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"rejectReason\", \"label\": \"驳回原因\", \"dataType\": \"String\", \"sourceExpression\": \"prescription.rejectReason\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": false}" ;
+    tcm:parameter "{\"name\": \"prescribeDateFrom\", \"label\": \"开方日期起\", \"dataType\": \"Date\", \"required\": false, \"allowedOperators\": [\"GE\"], \"sourceField\": \"prescription.prescribeTime\"}" ;
+    tcm:parameter "{\"name\": \"prescribeDateTo\", \"label\": \"开方日期止\", \"dataType\": \"Date\", \"required\": false, \"allowedOperators\": [\"LE\"], \"sourceField\": \"prescription.prescribeTime\"}" ;
+    tcm:parameter "{\"name\": \"triggerType\", \"label\": \"触发类型\", \"dataType\": \"Enum\", \"required\": false, \"defaultValue\": \"BOTH\", \"enumValues\": [\"OVERDOSE\", \"TOXIC\", \"BOTH\"], \"allowedOperators\": [\"EQ\"], \"sourceField\": \"herb.maxCommonDose\"}" ;
+    tcm:parameter "{\"name\": \"prescriptionStatus\", \"label\": \"处方状态\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\", \"IN\"], \"sourceField\": \"prescription.prescriptionStatus\"}" ;
+    tcm:parameter "{\"name\": \"reviewerId\", \"label\": \"审核药师\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"prescription.reviewerId\"}" ;
+    tcm:parameter "{\"name\": \"reviewResult\", \"label\": \"处理结果\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"IN\"], \"sourceField\": \"prescription.prescriptionStatus\"}" .
+
+tcm:Report_RPT_FOLLOWUP_COMPLETION_001
+    a owl:NamedIndividual ;
+    a tcm:Report ;
+    rdfs:label "随访完成与失访分析"@zh ;
+    skos:notation "RPT-FOLLOWUP-COMPLETION-001" ;
+    rdfs:label "followUpCompletion"@en ;
+    rdfs:comment "统计复诊随访的完成率、失访率与疗效分布，评估治疗依从性与疗效；底部合计"@zh ;
+    tcm:behaviorRef "FollowUp_QueryCompletion" ;
+    tcm:sourceObject "AGG-FOLLOWUP-001 (主表)" ;
+    tcm:sourceObject "AGG-VISIT-001" ;
+    tcm:sourceObject "AGG-PATIENT-001" ;
+    tcm:resultColumn "{\"name\": \"statPeriod\", \"label\": \"统计期间\", \"dataType\": \"Date\", \"sourceExpression\": \"DATE_TRUNC(followUp.plannedFollowUpDate, MONTH)\", \"aggregateFunction\": \"NONE\", \"format\": \"yyyy-MM\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"deptCode\", \"label\": \"科室\", \"dataType\": \"DictionaryRef\", \"sourceExpression\": \"visit.deptCode\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"doctorId\", \"label\": \"接诊医师\", \"dataType\": \"String\", \"sourceExpression\": \"visit.doctorId\", \"aggregateFunction\": \"NONE\", \"format\": null, \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"plannedCount\", \"label\": \"计划随访数\", \"dataType\": \"Integer\", \"sourceExpression\": \"followUp.followUpNo\", \"aggregateFunction\": \"COUNT\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"completedCount\", \"label\": \"已完成数\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN followUp.recordStatus = 'COMPLETED' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"lostCount\", \"label\": \"已失访数\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN followUp.recordStatus = 'LOST' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"completionRatio\", \"label\": \"完成率\", \"dataType\": \"Decimal\", \"sourceExpression\": \"SUM(CASE WHEN followUp.recordStatus = 'COMPLETED' THEN 1 ELSE 0 END) / NULLIF(COUNT(followUp.followUpNo), 0)\", \"aggregateFunction\": \"NONE\", \"format\": \"0.00%\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"lostRatio\", \"label\": \"失访率\", \"dataType\": \"Decimal\", \"sourceExpression\": \"SUM(CASE WHEN followUp.recordStatus = 'LOST' THEN 1 ELSE 0 END) / NULLIF(COUNT(followUp.followUpNo), 0)\", \"aggregateFunction\": \"NONE\", \"format\": \"0.00%\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:resultColumn "{\"name\": \"curedCount\", \"label\": \"痊愈数\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN followUp.efficacyLevel = 'CURED' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"markedEffectCount\", \"label\": \"显效数\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN followUp.efficacyLevel = 'MARKED_EFFECT' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"effectiveCount\", \"label\": \"有效数\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN followUp.efficacyLevel = 'EFFECTIVE' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"ineffectiveCount\", \"label\": \"无效数\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN followUp.efficacyLevel = 'INEFFECTIVE' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"aggravatedCount\", \"label\": \"加重数\", \"dataType\": \"Integer\", \"sourceExpression\": \"SUM(CASE WHEN followUp.efficacyLevel = 'AGGRAVATED' THEN 1 ELSE 0 END)\", \"aggregateFunction\": \"NONE\", \"format\": \"#,##0\", \"nullable\": false, \"visible\": true, \"sortable\": false}" ;
+    tcm:resultColumn "{\"name\": \"effectiveRatio\", \"label\": \"有效率\", \"dataType\": \"Decimal\", \"sourceExpression\": \"SUM(CASE WHEN followUp.efficacyLevel IN ('CURED', 'MARKED_EFFECT', 'EFFECTIVE') THEN 1 ELSE 0 END) / NULLIF(SUM(CASE WHEN followUp.recordStatus = 'COMPLETED' THEN 1 ELSE 0 END), 0)\", \"aggregateFunction\": \"NONE\", \"format\": \"0.00%\", \"nullable\": true, \"visible\": true, \"sortable\": true}" ;
+    tcm:parameter "{\"name\": \"plannedDateFrom\", \"label\": \"计划随访日期起\", \"dataType\": \"Date\", \"required\": false, \"defaultValue\": \"MONTH_START\", \"allowedOperators\": [\"GE\"], \"sourceField\": \"followUp.plannedFollowUpDate\"}" ;
+    tcm:parameter "{\"name\": \"plannedDateTo\", \"label\": \"计划随访日期止\", \"dataType\": \"Date\", \"required\": false, \"defaultValue\": \"MONTH_END\", \"allowedOperators\": [\"LE\"], \"sourceField\": \"followUp.plannedFollowUpDate\"}" ;
+    tcm:parameter "{\"name\": \"deptCode\", \"label\": \"科室\", \"dataType\": \"DictionaryRef\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.deptCode\"}" ;
+    tcm:parameter "{\"name\": \"doctorId\", \"label\": \"接诊医师\", \"dataType\": \"String\", \"required\": false, \"allowedOperators\": [\"EQ\"], \"sourceField\": \"visit.doctorId\"}" ;
+    tcm:parameter "{\"name\": \"recordStatus\", \"label\": \"随访状态\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\", \"IN\"], \"sourceField\": \"followUp.recordStatus\"}" ;
+    tcm:parameter "{\"name\": \"efficacyLevel\", \"label\": \"疗效评价\", \"dataType\": \"Enum\", \"required\": false, \"allowedOperators\": [\"EQ\", \"IN\"], \"sourceField\": \"followUp.efficacyLevel\"}" ;
+    tcm:groupBy "DATE_TRUNC(followUp.plannedFollowUpDate, MONTH)" ;
+    tcm:groupBy "visit.deptCode" ;
+    tcm:groupBy "visit.doctorId" .

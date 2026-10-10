@@ -2,7 +2,7 @@
 # 统计：类 44 | 对象属性 48 | 数据属性 69 | 个体 306 | 注记三元组 ≈583
 
 # 中医问诊系统 · OWL 本体（由 tools/yaml2owl.py 从本体模型 YAML 机械生成，请勿手改）
-# 生成时间：2026-10-10 15:09
+# 生成时间：2026-10-10 15:18
 #   源文件 m1-object-model.yaml  md5[:16]=0f79584de131bae1
 #   源文件 m2-behavior-model.yaml  md5[:16]=a3fcee792f5dbd84
 #   源文件 m3-rule-model.yaml  md5[:16]=d317b136e6aeeed0
@@ -313,7 +313,7 @@ tcm:Patient_birthDate
 tcm:Patient_age
     a owl:DatatypeProperty ;
     rdfs:domain tcm:Patient ;
-    rdfs:range xsd:int ;
+    rdfs:range xsd:integer ;
     rdfs:label "年龄"@zh ;
     skos:notation "age" ;
     rdfs:comment "单位「岁」；有出生日期时自动计算，否则人工填写"@zh ;
@@ -744,7 +744,7 @@ tcm:FormulaTemplate_indication
 tcm:FormulaTemplate_defaultDoses
     a owl:DatatypeProperty ;
     rdfs:domain tcm:FormulaTemplate ;
-    rdfs:range xsd:int ;
+    rdfs:range xsd:integer ;
     rdfs:label "常用剂数"@zh ;
     skos:notation "defaultDoses" ;
     rdfs:comment "开方时默认带入处方剂数"@zh ;
@@ -981,7 +981,7 @@ tcm:Prescription_formulaTemplateId
 tcm:Prescription_doses
     a owl:DatatypeProperty ;
     rdfs:domain tcm:Prescription ;
-    rdfs:range xsd:int ;
+    rdfs:range xsd:integer ;
     rdfs:label "剂数"@zh ;
     skos:notation "doses" ;
     tcm:required "true" .

@@ -1,0 +1,336 @@
+# 中医问诊系统本体 · M3 规则模型 分片（由 tools/ontology_extras.py 从主文件拆分）
+# 用途：分工维护与评审。完整导入 WebProtégé 请用上级目录的 tcm-ontology.ttl
+
+@prefix tcm:  <http://hermes.local/tcm-ontology#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+tcm:ontology
+    a owl:Ontology ;
+    rdfs:label "中医问诊系统本体"@zh ;
+    rdfs:comment "由 7 个本体模型（M1/M2/M3/M5/M6/M7/MU）机械生成；领域：中医问诊"@zh ;
+    dcterms:source "中医问诊系统-需求规格说明书-V9" ;
+    owl:versionInfo "2.1" .
+
+tcm:Aggregate
+    a owl:Class ;
+    rdfs:label "聚合根"@zh ;
+    rdfs:comment "可独立存在的业务对象（M1 聚合根）"@zh .
+
+tcm:Enumeration
+    a owl:Class ;
+    rdfs:label "枚举字典"@zh ;
+    rdfs:comment "M1 数据字典中的取值类型"@zh .
+
+tcm:Role
+    a owl:Class ;
+    rdfs:label "角色"@zh ;
+    rdfs:comment "M5 角色（权限集合）"@zh .
+
+tcm:Actor
+    a owl:Class ;
+    rdfs:label "人员/主体"@zh ;
+    rdfs:comment "M5 参与者（人）"@zh .
+
+tcm:Behavior
+    a owl:Class ;
+    rdfs:label "行为"@zh ;
+    rdfs:comment "M2 行为（命令/查询等）"@zh .
+
+tcm:Permission
+    a owl:Class ;
+    rdfs:label "权限"@zh ;
+    rdfs:comment "M5 权限项（行为级 + 数据范围）"@zh .
+
+tcm:Rule
+    a owl:Class ;
+    rdfs:label "业务规则"@zh ;
+    rdfs:comment "M3 规则（校验/计算/分派）"@zh .
+
+tcm:Flow
+    a owl:Class ;
+    rdfs:label "流程"@zh ;
+    rdfs:comment "M6 流程定义"@zh .
+
+tcm:FlowActivity
+    a owl:Class ;
+    rdfs:label "流程活动"@zh ;
+    rdfs:comment "M6 流程内的活动节点"@zh .
+
+tcm:Report
+    a owl:Class ;
+    rdfs:label "报表"@zh ;
+    rdfs:comment "M7 查询与报表"@zh .
+
+tcm:Screen
+    a owl:Class ;
+    rdfs:label "界面"@zh ;
+    rdfs:comment "MU 屏幕"@zh .
+
+tcm:grantsPermission
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Role ;
+    rdfs:range tcm:Permission ;
+    rdfs:label "角色授予权限"@zh .
+
+tcm:hasRole
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Actor ;
+    rdfs:range tcm:Role ;
+    rdfs:label "人员具有角色"@zh .
+
+tcm:appliesRule
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Behavior ;
+    rdfs:range tcm:Rule ;
+    rdfs:label "行为适用规则"@zh .
+
+tcm:hasActivity
+    a owl:ObjectProperty ;
+    rdfs:domain tcm:Flow ;
+    rdfs:range tcm:FlowActivity ;
+    rdfs:label "流程包含活动"@zh .
+
+tcm:lifecycle
+    a owl:AnnotationProperty ;
+    rdfs:label "生命周期"@zh .
+
+tcm:required
+    a owl:AnnotationProperty ;
+    rdfs:label "是否必填"@zh .
+
+tcm:unique
+    a owl:AnnotationProperty ;
+    rdfs:label "是否唯一"@zh .
+
+tcm:defaultValue
+    a owl:AnnotationProperty ;
+    rdfs:label "默认值"@zh .
+
+tcm:dictionaryId
+    a owl:AnnotationProperty ;
+    rdfs:label "所属字典"@zh .
+
+tcm:sortOrder
+    a owl:AnnotationProperty ;
+    rdfs:label "排序"@zh .
+
+tcm:inverseLabel
+    a owl:AnnotationProperty ;
+    rdfs:label "反向角色名"@zh .
+
+tcm:cardinality
+    a owl:AnnotationProperty ;
+    rdfs:label "基数"@zh .
+
+tcm:referenceField
+    a owl:AnnotationProperty ;
+    rdfs:label "引用字段"@zh .
+
+tcm:targetType
+    a owl:AnnotationProperty ;
+    rdfs:label "目标类型"@zh .
+
+tcm:dataScope
+    a owl:AnnotationProperty ;
+    rdfs:label "数据范围"@zh .
+
+tcm:actorType
+    a owl:AnnotationProperty ;
+    rdfs:label "主体类型"@zh .
+
+tcm:behaviorType
+    a owl:AnnotationProperty ;
+    rdfs:label "行为类型"@zh .
+
+tcm:triggerType
+    a owl:AnnotationProperty ;
+    rdfs:label "触发方式"@zh .
+
+tcm:ownerEntity
+    a owl:AnnotationProperty ;
+    rdfs:label "所属实体ID"@zh .
+
+tcm:ownerEntityName
+    a owl:AnnotationProperty ;
+    rdfs:label "所属实体"@zh .
+
+tcm:precondition
+    a owl:AnnotationProperty ;
+    rdfs:label "前置条件"@zh .
+
+tcm:postcondition
+    a owl:AnnotationProperty ;
+    rdfs:label "后置条件"@zh .
+
+tcm:appliedRule
+    a owl:AnnotationProperty ;
+    rdfs:label "适用规则ID"@zh .
+
+tcm:ruleType
+    a owl:AnnotationProperty ;
+    rdfs:label "规则类型"@zh .
+
+tcm:outputType
+    a owl:AnnotationProperty ;
+    rdfs:label "输出类型"@zh .
+
+tcm:expression
+    a owl:AnnotationProperty ;
+    rdfs:label "规则表达式"@zh .
+
+tcm:inputParam
+    a owl:AnnotationProperty ;
+    rdfs:label "输入参数"@zh .
+
+tcm:reusedByBehavior
+    a owl:AnnotationProperty ;
+    rdfs:label "被行为引用"@zh .
+
+tcm:flowType
+    a owl:AnnotationProperty ;
+    rdfs:label "流程类型"@zh .
+
+tcm:businessObject
+    a owl:AnnotationProperty ;
+    rdfs:label "涉及业务对象"@zh .
+
+tcm:involvedRole
+    a owl:AnnotationProperty ;
+    rdfs:label "涉及角色"@zh .
+
+tcm:startActivity
+    a owl:AnnotationProperty ;
+    rdfs:label "起始活动"@zh .
+
+tcm:endActivity
+    a owl:AnnotationProperty ;
+    rdfs:label "结束活动"@zh .
+
+tcm:performer
+    a owl:AnnotationProperty ;
+    rdfs:label "执行角色"@zh .
+
+tcm:activityType
+    a owl:AnnotationProperty ;
+    rdfs:label "活动类型"@zh .
+
+tcm:behaviorRef
+    a owl:AnnotationProperty ;
+    rdfs:label "对应行为"@zh .
+
+tcm:sourceObject
+    a owl:AnnotationProperty ;
+    rdfs:label "来源对象"@zh .
+
+tcm:resultColumn
+    a owl:AnnotationProperty ;
+    rdfs:label "结果列"@zh .
+
+tcm:parameter
+    a owl:AnnotationProperty ;
+    rdfs:label "参数"@zh .
+
+tcm:groupBy
+    a owl:AnnotationProperty ;
+    rdfs:label "分组字段"@zh .
+
+tcm:screenType
+    a owl:AnnotationProperty ;
+    rdfs:label "屏幕类型"@zh .
+
+tcm:elementCount
+    a owl:AnnotationProperty ;
+    rdfs:label "元素数"@zh .
+
+tcm:actionCount
+    a owl:AnnotationProperty ;
+    rdfs:label "动作数"@zh .
+
+tcm:Rule_RULE_PRESCRIPTION_DOSE_LIMIT_CHECK
+    a owl:NamedIndividual ;
+    a tcm:Rule ;
+    rdfs:label "剂量超常用量上限处理判定"@zh ;
+    skos:notation "RULE-PRESCRIPTION-DOSE-LIMIT-CHECK" ;
+    tcm:ruleType "VALIDATION" ;
+    tcm:outputType "String" ;
+    rdfs:comment "读取处方明细的单剂剂量与所引饮片的常用量区间，判定三种处理结论：\nPASS（未超常用上限，正常放行）/ NEED_REASON（超常用上限但在 2 倍以内，必须填写超量理由并强制药师审核）/\nBLOCK（超过常用上限 2 倍，直接阻断提交）。依据 D-11、D-16。"@zh ;
+    tcm:expression "\"IF singleDose <= maxCommonDose THEN 'PASS'\\nELSE IF singleDose > maxCommonDose * 2 THEN 'BLOCK'\\nELSE IF overDoseReason IS NULL OR LENGTH(overDoseReason) == 0 THEN 'NEED_REASON'\\nELSE 'NEED_REASON'\"" ;
+    tcm:inputParam "{\"name\": \"singleDose\", \"type\": \"Decimal\", \"sourceField\": \"PrescriptionItem.singleDose\", \"required\": true, \"description\": \"处方明细单剂剂量（g）\"}" ;
+    tcm:inputParam "{\"name\": \"maxCommonDose\", \"type\": \"Decimal\", \"sourceField\": \"Herb.maxCommonDose\", \"required\": true, \"description\": \"饮片常用最大量（g）\"}" ;
+    tcm:inputParam "{\"name\": \"minCommonDose\", \"type\": \"Decimal\", \"sourceField\": \"Herb.minCommonDose\", \"required\": true, \"description\": \"饮片常用最小量（g）\"}" ;
+    tcm:inputParam "{\"name\": \"overDoseReason\", \"type\": \"String\", \"sourceField\": \"PrescriptionItem.overDoseReason\", \"required\": false, \"description\": \"超量理由，超常用上限时必填\"}" ;
+    tcm:reusedByBehavior "Prescription_Save" ;
+    tcm:reusedByBehavior "Prescription_Submit" .
+
+tcm:Rule_RULE_HERB_STOCK_SUFFICIENT
+    a owl:NamedIndividual ;
+    a tcm:Rule ;
+    rdfs:label "饮片库存充足校验"@zh ;
+    skos:notation "RULE-HERB-STOCK-SUFFICIENT" ;
+    tcm:ruleType "VALIDATION" ;
+    tcm:outputType "Boolean" ;
+    rdfs:comment "按处方剂数计算各味饮片需求总量，逐味比对饮片当前库存数量，任一味不足则阻断调剂（D-14）。"@zh ;
+    tcm:expression "\"FOR EACH item IN prescriptionItems:\\n  IF item.singleDose * prescription.doses > herb(item.herbId).stockQuantity THEN RETURN false\\nRETURN true\"" ;
+    tcm:inputParam "{\"name\": \"requiredQuantity\", \"type\": \"Decimal\", \"sourceField\": \"PrescriptionItem.singleDose * Prescription.doses\", \"required\": true, \"description\": \"该味饮片需求总量 = 单剂剂量 × 剂数（g）\"}" ;
+    tcm:inputParam "{\"name\": \"stockQuantity\", \"type\": \"Decimal\", \"sourceField\": \"Herb.stockQuantity\", \"required\": true, \"description\": \"饮片当前库存数量（g）\"}" ;
+    tcm:reusedByBehavior "Dispense_Confirm" .
+
+tcm:Rule_RULE_HERB_TOXIC_TOTAL_LIMIT_CHECK
+    a owl:NamedIndividual ;
+    a tcm:Rule ;
+    rdfs:label "毒性饮片处方总量上限校验"@zh ;
+    skos:notation "RULE-HERB-TOXIC-TOTAL-LIMIT-CHECK" ;
+    tcm:ruleType "VALIDATION" ;
+    tcm:outputType "Boolean" ;
+    rdfs:comment "对处方内毒性分级非「无毒」的饮片，按单剂剂量汇总同味饮片总量，与饮片维护的「毒性单张处方总量上限」比对，\n超上限即阻断提交；未维护上限的毒性饮片只做强制审核提示。依据 D-11。"@zh ;
+    tcm:expression "\"IF toxicityLevel == 'NONE' THEN RETURN true\\nIF toxicDoseLimit IS NULL THEN RETURN true\\nRETURN totalDoseInPrescription <= toxicDoseLimit\"" ;
+    tcm:inputParam "{\"name\": \"herbId\", \"type\": \"String\", \"sourceField\": \"PrescriptionItem.herbId\", \"required\": true}" ;
+    tcm:inputParam "{\"name\": \"toxicityLevel\", \"type\": \"String\", \"sourceField\": \"Herb.toxicityLevel\", \"required\": true, \"description\": \"毒性分级字典值，NONE 表示无毒\"}" ;
+    tcm:inputParam "{\"name\": \"toxicDoseLimit\", \"type\": \"Decimal\", \"sourceField\": \"Herb.toxicDoseLimit\", \"required\": false, \"description\": \"毒性单张处方总量上限（g），为空表示不单独设限\"}" ;
+    tcm:inputParam "{\"name\": \"totalDoseInPrescription\", \"type\": \"Decimal\", \"sourceField\": \"SUM(PrescriptionItem.singleDose)\", \"required\": true, \"description\": \"同一处方内该味饮片的单剂总量（g）\"}" ;
+    tcm:reusedByBehavior "Prescription_Submit" .
+
+tcm:Rule_RULE_PRESCRIPTION_VOID_DISPATCH
+    a owl:NamedIndividual ;
+    a tcm:Rule ;
+    rdfs:label "处方作废处理判定与阻断"@zh ;
+    skos:notation "RULE-PRESCRIPTION-VOID-DISPATCH" ;
+    tcm:ruleType "VALIDATION" ;
+    tcm:outputType "String" ;
+    rdfs:comment "按调剂发药记录状态三分派：无记录或「待调剂」→ VOID_ONLY（允许作废，无库存动作，同步取消待调剂记录）；\n「已调剂」→ VOID_WITH_ROLLBACK（允许作废并按 B-02 回冲库存）；「已发药」→ BLOCK（阻断作废，\n退药走线下处理）。规则只判断与分派，状态变化由行为完成。依据 D-08、D-19。"@zh ;
+    tcm:expression "\"IF recordStatus IS NULL THEN RETURN 'VOID_ONLY'\\nIF recordStatus == 'PENDING' THEN RETURN 'VOID_ONLY'\\nIF recordStatus == 'DISPENSED' THEN RETURN 'VOID_WITH_ROLLBACK'\\nIF recordStatus == 'ISSUED' THEN RETURN 'BLOCK'\\nRETURN 'VOID_ONLY'\"" ;
+    tcm:inputParam "{\"name\": \"recordStatus\", \"type\": \"String\", \"sourceField\": \"DispenseRecord.recordStatus\", \"required\": false, \"description\": \"调剂发药记录状态；无记录时为空\"}" ;
+    tcm:inputParam "{\"name\": \"prescriptionStatus\", \"type\": \"String\", \"sourceField\": \"Prescription.prescriptionStatus\", \"required\": true, \"description\": \"当前处方状态\"}" ;
+    tcm:reusedByBehavior "Prescription_Cancel" .
+
+tcm:Rule_RULE_FOLLOWUP_DATE_ORDER
+    a owl:NamedIndividual ;
+    a tcm:Rule ;
+    rdfs:label "复诊日期顺序校验"@zh ;
+    skos:notation "RULE-FOLLOWUP-DATE-ORDER" ;
+    tcm:ruleType "VALIDATION" ;
+    tcm:outputType "Boolean" ;
+    rdfs:comment "实际随访日期不得早于随访来源就诊的挂号时间；违反时提示并要求修正（D-17）。"@zh ;
+    tcm:expression "\"actualFollowUpDate >= DATE(sourceVisitRegisterTime)\"" ;
+    tcm:inputParam "{\"name\": \"actualFollowUpDate\", \"type\": \"Date\", \"sourceField\": \"FollowUp.actualFollowUpDate\", \"required\": true}" ;
+    tcm:inputParam "{\"name\": \"sourceVisitRegisterTime\", \"type\": \"DateTime\", \"sourceField\": \"Visit.registerTime\", \"required\": true, \"description\": \"上次就诊（随访来源）的挂号时间\"}" ;
+    tcm:reusedByBehavior "FollowUp_Complete" .
+
+tcm:Rule_RULE_HERB_STOCK_RECONCILE
+    a owl:NamedIndividual ;
+    a tcm:Rule ;
+    rdfs:label "饮片库存对账校验"@zh ;
+    skos:notation "RULE-HERB-STOCK-RECONCILE" ;
+    tcm:ruleType "VALIDATION" ;
+    tcm:outputType "Decimal" ;
+    rdfs:comment "盘点时以饮片库存数量与全部出入库流水数量净和比对，输出对账结论与差异值（不阻断业务，供盘点人员据以发起盘点调整）。\n与 M1 聚合不变量 INV-03 同源：INV-03 为写入时强制的聚合不变量，本规则为盘点行为的对账判定与差异呈现。依据 INV-03。"@zh ;
+    tcm:expression "\"stockQuantity - flowNetQuantity\"" ;
+    tcm:inputParam "{\"name\": \"stockQuantity\", \"type\": \"Decimal\", \"sourceField\": \"Herb.stockQuantity\", \"required\": true}" ;
+    tcm:inputParam "{\"name\": \"flowNetQuantity\", \"type\": \"Decimal\", \"sourceField\": \"SUM(HerbStockFlow.quantity)\", \"required\": true, \"description\": \"该饮片全部出入库流水数量净和（g）\"}" ;
+    tcm:reusedByBehavior "Herb_Stocktake" .

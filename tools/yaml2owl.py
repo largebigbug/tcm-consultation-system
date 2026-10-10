@@ -38,7 +38,7 @@ except ImportError:
 
 BASE = "http://hermes.local/tcm-ontology#"
 XSD = "http://www.w3.org/2001/XMLSchema#"
-SCALAR_RANGE = {"String": "xsd:string", "Integer": "xsd:int", "Decimal": "xsd:decimal",
+SCALAR_RANGE = {"String": "xsd:string", "Integer": "xsd:integer", "Decimal": "xsd:decimal",
                 "Date": "xsd:date", "DateTime": "xsd:dateTime", "Boolean": "xsd:boolean"}
 
 
